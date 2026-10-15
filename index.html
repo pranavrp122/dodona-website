@@ -21,6 +21,7 @@
   <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/styles.css">
   <script src="/waitlist.js" defer></script>
+  <script type="module" src="/paper-order.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -69,6 +70,46 @@
 
     <section class="sec" id="how-it-works" aria-labelledby="how-title"><div class="wrap">
       <div class="sec-head"><div><p class="eyebrow">How it works</p><h2 id="how-title">Book a price for<br>your next GPU run.</h2></div><p>Pay for the price protection and a separate booking fee upfront. Pay for the compute itself only if you use it.</p></div>
+      <div class="paper-order" id="paper-order" aria-labelledby="paper-title">
+        <div class="paper-heading"><div><p class="eyebrow">Try it here</p><h3 id="paper-title">Place a paper order</h3><p>Choose your compute, review the cost, and try booking it.</p></div><span class="paper-badge">Demo · no real money</span></div>
+        <ol class="paper-steps" aria-label="Paper order progress"><li data-paper-step="details" aria-current="step">1. Details</li><li data-paper-step="review">2. Review</li><li data-paper-step="receipt">3. Receipt</li></ol>
+        <div class="paper-grid">
+          <form id="paper-order-form" aria-labelledby="paper-title" aria-describedby="paper-disclaimer paper-message" novalidate>
+            <fieldset id="paper-fields">
+              <legend class="visually-hidden">Compute details</legend>
+              <div class="paper-fields-grid">
+                <div class="field"><label for="paper-gpu">GPU type</label><select id="paper-gpu" name="gpuType" required><option value="H100">NVIDIA H100</option></select></div>
+                <div class="field"><label for="paper-count">GPUs used together</label><input id="paper-count" name="gpuCount" type="number" min="1" max="8" step="1" value="1" required></div>
+                <div class="field"><label for="paper-hours">Total GPU-hours</label><input id="paper-hours" name="gpuHours" type="number" min="1" max="10000" step="1" value="100" required aria-describedby="paper-hours-help"><span class="paper-help" id="paper-hours-help">100 hours = 1 GPU for 100 hours, or 2 for 50 each.</span></div>
+                <div class="field"><label for="paper-region">Region preference</label><select id="paper-region" name="region" required aria-describedby="paper-region-help"><option value="US East">US East</option><option value="US West">US West</option><option value="Europe">Europe</option></select><span class="paper-help" id="paper-region-help">Demo preferences, not available inventory.</span></div>
+                <div class="field"><label for="paper-start">Usage starts (UTC)</label><input id="paper-start" name="usageStartsAt" type="datetime-local" required></div>
+                <div class="field"><label for="paper-end">Usage ends (UTC)</label><input id="paper-end" name="usageEndsAt" type="datetime-local" required></div>
+              </div>
+              <p class="paper-help">All times are UTC. The window needs enough time for your GPU-hours.</p>
+              <button class="btn btn-ink paper-primary" id="paper-review-button" type="submit" disabled>Review paper order <span aria-hidden="true">→</span></button>
+            </fieldset>
+            <div id="paper-review" hidden>
+              <h4 id="paper-review-title" tabindex="-1">Review your paper order</h4>
+              <dl class="paper-details"><div><dt>Compute</dt><dd data-paper-detail="compute"></dd></div><div><dt>Region preference</dt><dd data-paper-detail="region"></dd></div><div><dt>Usage starts</dt><dd data-paper-detail="starts"></dd></div><div><dt>Usage ends</dt><dd data-paper-detail="ends"></dd></div><div><dt>Paper upfront</dt><dd data-paper-price="upfrontTotalCents">$22.00</dd></div><div><dt>Compute if used</dt><dd data-paper-price="computePaymentIfUsedCents">$300.00</dd></div><div><dt>Total if used</dt><dd data-paper-price="totalIfUsedCents">$322.00</dd></div></dl>
+              <p class="paper-help">In a real booking, request access before this window starts. Protection and booking payments remain paid if it expires unused; the booking fee stays paid after a resale or buyback, subject to required refund rights.</p>
+              <label class="paper-consent" for="paper-confirm"><input id="paper-confirm" type="checkbox" required disabled><span>I understand this is a paper order. No payment or compute is involved.</span></label>
+              <div class="paper-actions"><button class="btn btn-ink" type="submit">Place paper order</button><button class="text-link" id="paper-edit" type="button">Edit details</button></div>
+            </div>
+            <div id="paper-receipt" hidden>
+              <span class="paper-badge">Paper receipt</span>
+              <h4 id="paper-receipt-title" tabindex="-1">Paper order placed</h4>
+              <p class="paper-receipt-note">You’ve tried the booking flow. No payment was taken and no compute was reserved.</p>
+              <dl class="paper-details"><div><dt>Reference</dt><dd id="paper-receipt-id"></dd></div><div><dt>Compute</dt><dd data-paper-detail="compute"></dd></div><div><dt>Region preference</dt><dd data-paper-detail="region"></dd></div><div><dt>Usage starts</dt><dd data-paper-detail="starts"></dd></div><div><dt>Usage ends</dt><dd data-paper-detail="ends"></dd></div><div><dt>Paper upfront</dt><dd data-paper-price="upfrontTotalCents">$22.00</dd></div><div><dt>Compute if used</dt><dd data-paper-price="computePaymentIfUsedCents">$300.00</dd></div><div><dt>Total if used</dt><dd data-paper-price="totalIfUsedCents">$322.00</dd></div></dl>
+              <p class="paper-help">This receipt lives only on this page. Download a copy if you want to keep it; refreshing clears the paper order.</p>
+              <div class="paper-actions"><button class="btn btn-ink" id="paper-again" type="button">Try another order</button><button class="text-link" id="paper-download" type="button">Download receipt</button></div>
+            </div>
+            <p class="paper-message" id="paper-message" role="status" aria-live="polite" aria-atomic="true">Loading the paper-order demo…</p>
+            <noscript><p class="field-error">Enable JavaScript to try a paper order. Nothing has been booked.</p></noscript>
+          </form>
+          <aside class="paper-summary" aria-labelledby="paper-summary-title"><p class="eyebrow">Illustrative pricing · USD</p><h4 id="paper-summary-title">Your paper quote</h4><p>$3 per GPU-hour, if you use it.</p><dl class="paper-prices"><div><dt>Price protection</dt><dd data-paper-price="protectionPaymentCents">$20.00</dd></div><div><dt>Booking fee</dt><dd data-paper-price="bookingFeeCents">$2.00</dd></div><div class="paper-upfront"><dt>Upfront, in this demo</dt><dd data-paper-price="upfrontTotalCents">$22.00</dd></div><div><dt>Compute, if used</dt><dd data-paper-price="computePaymentIfUsedCents">$300.00</dd></div><div><dt>Total if used</dt><dd data-paper-price="totalIfUsedCents">$322.00</dd></div></dl><p class="paper-summary-note">Protection costs $0.20 per GPU-hour. Taxes and other charges are excluded. These are example prices, not an offer.</p></aside>
+        </div>
+        <p class="paper-disclaimer" id="paper-disclaimer">Paper orders run in your browser. They don’t take payments, reserve capacity, create an account, or join the waitlist.</p>
+      </div>
       <ol class="flow">
         <li class="stage"><span class="step-number">01 <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></span><h3>Choose your compute</h3><p>Choose the GPU, hours, provider, and usage window. Check the price and the deadline to request access.</p></li>
         <li class="stage"><span class="step-number">02 <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></span><h3>Secure your price</h3><p>Pay for protection and booking. The agreed rental price stays fixed even if GPU prices rise.</p></li>
