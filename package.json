@@ -13,7 +13,7 @@
   "scripts": {
     "start": "node --use-env-proxy --env-file-if-exists=.env server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "test:browser": "node tests/browser.mjs",
+    "test:browser": "npm run preview:html && node tests/browser.mjs && node tests/paper-browser.mjs",
     "preview:html": "node scripts/build-preview.mjs",
     "social:build": "node scripts/build-social-card.mjs",
     "demo:mcp": "node --use-env-proxy --env-file-if-exists=.env scripts/demo-mcp.mjs",

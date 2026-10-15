@@ -22,7 +22,15 @@ The signup form offers **Check again**, retries availability every 30 seconds wh
 
 ## Human and agent access
 
-The landing page uses short descriptions, separate cost and payout examples, native FAQ controls, and a section menu that also works on mobile. Important product information is server-rendered, so readers and crawlers do not need JavaScript to read it. Keyboard navigation, visible focus, labels, and live form status remain supported. JavaScript is only needed for the browser signup flow; agents can use the same API directly.
+The landing page uses short descriptions, separate cost and payout examples, native FAQ controls, and a section menu that also works on mobile. Important product information is server-rendered, so readers and crawlers do not need JavaScript to read it. Keyboard navigation, visible focus, labels, and live form status remain supported. JavaScript powers the signup form and paper-order demo; agents can use the signup API directly.
+
+### Browser paper orders
+
+“How it works” includes a browser-only paper-order form at `/#paper-order`. Choose H100, GPU count, total GPU-hours, region preference, and a usage window in UTC. The cost summary updates with quantity. Review the complete request and fees, acknowledge that it is a demo, then place the paper order. The receipt can be downloaded as JSON or cleared by starting another order or refreshing.
+
+Pricing and window/budget checks come from `demo-model.js`, shared with the MCP reservation demo. The example is $0.20 per GPU-hour for protection, a $2 booking fee, and $3 per GPU-hour for compute if used. The UI rejects past/short windows and invalid quantities. A review expires after 15 minutes or when its usage window starts; changed details require a fresh review. Counts represent parallel GPUs, not an extra multiplier on the total GPU-hours.
+
+Paper orders make **no API writes**, take no payment, hold no capacity, create no account, and do not join the waitlist. Their state lives only in page memory, without localStorage or sessionStorage. Receipts use a `PAPER-` reference and explicitly set payment, capacity, real-reservation, and persistence flags to false. They are not the signed MCP quotes or durable booking records. The self-contained HTML preview bundles the same model and UI, so paper orders work offline while real signup collection remains disabled.
 
 Public discovery routes:
 
