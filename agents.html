@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>For agents and developers — Dodona</title>
+  <meta name="description" content="Read Dodona product information and use its public waitlist API. Schemas, signup steps, limits, and error handling.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="alternate" type="text/plain" href="/llms-full.txt" title="Full agent guide">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><a class="text-link" href="/">Back to Dodona</a></div></header>
+  <main class="wrap privacy-document agent-document" id="main">
+    <p class="eyebrow">API and documentation</p>
+    <h1>For agents and developers</h1>
+    <p>Connect an MCP client to walk through a demo reservation, or use the API to join the waitlist. Real bookings, payments, trading, resales, buybacks, and compute access aren’t available.</p>
+    <nav class="document-links" aria-label="Agent resources"><a href="/llms.txt">Quick guide</a><a href="/llms-full.txt">Full text guide</a><a href="/api/site">Product JSON</a><a href="/openapi.json">OpenAPI schema</a></nav>
+    <h2 id="mcp">Connect with MCP</h2>
+    <p>Endpoint: <code><!-- MCP_URL --></code>. Add the full URL—this site’s origin followed by <code>/mcp</code>—to a client that supports remote Streamable HTTP MCP. Use the public HTTPS URL when deployed. The connector must be added before a chat can use Dodona; visiting the endpoint in a browser won’t book anything.</p>
+    <p>No account or API key is needed for this demo. A compatible client handles MCP initialization and the POST requests. The endpoint uses JSON responses without a persistent event stream.</p>
+    <h2>Try a reservation</h2>
+    <p>Once connected, ask: “Help me book a demo H100 reservation with Dodona.” Your agent should ask for the GPU count, total GPU-hours, usage dates and timezone, and region. You can also give upfront or total budget limits.</p>
+    <p>It should show the protection payment, booking fee, compute cost, and terms, then ask you to confirm. The receipt will say <strong>DEMO</strong>: no payment is taken, no capacity is held, and no reservation is stored.</p>
+    <p>The demo supports H100, 1–8 GPUs, and up to 10,000 total GPU-hours. One hundred GPU-hours means one GPU for 100 hours or two for 50 hours each. Quotes last 15 minutes, or until the usage window starts.</p>
+    <dl class="api-values"><div><dt><code>get_product</code></dt><dd>Read product terms and example fees</dd></div><div><dt><code>get_reservation_requirements</code></dt><dd>Get the questions and supported values</dd></div><div><dt><code>quote_demo_reservation</code></dt><dd>Review a signed, illustrative quote</dd></div><div><dt><code>confirm_demo_reservation</code></dt><dd>Receive a simulated receipt after confirming</dd></div><div><dt><code>get_waitlist_status</code></dt><dd>Check real signup availability</dd></div><div><dt><code>join_waitlist</code></dt><dd>Sign up only if the user asks and storage confirms</dd></div></dl>
+    <p>The MCP server also provides the <code>reserve_compute_demo</code> prompt and <code>dodona://product</code> and <code>dodona://guide</code> resources. It never asks for card details.</p>
+    <h2>Read first</h2>
+    <p>The <a href="/api/site">product summary</a> lists the terms, example figures, and supported capabilities. All prices and fees are examples. Read the <a href="/privacy">signup policy</a> before collecting an email. There is no public signup list.</p>
+    <h2>Join the waitlist</h2>
+    <ol class="api-steps">
+      <li>Use only the email and optional details the user supplied, after they ask to join.</li>
+      <li>Request <code>GET /api/waitlist/status</code>. Continue only on <code>200</code> with <code>available: true</code> and a token. A <code>503</code> means signup is unavailable.</li>
+      <li>Wait at least 1.5 seconds after the token was issued. It expires after two hours.</li>
+      <li>Send <code>POST /api/waitlist</code> with <code>Content-Type: application/json</code> and the fields below.</li>
+      <li>Only <code>200</code> with <code>{"status":"saved"}</code> confirms signup. New and existing addresses get the same response. No email is sent automatically.</li>
+    </ol>
+    <pre><code>{
+  "email": "the-user-provided-address",
+  "token": "the-token-from-the-status-response",
+  "interest": "Business hedging",
+  "useCase": "The user's own description",
+  "website": ""
+}</code></pre>
+    <p><code>email</code> and <code>token</code> are required. Other fields are optional. Leave <code>website</code> empty or omit it; it is a spam trap, not a URL field.</p>
+    <h2>Interest values</h2>
+    <p>The API keeps its original field values. The form uses these labels:</p>
+    <dl class="api-values"><div><dt><code>Individual trading</code></dt><dd>Planning a personal project</dd></div><div><dt><code>Business hedging</code></dt><dd>Protecting a business budget</dd></div><div><dt><code>Partnership</code></dt><dd>Providing compute capacity</dd></div><div><dt>Empty or omitted</dt><dd>No preference</dd></div></dl>
+    <h2>Limits and retries</h2>
+    <p>Email: 254 characters maximum. Use case: 280 characters. Body: 4 KB. Default limits are 20 signup attempts per client in 10 minutes and 120 status checks per minute.</p>
+    <p>For <code>429</code>, follow <code>Retry-After</code>. For <code>FORM_EXPIRED</code>, fetch a new token. On <code>503</code>, report that signup was not confirmed. A lost response can follow a saved signup; retrying the same email won’t create a duplicate or overwrite preferences.</p>
+    <h2>Client access</h2>
+    <p>Server-to-server requests work without a browser. Browser requests must come from this site; cross-origin access isn’t enabled. Clients don’t need Supabase credentials or the server’s form secret. Don’t spoof an origin or bypass limits.</p>
+    <h2>Contact</h2>
+    <p>For signup corrections, removal, or questions:</p>
+    <!-- ABOUT_CONTACT -->
+  </main>
+  <footer><div class="wrap footer-grid"><p>Dodona is in development. This API does not accept payments.</p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

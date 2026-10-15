@@ -1,0 +1,28 @@
+{
+  "name": "dodona-website",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "axe-core": "4.14.0",
+    "playwright": "1.62.1"
+  },
+  "scripts": {
+    "start": "node --use-env-proxy --env-file-if-exists=.env server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "preview:html": "node scripts/build-preview.mjs",
+    "social:build": "node scripts/build-social-card.mjs",
+    "demo:mcp": "node --use-env-proxy --env-file-if-exists=.env scripts/demo-mcp.mjs",
+    "check:deployment": "node --use-env-proxy --env-file-if-exists=.env scripts/check-deployment.mjs",
+    "waitlist:export": "node --use-env-proxy --env-file-if-exists=.env scripts/export-waitlist.mjs",
+    "verify:storage": "node --use-env-proxy --env-file-if-exists=.env scripts/verify-storage.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.1",
+    "zod": "4.6.7"
+  }
+}

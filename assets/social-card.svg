@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8f7f2"/>
+  <rect x="64" y="50" width="200" height="58" rx="10" fill="#e0ff4f"/>
+  <text x="84" y="88" fill="#052b42" font-family="Bricolage Grotesque, sans-serif" font-size="30" font-weight="700">DODONA</text>
+  <text x="928" y="84" fill="#052b42" font-family="Albert Sans, sans-serif" font-size="18" font-weight="600">IN DEVELOPMENT</text>
+  <text x="64" y="235" fill="#052b42" font-family="Bricolage Grotesque, sans-serif" font-size="76" font-weight="700">Protect your</text>
+  <text x="64" y="325" fill="#614efa" font-family="Bricolage Grotesque, sans-serif" font-size="76" font-weight="700">compute budget.</text>
+  <text x="64" y="405" fill="#052b42" font-family="Albert Sans, sans-serif" font-size="28">Lock in a rental price for your next GPU run.</text>
+  <text x="64" y="447" fill="#052b42" font-family="Albert Sans, sans-serif" font-size="28">Decide later whether to use it.</text>
+  <path d="M64 510h1072" stroke="#052b42" stroke-opacity=".2"/>
+  <text x="64" y="561" fill="#4f6676" font-family="Albert Sans, sans-serif" font-size="20">Sign up for launch updates.</text>
+  <text x="845" y="561" fill="#4f6676" font-family="Albert Sans, sans-serif" font-size="18">Real-money trading is unavailable.</text>
+</svg>
