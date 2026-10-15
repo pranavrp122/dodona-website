@@ -1,0 +1,11 @@
+.git
+.env
+.env.*
+node_modules
+artifacts
+exports
+tests
+scripts
+supabase
+*.csv
+*.log
