@@ -16,6 +16,7 @@ const staticFiles = new Map([
   ['/index.html', ['index.html', 'text/html; charset=utf-8']],
   ['/styles.css', ['styles.css', 'text/css; charset=utf-8']],
   ['/waitlist.js', ['waitlist.js', 'text/javascript; charset=utf-8']],
+  ['/checkout.js', ['checkout.js', 'text/javascript; charset=utf-8']],
   ['/paper-order.js', ['paper-order.js', 'text/javascript; charset=utf-8']],
   ['/demo-model.js', ['demo-model.js', 'text/javascript; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
@@ -200,6 +201,14 @@ export function createApp({
         return response.end(request.method === 'HEAD' ? undefined : content);
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
+      // Temporary until the prices module lands.
+      if (url.pathname === '/api/prices' && request.method === 'GET') {
+        let data;
+        try { data = JSON.parse(await readFile(resolve(root, 'data/ornn-index.json'), 'utf8')); }
+        catch { return json(response, 503, { message: 'Prices are unavailable.' }); }
+        const asOf = Object.values(data).map(series => series.at(-1)?.[0] || '').sort().at(-1);
+        return json(response, 200, { asOf, source: 'ornn', live: false, data });
+      }
       if (url.pathname === '/readyz' && request.method === 'GET') {
         limit(clientAddress(request), 'status', 120, 60000);
         const ready = await isAvailable();
