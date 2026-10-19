@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createApp } from '../server.mjs';
 import { fallbackHistory } from '../lib/prices.mjs';
 import { buildBoard, buildContractDetail } from '../lib/contracts.mjs';
-import { demoConfirmation } from '../contracts-view.js';
+import { demoConfirmation, ATTRIBUTION } from '../contracts-view.js';
 import samples from '../data/sample-contracts.json' with { type: 'json' };
 import { listen, close } from './fixture.mjs';
 
@@ -72,6 +72,7 @@ test('the board page server-renders a readable no-JS state and honours a region 
   assert.ok(html.includes('Contract values · Sample'));
   assert.ok(html.includes('class="region-map'));
   assert.ok(html.includes('Lender view'));
+  assert.ok(html.includes(ATTRIBUTION));
   assert.ok(!/\brating\b/i.test(html.replace(/not ratings/g, '')));
   const filtered = await (await fetch(origin + '/contracts?region=Europe')).text();
   assert.equal((filtered.match(/class="c-row" data-region="Europe">/g) || []).length, 2);
@@ -88,6 +89,7 @@ test('the contract page server-renders value, chart, term sheet, and the right a
   assert.ok(heldHtml.includes('Term sheet'));
   assert.ok(heldHtml.includes('How this value is computed'));
   assert.ok(heldHtml.includes('List for sale'));
+  assert.ok(heldHtml.includes(ATTRIBUTION));
   const listedHtml = await (await fetch(origin + '/contracts/' + listed.id)).text();
   assert.ok(listedHtml.includes('Make an offer'));
   const head = await fetch(origin + '/contracts/' + held.id, { method: 'HEAD' });

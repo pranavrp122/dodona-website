@@ -4,6 +4,7 @@ export const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&'
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const REGIONS = ['US East', 'US West', 'Europe'];
 const PIN_SPOTS = { 'US West': [112, 186], 'US East': [300, 176], 'Europe': [600, 142] };
+export const ATTRIBUTION = 'Index data: Ornn daily index, used here for demonstration only; not licensed for commercial valuation.';
 const ARROW = '<span aria-hidden="true">→</span>';
 
 export function usd(value) {
@@ -37,7 +38,7 @@ function statusPill(contract) {
 
 export function pricesLine(prices, methodVersion) {
   const state = prices.live ? '<span class="c-live is-live">Live</span>' : '<span class="c-live">Cached</span>';
-  return `Ornn GPU index as of ${escapeHtml(shortDate(prices.asOf))} ${state} · method ${escapeHtml(methodVersion)}`;
+  return `Ornn GPU index as of ${escapeHtml(shortDate(prices.asOf))} ${state} · method ${escapeHtml(methodVersion)}<span class="c-attrib">${ATTRIBUTION}</span>`;
 }
 
 export function kpis(board) {
@@ -123,7 +124,7 @@ export function contractSummary(detail) {
   return `<p class="eyebrow">Dodona Value · Sample contract</p>
     <p class="c-big ${centsTone(v.centsOnDollar)}">${usd(v.value)}</p>
     <p class="c-range">Range ${usd(v.low)} to ${usd(v.high)} · <strong class="${centsTone(v.centsOnDollar)}">${cents(v.centsOnDollar)}</strong> on the dollar · ${statusPill(c)}</p>
-    <p class="fine">Value to the holder of the remaining ${gpuHours(v.remainingHours)} GPU-hours, as of ${escapeHtml(shortDate(detail.today))}. ${pricesLine(detail.prices, detail.methodVersion)}.</p>`;
+    <p class="fine">Value to the holder of the remaining ${gpuHours(v.remainingHours)} GPU-hours, as of ${escapeHtml(shortDate(detail.today))}. ${pricesLine(detail.prices, detail.methodVersion)}</p>`;
 }
 
 export function valueChart(history) {
@@ -173,7 +174,7 @@ export function termSheet(detail) {
     termRow('Index today', `${perHour(v.spot)}/h`, `Ornn ${c.gpu} index`),
     termRow('Forward average', `${perHour(v.forwardAvg)}/h`, `After ×${v.inputs.basis.toFixed(2)} region and config basis`),
     termRow('Price gap', `${signedPerHour(gap)}/h`, 'Forward average minus contract price'),
-    termRow('Volatility', percent(v.vol), 'Annualised, trailing window'),
+    termRow('Volatility', percent(v.vol), v.volSampling === 'weekly' ? 'Annualised from weekly changes' : 'Annualised from daily changes'),
     termRow('Provider', `${c.provider.creditTier} · ${c.provider.bondPriceCents}c bonds`, c.provider.label),
     termRow('Default hazard', `${percent(v.hazard)}/yr`, 'Implied by the bond price'),
     termRow('Discount rate', `${percent(v.inputs.discountRate)}/yr`),

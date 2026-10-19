@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  marketStats, hazardFromBond, basisFactor, monthlySlices, valueContract, valuationHistory, fleetMark, ltvStatus, METHOD_VERSION,
+  marketStats, weeklyVol, hazardFromBond, basisFactor, monthlySlices, valueContract, valuationHistory, fleetMark, ltvStatus, METHOD_VERSION,
 } from '../lib/valuation.mjs';
 
 const close = (actual, expected, tolerance = 1e-6) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} is not within ${tolerance} of ${expected}`);
@@ -23,6 +23,28 @@ test('market stats give zero vol and drift on a flat series and clamp then halve
   const rising = flat(1).map(([date], i) => [date, Math.exp(0.01 * i)]);
   close(marketStats(rising).rawDrift, 3.65);
   close(marketStats(rising).drift, 0.15);
+});
+
+test('volatility uses weekly changes when there are at least eight weekly points', () => {
+  const weeklyCycle = flat(3, 64).map(([date], i) => [date, 3 * (1 + 0.05 * Math.sin(2 * Math.PI * i / 7))]);
+  const stats = marketStats(weeklyCycle);
+  assert.equal(stats.volSampling, 'weekly');
+  close(stats.vol, 0, 1e-9);
+  const trend = flat(1, 64).map(([date], i) => [date, Math.exp(0.01 * i + (i % 7 === 0 ? 0 : 0.02))]);
+  const weekly = [];
+  for (let i = 63; i >= 0; i -= 7) weekly.unshift(trend[i][1]);
+  const returns = weekly.slice(1).map((p, i) => Math.log(p / weekly[i]));
+  const mean = returns.reduce((a, b) => a + b, 0) / returns.length;
+  const sd = Math.sqrt(returns.reduce((a, r) => a + (r - mean) ** 2, 0) / (returns.length - 1));
+  close(marketStats(trend).vol, sd * Math.sqrt(52));
+});
+
+test('volatility falls back to daily changes below eight weekly points', () => {
+  const short = flat(3, 30).map(([date], i) => [date, 3 * Math.exp(0.04 * Math.sin(i))]);
+  const result = weeklyVol(short.map(([, p]) => p));
+  assert.equal(result.volSampling, 'daily');
+  assert.ok(result.vol > 0);
+  assert.equal(marketStats(short).volSampling, 'daily');
 });
 
 test('hazard comes from the bond price and basis multiplies region by config', () => {

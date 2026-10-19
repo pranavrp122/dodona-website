@@ -41,7 +41,7 @@
         <details class="c-method">
           <summary>How this value is computed</summary>
           <ol>
-            <li><strong>Market today.</strong> Take the latest index price for this GPU. Measure how much it moves day to day (volatility) and its recent trend (drift). Cap the trend at 30% a year and halve it, because 90 days is weak evidence.</li>
+            <li><strong>Market today.</strong> Take the latest index price for this GPU. Measure how much it moves week to week (volatility) and its recent trend (drift). Weekly changes are used because the daily index swings and snaps back, which overstates risk over months. Cap the trend at 30% a year and halve it, because 90 days is weak evidence.</li>
             <li><strong>Expected prices.</strong> Project the price forward month by month along that trend: F(t) = index × e^(drift × t).</li>
             <li><strong>This exact contract.</strong> Adjust for location and hardware. Europe is 4% higher. PCIe is 15% lower than SXM with InfiniBand.</li>
             <li><strong>Hours left.</strong> Count the GPU-hours left in each remaining month. The remaining cost is those hours × the contract price.</li>

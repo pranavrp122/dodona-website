@@ -11,11 +11,11 @@ A contract has a GPU type, a GPU count, a contract price per GPU-hour (K), a sta
 - **Provider** carries a label, a credit tier and the price of its bonds in cents.
 - **Term type** is take-or-pay or usage-with-cancel.
 
-Prices come from the Ornn daily GPU rental index, about 92 daily points per GPU. The server caches them for an hour. It falls back to a saved copy in `data/ornn-index.json` when the live feed is unavailable.
+Prices come from the Ornn daily GPU rental index. That data is used here for demonstration only and is not licensed for commercial valuation; any derived valuation product needs a signed agreement with Ornn. The index has about 92 daily points per GPU. The server caches them for an hour. It falls back to a saved copy in `data/ornn-index.json` when the live feed is unavailable.
 
 ## Steps
 
-1. **Market.** Spot S0 is the latest index value. Daily log returns are r_i = ln(P_i / P_(i-1)). Volatility is σ = stdev(r) × √365, using the sample standard deviation. Drift is μ = clamp(mean(r) × 365, ±30 %) / 2. We clamp and halve it because 90 days of drift is weak evidence.
+1. **Market.** Spot S0 is the latest index value. Volatility uses weekly sampling. Take every 7th index point counting back from the latest, compute the log returns between them, and annualise: σ = stdev(weekly log returns) × √52, using the sample standard deviation. The daily index mean-reverts, so daily returns overstate term risk by about 2.3× for the H100. With fewer than 8 weekly points, σ falls back to stdev(daily log returns) × √365. Drift uses daily log returns: μ = clamp(mean(r_daily) × 365, ±30 %) / 2. We clamp and halve it because 90 days of drift is weak evidence.
 2. **Forward curve.** F(t) = S0 · e^(μt), where t is in years from the valuation date and a year is 365 days. An optional per-month market-implied settle, such as a Kalshi price, is blended 50/50 with F(t) when supplied. The demo does not supply one.
 3. **Basis.** The multiplier is b = region × configuration. The region factor is 1.00 for US East, 1.00 for US West and 1.04 for Europe. The configuration factor is 1.00 for SXM-IB and 0.85 for PCIe. The market price for this exact contract is F(t)·b.
 4. **Remaining hours.** The remaining window [max(today, start), end) is cut at UTC month boundaries. Each slice m has H_m = count × hours in the slice and a tenor t_m measured to the slice's midpoint. The remaining cost is C = Σ H_m · K.
