@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import { readSiteSettings, renderPage } from '../lib/site.mjs';
 import { createApp } from '../server.mjs';
 import { fixture } from './fixture.mjs';
@@ -43,4 +44,11 @@ test('privacy and health endpoints reveal no signup records or credentials', asy
   assert.ok(!html.includes('test-only-service-role-key'));
   assert.deepEqual(await (await fetch(f.origin + '/healthz')).json(), { status: 'ok' });
   assert.deepEqual(await (await fetch(f.origin + '/readyz')).json(), { waitlistAvailable: true });
+});
+test('the How it works calculator loads from an external script the CSP allows', async () => {
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  assert.ok(html.includes('<script src="/checkout.js" defer></script>'));
+  assert.ok(!html.includes('paper-order.js'));
+  assert.ok(html.includes('id="paper-order"') && html.includes('id="co-buy"') && html.includes('id="co-dialog"'));
+  assert.ok(html.split('<script').slice(1).every(tag => tag.split('>')[0].includes(' src=')), 'no inline scripts');
 });
