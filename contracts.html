@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contract values · Sample — Dodona</title>
+  <meta name="description" content="Sample GPU rental contracts with a daily Dodona Value marked against the Ornn GPU price index, plus a lender view of GPU-backed loans.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/contracts.css">
+  <script type="module" src="/contracts.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Contract values"><a href="/contracts" aria-current="page">Contract values</a><a href="/">Back to Dodona</a></nav></div></header>
+  <main id="main">
+    <section class="sec c-hero" aria-labelledby="board-heading">
+      <div class="wrap">
+        <div class="sec-head">
+          <div>
+            <p class="eyebrow">Contract values · Sample</p>
+            <h1 id="board-heading" class="c-title">What is a GPU contract worth today?</h1>
+          </div>
+          <p>Each sample contract gets a daily Dodona Value: what the remaining GPU-hours are worth to the holder at today's index, after region, hardware and provider credit. It works like a home-value estimate for compute.</p>
+        </div>
+        <p class="c-prices fine" id="c-prices"><!-- C_PRICES --></p>
+        <dl class="c-kpis" id="c-kpis"><!-- C_KPIS --></dl>
+      </div>
+    </section>
+
+    <section class="sec c-board-sec" aria-labelledby="map-heading">
+      <div class="wrap c-board-grid">
+        <div class="c-map-card">
+          <h2 id="map-heading" class="c-h2">Where the hours are</h2>
+          <p class="fine">Pin size shows remaining GPU-hours. The label shows cents on the dollar. Select a pin to filter the board.</p>
+          <div class="c-map" id="c-map"><!-- C_MAP --></div>
+          <nav class="c-filters" id="c-filters" aria-label="Filter by region"><!-- C_FILTERS --></nav>
+        </div>
+        <div class="c-board">
+          <div class="c-board-head"><h2 class="c-h2">The board</h2><p class="fine" id="c-count" role="status"></p></div>
+          <ol class="c-rows" id="c-rows"><!-- C_ROWS --></ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec c-lender-sec" aria-labelledby="lender-heading">
+      <div class="wrap">
+        <div class="sec-head">
+          <div><p class="eyebrow">Lender view · Sample</p><h2 id="lender-heading">GPU-backed loans, marked daily</h2></div>
+          <p>Each fleet is valued from the rental income it can still earn over its remaining useful life, plus a small residual. Loan-to-value is flagged at 60% and 75%.</p>
+        </div>
+        <div class="c-table-wrap">
+          <table class="c-table">
+            <thead><tr><th scope="col">Loan</th><th scope="col">Units</th><th scope="col">Life left</th><th scope="col">Fleet value</th><th scope="col">Loan balance</th><th scope="col">LTV</th><th scope="col">Status</th></tr></thead>
+            <tbody id="c-fleets"><!-- C_FLEETS --></tbody>
+          </table>
+        </div>
+        <p class="fine c-method-link">How values are computed: test method v0.1. Open any contract to see the formula in plain words.</p>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Sample contracts and loans for demonstration. Parties and terms are illustrative. Dodona Values are impersonal analytics, not ratings, offers or advice. Dodona never holds funds.</p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

@@ -9,6 +9,7 @@ import { readSiteSettings, collectionDetailsReady, renderPage } from './lib/site
 import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
 import { getPriceHistory } from './lib/prices.mjs';
+import { contractsDocument } from './lib/contracts.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -19,6 +20,10 @@ const staticFiles = new Map([
   ['/waitlist.js', ['waitlist.js', 'text/javascript; charset=utf-8']],
   ['/paper-order.js', ['paper-order.js', 'text/javascript; charset=utf-8']],
   ['/demo-model.js', ['demo-model.js', 'text/javascript; charset=utf-8']],
+  ['/contracts.css', ['contracts.css', 'text/css; charset=utf-8']],
+  ['/contracts.js', ['contracts.js', 'text/javascript; charset=utf-8']],
+  ['/contract.js', ['contract.js', 'text/javascript; charset=utf-8']],
+  ['/contracts-view.js', ['contracts-view.js', 'text/javascript; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -203,6 +208,14 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
+      if (['GET', 'HEAD'].includes(request.method)) {
+        const page = await contractsDocument(url, { prices, now, settings: siteSettings, origin });
+        if (page) {
+          const content = Buffer.from(page.body);
+          response.writeHead(page.status, { 'Content-Type': page.type, 'Content-Length': content.length, 'Cache-Control': page.cacheControl });
+          return response.end(request.method === 'HEAD' ? undefined : content);
+        }
+      }
       if (url.pathname === '/readyz' && request.method === 'GET') {
         limit(clientAddress(request), 'status', 120, 60000);
         const ready = await isAvailable();
