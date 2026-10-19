@@ -3,7 +3,7 @@
 export const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const REGIONS = ['US East', 'US West', 'Europe'];
-const PIN_SPOTS = { 'US West': [118, 178], 'US East': [292, 166], 'Europe': [592, 132] };
+const PIN_SPOTS = { 'US West': [112, 186], 'US East': [300, 176], 'Europe': [600, 142] };
 const ARROW = '<span aria-hidden="true">→</span>';
 
 export function usd(value) {
@@ -47,7 +47,7 @@ export function kpis(board) {
     ['Avg. cents on the dollar', cents(board.kpis.centsOnDollar), 'Weighted by remaining cost'],
     ['Prices as of', shortDate(board.prices.asOf), board.prices.live ? 'Live Ornn index' : 'Cached Ornn index'],
   ];
-  return tiles.map(([label, value, note]) => `<div class="c-kpi"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd><p>${escapeHtml(note)}</p></div>`).join('');
+  return tiles.map(([label, value, note]) => `<div class="c-kpi"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd><dd class="c-kpi-note">${escapeHtml(note)}</dd></div>`).join('');
 }
 
 export function regionMap(board, active) {
@@ -59,8 +59,8 @@ export function regionMap(board, active) {
     return `<a class="map-pin ${centsTone(r.centsOnDollar)}${active === r.region ? ' is-active' : ''}" href="/contracts?region=${encodeURIComponent(r.region)}" data-region-filter="${escapeHtml(r.region)}" aria-label="${escapeHtml(label)}">
       <circle class="map-pin-halo" cx="${x}" cy="${y}" r="${(radius + 7).toFixed(1)}"/>
       <circle class="map-pin-dot" cx="${x}" cy="${y}" r="${radius.toFixed(1)}"/>
-      <text class="map-pin-name" x="${x}" y="${(y - radius - 22).toFixed(1)}" text-anchor="middle">${escapeHtml(r.region)}</text>
-      <text class="map-pin-cents" x="${x}" y="${(y - radius - 6).toFixed(1)}" text-anchor="middle">${escapeHtml(cents(r.centsOnDollar))} · ${escapeHtml(gpuHours(r.remainingHours))} GPU-h</text>
+      <text class="map-pin-name" x="${x}" y="${(y - radius - 30).toFixed(1)}" text-anchor="middle">${escapeHtml(r.region)}</text>
+      <text class="map-pin-cents" x="${x}" y="${(y - radius - 9).toFixed(1)}" text-anchor="middle">${escapeHtml(cents(r.centsOnDollar))}</text>
     </a>`;
   }).join('');
   return `<svg class="region-map${active ? ' has-active' : ''}" viewBox="0 0 720 330" role="group" aria-label="Schematic map of sample contracts by region. Pin size shows remaining GPU-hours.">
@@ -146,7 +146,7 @@ export function valueChart(history) {
     <path class="chart-line" d="${line}"/>
     <circle class="chart-dot" cx="${x(history.length - 1).toFixed(1)}" cy="${y(last.value).toFixed(1)}" r="5"/>
     <text class="chart-label" x="${left - 10}" y="${(y(max) + 4).toFixed(1)}" text-anchor="end">${escapeHtml(usd(max))}</text>
-    <text class="chart-label" x="${left - 10}" y="${(y(min) + 4).toFixed(1)}" text-anchor="end">${escapeHtml(usd(min))}</text>
+    ${min < 0 ? `<text class="chart-label" x="${left - 10}" y="${(y(min) + 4).toFixed(1)}" text-anchor="end">${escapeHtml(usd(min))}</text>` : ''}
     <text class="chart-label" x="${left - 10}" y="${(y(0) + 4).toFixed(1)}" text-anchor="end">$0</text>
     <text class="chart-label" x="${left}" y="${h - 8}">${escapeHtml(shortDate(history[0].date))}</text>
     <text class="chart-label" x="${w - right}" y="${h - 8}" text-anchor="end">${escapeHtml(shortDate(last.date))}</text>
