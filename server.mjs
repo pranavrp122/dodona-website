@@ -8,6 +8,7 @@ import { createClientAddressResolver } from './lib/proxy.mjs';
 import { readSiteSettings, collectionDetailsReady, renderPage } from './lib/site.mjs';
 import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
+import { getPriceHistory } from './lib/prices.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -94,6 +95,7 @@ export function createApp({
   now = Date.now,
   rateLimit = 20,
   logger = console,
+  prices = getPriceHistory,
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -200,6 +202,7 @@ export function createApp({
         return response.end(request.method === 'HEAD' ? undefined : content);
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
+      if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
       if (url.pathname === '/readyz' && request.method === 'GET') {
         limit(clientAddress(request), 'status', 120, 60000);
         const ready = await isAvailable();
