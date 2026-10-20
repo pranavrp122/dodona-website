@@ -159,7 +159,7 @@ test('only public assets are served; submissions, secrets, source, and directori
   assert.ok(response.headers.get('content-security-policy').includes("connect-src 'self'"));
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.ok(!(await response.text()).includes('test-only-service-role-key'));
-  for (const path of ['/styles.css', '/waitlist.js', '/assets/favicon.svg', '/assets/fonts/albert-sans-latin-wght-normal.woff2']) assert.equal((await fetch(f.origin + path)).status, 200);
+  for (const path of ['/styles.css', '/waitlist.js', '/checkout.js', '/assets/favicon.svg', '/assets/fonts/albert-sans-latin-wght-normal.woff2']) assert.equal((await fetch(f.origin + path)).status, 200);
 });
 
 test('Supabase configuration keeps credentials scoped to an HTTPS project', () => {

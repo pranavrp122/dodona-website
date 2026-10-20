@@ -22,15 +22,15 @@ The signup form offers **Check again**, retries availability every 30 seconds wh
 
 ## Human and agent access
 
-The landing page uses short descriptions, separate cost and payout examples, native FAQ controls, and a section menu that also works on mobile. Important product information is server-rendered, so readers and crawlers do not need JavaScript to read it. Keyboard navigation, visible focus, labels, and live form status remain supported. JavaScript powers the signup form and paper-order demo; agents can use the signup API directly.
+The landing page uses short descriptions, separate cost and payout examples, native FAQ controls, and a section menu that also works on mobile. Important product information is server-rendered, so readers and crawlers do not need JavaScript to read it. Keyboard navigation, visible focus, labels, and live form status remain supported. JavaScript powers the signup form and checkout calculator; agents can use the signup API directly.
 
-### Browser paper orders
+### Browser checkout calculator
 
-“How it works” includes a browser-only paper-order form at `/#paper-order`. Choose H100, GPU count, total GPU-hours, region preference, and a usage window in UTC. The cost summary updates with quantity. Review the complete request and fees, acknowledge that it is a demo, then place the paper order. The receipt can be downloaded as JSON or cleared by starting another order or refreshing.
+“How it works” includes a browser-only checkout calculator at `/#paper-order`. GPU tabs (H100, H200, B200, A100, RTX 5090) show today’s price and a sparkline, above a 90-day chart with today, high, low, and change tiles. Choose a quantity (1, 2, or 4 GPUs, or 1–16 nodes of 8), a region preference, a time zone (your own by default), and exact start and end dates and hours, or use the 1 day, 1 week, 2 weeks, and 1 month presets. The window is shown in local time and UTC. Starts must be at least 48 hours and at most 12 months away; the end must follow the start by at least 4 hours.
 
-Pricing and window/budget checks come from `demo-model.js`, shared with the MCP reservation demo. The example is $0.20 per GPU-hour for protection, a $2 booking fee, and $3 per GPU-hour for compute if used. The UI rejects past/short windows and invalid quantities. A review expires after 15 minutes or when its usage window starts; changed details require a fresh review. Counts represent parallel GPUs, not an extra multiplier on the total GPU-hours.
+Lock fixes the price per GPU-hour; Cap pays the market price up to a cap. The quote shows GPU-hours, the price, the protection fee and its per-GPU-hour rate, the $2 booking fee, the amount paid now, compute if used, the total, and the key dates, including the claim deadline. Fees are illustrative and scale with the GPU’s recent volatility and the time until the window. **Buy protection** opens a review; after the demo acknowledgement it shows a `DEMO-` receipt, and **Start another** resets the form.
 
-Paper orders make **no API writes**, take no payment, hold no capacity, create no account, and do not join the waitlist. Their state lives only in page memory, without localStorage or sessionStorage. Receipts use a `PAPER-` reference and explicitly set payment, capacity, real-reservation, and persistence flags to false. They are not the signed MCP quotes or durable booking records. The self-contained HTML preview bundles the same model and UI, so paper orders work offline while real signup collection remains disabled.
+The calculator lives in `checkout.js`, an external script, so the CSP still blocks inline scripts. On load it requests `GET /api/prices` with a 3-second timeout and labels the as-of date as live or cached; if that fails it keeps the Ornn daily index embedded in the script. It makes **no API writes**, takes no payment, holds no capacity, creates no account, does not join the waitlist, and uses no browser storage. The self-contained HTML preview inlines the same script with the embedded prices. `demo-model.js` still prices the MCP reservation demo; the page no longer loads `paper-order.js`.
 
 Public discovery routes:
 
