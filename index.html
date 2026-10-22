@@ -114,7 +114,7 @@
               <legend><span class="co-num">3</span>Protection</legend>
               <div class="co-types" role="group" aria-label="Protection type">
                 <button type="button" data-kind="lock" aria-pressed="true"><b>Lock</b><span>Fixed price per GPU-hour for the window.</span></button>
-                <button type="button" data-kind="cap" aria-pressed="false"><b>Price cap (a call)</b><span>Pay market price, never above the cap.</span></button>
+                <button type="button" data-kind="cap" aria-pressed="false"><b>Price cap (a call)</b><span>Pay your window’s average market price, never above the cap.</span></button>
               </div>
               <div class="co-strike" id="co-strike" hidden>
                 <span class="co-label" id="co-strike-l">Cap price</span>
@@ -209,7 +209,7 @@
           <div class="downside"><span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span><p><strong>If it expires unused:</strong> the $20 protection payment and $2 booking fee are not refunded. You receive no compute.</p></div>
         </div>
       </article>
-      <div class="decision-head"><h3>If rental prices change</h3><p>Same GPU and usage window. Both examples include the $22 upfront payment and exclude taxes or other charges.</p></div>
+      <div class="decision-head"><h3>If rental prices change</h3><p>Same GPU and usage window. The rental price here is the average of the daily index over that window. Both examples include the $22 upfront payment and exclude taxes or other charges.</p></div>
       <div class="decision-grid">
         <article><p class="scenario-label">Rental price rises to $4 an hour</p><h4>Use the price you booked.</h4><p>Renting separately would cost $400. Use your secured price and pay $300, plus $20 protection and $2 booking: <strong>$322 total, or $78 less</strong>.</p></article>
         <article><p class="scenario-label">Rental price falls to $2 an hour</p><h4>Rent elsewhere for less.</h4><p>If comparable compute is available for $200, you can rent it elsewhere. With the $22 already paid, that’s <strong>$222 total</strong>. Using your booked price would cost $322.</p></article>
