@@ -48,6 +48,7 @@
 .mt-terms dt{font-weight:600}
 .mt-terms dd{margin:0;color:var(--muted)}
 .mt-formula{overflow-x:auto;padding:18px 20px;background:var(--panel);border:1px solid var(--border);border-radius:12px;font-size:14px;line-height:1.6}
+.mt-document p+p,.mt-document pre+p{margin-top:14px}
 .mt-list{padding-left:20px}
 .mt-list li{margin-bottom:6px}
 @media(max-width:540px){.mt-terms>div{grid-template-columns:1fr}.mt-lede{font-size:16px}}
