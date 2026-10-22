@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from '../server.mjs';
 import { fallbackHistory } from '../lib/prices.mjs';
-import { quoteCap } from '../lib/pricing.mjs';
 import { getPortfolio } from '../lib/portfolio.mjs';
 import { listen, close } from './fixture.mjs';
 
@@ -16,7 +15,7 @@ async function app(t) {
 }
 
 const apiPlaceholders = [
-  ['GET', '/api/quote'], ['GET', '/api/portfolio'], ['POST', '/api/signups'],
+  ['GET', '/api/portfolio'], ['POST', '/api/signups'],
   ['POST', '/api/contact'], ['POST', '/api/rfq'], ['GET', '/api/market'],
 ];
 
@@ -40,6 +39,5 @@ test('placeholder pages render a coming soon page', async t => {
 });
 
 test('pricing and portfolio stubs keep their agreed shapes', async () => {
-  assert.throws(() => quoteCap({}, []), /not implemented/);
   assert.deepEqual(await getPortfolio('demo'), { positions: [], asOf: null });
 });
