@@ -406,7 +406,7 @@ async function renderProvider() {
     </div>
     <div class="d-step">
       <div class="d-result"><p class="eyebrow">Premium income, paid now ${v.tag('model')}</p><strong>${esc(v.dollars(capQuote.premium * gpuHours))}</strong>
-        <p>${esc(v.perHour(capQuote.premium))}/GPU-h on ${esc(v.hoursText(gpuHours))} · cap ${esc(v.perHour(strike))}/GPU-h</p>${placeholderFlag(capQuote)}${capQuote.computeMs != null ? `<p class="d-quote-ms">priced in ${esc(Math.round(capQuote.computeMs))} ms</p>` : ''}</div>
+        <p>${esc(v.perHour(capQuote.premium))}/GPU-h on ${esc(v.hoursText(gpuHours))} · cap ${esc(v.perHour(strike))}/GPU-h</p>${placeholderFlag(capQuote)}${capQuote.computeMs != null ? `<p class="d-quote-ms">priced in ${esc(capQuote.computeMs < 10 ? capQuote.computeMs.toFixed(1) : Math.round(capQuote.computeMs))} ms</p>` : ''}</div>
       <div class="d-panel d-step"><h2>2 · Buy a floor</h2>
         <div class="d-pick"><span>Floor price</span>${seg('floor', [[1, chip(index, 1, 'Today')], [0.9, chip(index, 0.9, '−10%')], [0.8, chip(index, 0.8, '−20%')]])}</div>
         <div class="d-pick"><span>Cap price sold to pay for it</span>${seg('collarCap', [[1.1, chip(index, 1.1, '+10%')], [1.2, chip(index, 1.2, '+20%')], [1.3, chip(index, 1.3, '+30%')]])}</div>

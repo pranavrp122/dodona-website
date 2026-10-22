@@ -14,8 +14,14 @@ import { quoteRoute } from './lib/pricing.mjs';
 import { createMarketSource, handleMarket, handleMethodology } from './lib/market.mjs';
 import { createFormRoutes } from './lib/forms.mjs';
 import { formStoreFromEnvironment } from './lib/signups.mjs';
-import { auditDocument, acceptEvent, AuditError, recordStartup } from './lib/audit.mjs';
+import { auditDocument, acceptEvent, AuditError, recordStartup, recordServerEvent } from './lib/audit.mjs';
 import { portfolioDocument } from './lib/portfolio.mjs';
+
+const QUOTE_AUDIT_INTERVAL_MS = 15000;
+const dateOnly = iso => String(iso).slice(0, 10);
+const quoteSummary = ({ inputs, type, strike, premiumPerGpuHour }) => `Quote · ${inputs.gpu} × ${inputs.count} · ${dateOnly(inputs.start)} to ${dateOnly(inputs.end)} · ${type} $${Number(strike).toFixed(2)} · fee $${premiumPerGpuHour.toFixed(2)}/h`;
+const compactUsd = v => `${v < 0 ? '−' : '+'}$${Math.round(Math.abs(v) / 1000).toLocaleString('en-US')}k`;
+const markSummary = portfolio => `Mark · ${portfolio.positions.filter(p => p.phase !== 'used').length} positions · net ${compactUsd(portfolio.kpis.netValue)} · Ornn ${dateOnly(portfolio.prices.asOf)}`;
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -157,6 +163,26 @@ export function createApp({
     const entry = attempts.get(key);
     if (++entry.count > max) throw new RequestError(429, 'Too many requests. Please try again shortly.', { code: 'RATE_LIMIT', retryAfter: Math.ceil((entry.until - time) / 1000) });
   }
+  const lastQuoteAudit = new Map();
+  let lastMarkAsOf = null;
+  const auditQuote = (request, quote) => {
+    try {
+      const address = clientAddress(request), at = now();
+      if (at - (lastQuoteAudit.get(address) ?? -Infinity) < QUOTE_AUDIT_INTERVAL_MS) return;
+      if (lastQuoteAudit.size > 1000) lastQuoteAudit.clear();
+      lastQuoteAudit.set(address, at);
+      recordServerEvent('quote', quoteSummary(quote), { premiumTotal: quote.premiumTotal, method: quote.method, asOf: quote.asOf });
+    } catch { /* the audit trail never breaks a quote */ }
+  };
+  const auditMark = page => {
+    try {
+      if (page.status !== 200) return;
+      const portfolio = JSON.parse(page.body);
+      if (portfolio.asOf === lastMarkAsOf) return;
+      lastMarkAsOf = portfolio.asOf;
+      recordServerEvent('mark', markSummary(portfolio), { netValue: portfolio.kpis.netValue, asOf: portfolio.asOf, indexAsOf: portfolio.prices.asOf });
+    } catch { /* the audit trail never breaks the portfolio */ }
+  };
   const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;
@@ -229,7 +255,7 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
-      if (url.pathname === '/api/quote' && request.method === 'GET') { const quote = await quoteRoute(url, { prices, now }); return json(response, quote.status, quote.body); }
+      if (url.pathname === '/api/quote' && request.method === 'GET') { const quote = await quoteRoute(url, { prices, now }); if (quote.status === 200) auditQuote(request, quote.body); return json(response, quote.status, quote.body); }
       if (url.pathname === '/api/market' && request.method === 'GET') return await handleMarket(url, response, market, json);
       if (url.pathname === '/methodology' && ['GET', 'HEAD'].includes(request.method)) return await handleMethodology(request, response, { settings: siteSettings, origin });
       if (await forms.handle(request, response, url)) return;
@@ -244,6 +270,7 @@ export function createApp({
       }
       if (['GET', 'HEAD'].includes(request.method) && (url.pathname === '/dashboard' || url.pathname === '/api/portfolio')) {
         const page = await portfolioDocument(url, { prices, now, settings: siteSettings, origin });
+        if (url.pathname === '/api/portfolio') auditMark(page);
         const content = Buffer.from(page.body);
         response.writeHead(page.status, { 'Content-Type': page.type, 'Content-Length': content.length, 'Cache-Control': page.cacheControl });
         return response.end(request.method === 'HEAD' ? undefined : content);

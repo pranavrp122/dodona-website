@@ -149,3 +149,30 @@ test('GET /audit renders the page with server-rendered rows and no inline script
   assert.match(html, /<span class="a-kind">Offer<\/span>/);
   for (const path of ['/audit.js', '/audit.css']) assert.equal((await fetch(origin + path)).status, 200, path);
 });
+
+test('quotes are audited at most once per client every 15 seconds and marks once per day', async t => {
+  let clock = Date.parse('2026-10-20T12:00:00Z');
+  const server = createApp({ store: null, prices: async () => fallbackHistory(), siteSettings: settings, now: () => clock });
+  const origin = await listen(server);
+  t.after(() => close(server));
+  const count = async kind => (await (await fetch(`${origin}/api/audit?kind=${kind}&limit=1000`)).json()).count;
+  const quoteUrl = `${origin}/api/quote?gpu=H100&count=64&start=2026-11-02T00:00:00Z&end=2026-11-09T00:00:00Z&type=call&strike=2.50&region=US%20East&config=SXM-IB`;
+
+  const quotesBefore = await count('quote');
+  for (let i = 0; i < 3; i++) assert.equal((await fetch(quoteUrl)).status, 200);
+  assert.equal(await count('quote'), quotesBefore + 1);
+  clock += 16000;
+  await fetch(quoteUrl);
+  assert.equal(await count('quote'), quotesBefore + 2);
+  const [latest] = (await (await fetch(`${origin}/api/audit?kind=quote&limit=1`)).json()).entries;
+  assert.match(latest.summary, /^Quote · H100 × 64 · 2026-11-02 to 2026-11-09 · call \$2\.50 · fee \$\d+\.\d{2}\/h$/);
+  assert.deepEqual(Object.keys(latest.data).sort(), ['asOf', 'method', 'premiumTotal']);
+  assert.equal((await fetch(`${origin}/api/quote?gpu=TPU`)).status, 400);
+  assert.equal(await count('quote'), quotesBefore + 2);
+
+  const marksBefore = await count('mark');
+  for (let i = 0; i < 2; i++) assert.equal((await fetch(`${origin}/api/portfolio`)).status, 200);
+  assert.equal(await count('mark'), marksBefore + 1);
+  const [mark] = (await (await fetch(`${origin}/api/audit?kind=mark&limit=1`)).json()).entries;
+  assert.match(mark.summary, /^Mark · \d+ positions · net [+−]\$[\d,]+k · Ornn \d{4}-\d{2}-\d{2}$/);
+});

@@ -3,6 +3,9 @@ import { createServer } from 'node:http';
 import { SupabaseWaitlistStore } from '../lib/supabase.mjs';
 import { createApp } from '../server.mjs';
 
+// Route tests keep the shared audit log in memory so they never write data/audit.jsonl.
+process.env.AUDIT_LOG_FILE ??= 'off';
+
 export async function listen(server) {
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
   return `http://127.0.0.1:${server.address().port}`;

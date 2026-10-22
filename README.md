@@ -67,6 +67,34 @@ The Kalshi market-implied view appears only on the signed-in demo dashboard, nev
 
 `/methodology` explains Dodona Value and cap pricing in plain words.
 
+## Cap pricing (v0)
+
+A cap is priced with Black-76 on the Ornn index forward, with an average-price adjustment because a cap covers every hour in its window. It reuses the valuation's volatility and drift, so a quote and a Dodona Value read the same market. The formulas are in `docs/pricing-v0.md` and the engine is `lib/pricing.mjs`.
+
+- `GET /api/quote?gpu=H100&count=64&start=<iso>&end=<iso>&type=call&strike=2.50&region=US%20East&config=SXM-IB` returns the premium per GPU-hour, total premium, fees, pay-now amount, cost if used, break-even, forward, spot, volatility, method, `asOf` and `computeMs`. `type` is `call`, `lock` or `put` (the provider floor). Invalid input returns 400 with `{ error }`. Responses are `no-store`. The route is listed in `/openapi.json`.
+- The home page calculator calls the route on every change and falls back to an offline estimate when it cannot reach it. Demo receipts are kept in `sessionStorage` so the dashboard can show them as upcoming positions.
+- The MCP tool `quote_cap` returns the same quote. It is a demo quote only; nothing is booked, held or charged.
+
+## Customer dashboard
+
+`/dashboard` is a server-rendered demo account. It has an overview with the portfolio value, positions with exercise, a what-if slider and resale listing, provider tools to quote caps and floors, a lender view with loan-to-value, a rent shock and CSV export, alerts and settings with demo scenarios. Sign-in is a demo session held in `sessionStorage`; nothing is stored on the server.
+
+- `GET /api/portfolio?bookings=<json>` returns the sample book plus the visitor's demo bookings, valued with the Dodona Value method. Calls get their time value from `quoteCap`.
+- The Kalshi-implied view from the market strip appears only here.
+
+## Signups, contact and quote requests
+
+`/signup`, `/contact` and `/rfq` save to three Supabase tables: `signups`, `contact_messages` and `rfq_requests`. They reuse the waitlist's signed form tokens, origin checks and per-client rate limits. Bodies are capped at 8 KB. Without storage the routes answer an honest 503 and nothing is saved. Submissions are never logged.
+
+To connect storage, run `supabase/signups.sql`, `supabase/contact.sql` and `supabase/rfq.sql` in the Supabase SQL editor. Create a Secret key, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (the new `sb_secret_` format and the legacy JWT both work), then restart the app.
+
+## Audit trail
+
+`/audit` shows an append-only, hash-chained log of demo activity: quotes, bookings, exercises, listings, offers, signups, RFQs, daily marks and server events. Each entry stores the SHA-256 of the previous one, starting from 64 zeros, and the page can verify the whole chain in the browser. Entries never hold personal data.
+
+- `GET /api/audit` returns the entries. `POST /api/audit/events` accepts demo events from the site's own pages.
+- The server keeps the last 1,000 entries in memory and appends to `data/audit.jsonl` when it can write there. `AUDIT_LOG_FILE` sets another path and `AUDIT_LOG_FILE=off` keeps it in memory only.
+
 ## MCP reservation demo
 
 The app serves a **stateless Streamable HTTP MCP server at `/mcp`**, using the pinned official SDK. Connect `http://127.0.0.1:3000/mcp` from a local compatible MCP client. For remote Claude/ChatGPT clients that support MCP connectors, first deploy the app behind HTTPS and add `<APP_ORIGIN>/mcp` in that client's connector settings. The endpoint must be connected before a chat can use its tools. The code has been verified with the SDK client, not by connecting a user's Claude or ChatGPT account. No public deployment or automatic connector registration has been performed.
@@ -81,6 +109,7 @@ Once connected, ask: **“Help me book a demo H100 reservation with Dodona.”**
 | `confirm_demo_reservation` | Return a simulated receipt after user confirmation |
 | `get_waitlist_status` | Check real signup availability and obtain a token |
 | `join_waitlist` | Save an authorized signup through the existing storage integration |
+| `quote_cap` | Price a cap, floor or fixed-price lock with pricing v0; demo quote only |
 
 Resources: `dodona://product`, `dodona://guide`. Prompt: `reserve_compute_demo`. All tool responses include text and structured JSON, and failures use `isError: true`. Tool metadata identifies the real waitlist write separately from read-only information and stateless simulations.
 
@@ -125,7 +154,7 @@ For a self-contained design preview that can be opened without the server, run `
 1. Create or select a Supabase project controlled by Dodona. In its authenticated **SQL Editor**, run [`supabase/waitlist.sql`](supabase/waitlist.sql). This creates the `public.waitlist` table, a unique email constraint, row-level security, and server-role permissions. The table has no public access policies, and grants are revoked from `public`, `anon`, and `authenticated`.
 2. In local development, copy `.env.example` to `.env`. In hosting, use the platform’s **server-side secret/environment settings**, not files in the public site. Set:
    - `SUPABASE_URL`: the project URL, such as `https://your-project.supabase.co`.
-   - `SUPABASE_SERVICE_ROLE_KEY`: the **legacy `service_role` key** in the project API key settings. This implementation expects the JWT service-role key, not an anon/publishable key or the newer `sb_secret_` format. Never put it in client JavaScript, a public environment prefix, chat, Git, or build output.
+   - `SUPABASE_SERVICE_ROLE_KEY`: a **Secret key** (`sb_secret_…`) or the **legacy `service_role` JWT** from the project API key settings, never an anon or publishable key. Never put it in client JavaScript, a public environment prefix, chat, Git, or build output.
    - `APP_ORIGIN`: the exact deployed HTTPS origin, with no path or trailing slash. For local checks, leave it empty or use the exact local origin including its port.
    - `WAITLIST_FORM_SECRET`: a private random value shared by all server instances. Generate one locally with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. A single local process can use the generated in-memory default. Set a stable value in production to keep form tokens valid across restarts/replicas.
 3. If your environment restricts outbound traffic, allow HTTPS to **your exact Supabase project hostname**. Node runs with normal certificate validation and proxy support (`--use-env-proxy`). Do not disable TLS checks.
