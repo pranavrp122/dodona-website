@@ -10,6 +10,7 @@ import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
 import { getPriceHistory } from './lib/prices.mjs';
 import { contractsDocument } from './lib/contracts.mjs';
+import { quoteRoute } from './lib/pricing.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -25,6 +26,7 @@ const staticFiles = new Map([
   ['/contracts.js', ['contracts.js', 'text/javascript; charset=utf-8']],
   ['/contract.js', ['contract.js', 'text/javascript; charset=utf-8']],
   ['/contracts-view.js', ['contracts-view.js', 'text/javascript; charset=utf-8']],
+  ['/checkout.css', ['checkout.css', 'text/css; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -35,7 +37,7 @@ const staticFiles = new Map([
 ]);
 const unavailable = 'We can’t accept signups right now. Please check back later.';
 // Placeholders for the demo build; each route is replaced when its feature lands.
-const placeholderRoutes = new Set(['GET /api/quote', 'GET /api/portfolio', 'POST /api/signups', 'POST /api/contact', 'POST /api/rfq', 'GET /api/market']);
+const placeholderRoutes = new Set(['GET /api/portfolio', 'POST /api/signups', 'POST /api/contact', 'POST /api/rfq', 'GET /api/market']);
 const placeholderPages = new Map([['/dashboard', 'Dashboard'], ['/signup', 'Sign up'], ['/methodology', 'Methodology']]);
 const comingSoonPage = title => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} | Dodona</title><!-- CANONICAL --><link rel="stylesheet" href="/styles.css"></head><body><main class="wrap"><h1>${title}</h1><p>Coming soon.</p><p><a href="/">Back to Dodona</a></p></main></body></html>`;
 
@@ -213,6 +215,7 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
+      if (url.pathname === '/api/quote' && request.method === 'GET') { const quote = await quoteRoute(url, { prices, now }); return json(response, quote.status, quote.body); }
       if (placeholderRoutes.has(`${request.method} ${url.pathname}`)) return json(response, 501, { error: 'not implemented' });
       if (['GET', 'HEAD'].includes(request.method) && placeholderPages.has(url.pathname)) {
         const content = Buffer.from(renderPage(comingSoonPage(placeholderPages.get(url.pathname)), { settings: siteSettings, origin, path: url.pathname }));

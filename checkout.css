@@ -1,0 +1,37 @@
+/* Checkout calculator additions for pricing v0: strike chips, fee breakdown, pricing disclosure, request-a-quote link. */
+#paper-order [hidden]{display:none!important}
+#paper-order .co-rfq{display:block;margin-top:6px;color:var(--ink);font-weight:600}
+#paper-order .co-rfq a{text-underline-offset:4px}
+#paper-order .co-strike{margin-top:16px;padding-top:14px;border-top:1px dashed var(--border)}
+#paper-order .co-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+#paper-order .co-chips button{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--border);background:white;color:var(--ink);border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+#paper-order .co-chips button small{font-size:12px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+#paper-order .co-chips button:hover{background:var(--lavender)}
+#paper-order .co-chips button[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:white}
+#paper-order .co-chips button[aria-pressed=true] small{color:#d6e0e6}
+#paper-order .co-chips button:focus-visible{outline:3px solid var(--violet);outline-offset:3px}
+#paper-order .co-strike-own{max-width:calc(50% - 8px)}
+#paper-order .co-strike-own input{font-variant-numeric:tabular-nums}
+#paper-order .co-lines>.co-sub{padding-top:0;border-top:0;margin-top:-4px}
+#paper-order .co-lines>.co-sub dt{font-size:12.5px;color:#b8c8d3}
+#paper-order .co-lines>.co-sub dd{font:500 14px/1.2 var(--body);color:#d6e0e6}
+#paper-order .co-source{margin:10px 0 0;font-size:12.5px;color:#b8c8d3;max-width:none}
+#paper-order .co-source.co-offline{color:var(--lime);font-weight:600}
+#paper-order .co-how{margin-top:12px;border-top:1px solid #ffffff26;padding-top:10px;font-size:13px}
+#paper-order .co-how summary{cursor:pointer;font-weight:600;padding:4px 0}
+#paper-order .co-how summary:focus-visible{outline:3px solid var(--lime);outline-offset:3px}
+#paper-order .co-how dl{margin:8px 0 0;display:grid;gap:6px}
+#paper-order .co-how dl>div{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:10px}
+#paper-order .co-how dt{color:#b8c8d3}
+#paper-order .co-how dd{margin:0;overflow-wrap:anywhere}
+#paper-order .co-how p{margin:10px 0 0;font-size:12px;color:#b8c8d3;max-width:none}
+#paper-order .co-dash-note{margin:14px 0 0;font-size:13px;color:var(--muted);max-width:none}
+#paper-order .co-acts .btn{text-decoration:none}
+@media(max-width:540px){
+  #paper-order .co-strike-own{max-width:none}
+  #paper-order .co-how dl>div{grid-template-columns:1fr;gap:0}
+  #paper-order .co-acts{flex-wrap:wrap;justify-content:space-between}
+}
+#paper-order .co-tag{display:inline-block;margin-left:6px;padding:1px 7px;border:1px solid currentColor;border-radius:20px;font:600 10px/1.5 var(--body);letter-spacing:.02em;vertical-align:1px;white-space:nowrap}
+#paper-order .co-lines dt .co-tag{color:var(--lime)}
+#paper-order .co-stats .co-tag{color:var(--ink);border-color:var(--border)}

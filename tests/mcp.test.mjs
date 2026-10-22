@@ -5,6 +5,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import { createApp } from '../server.mjs';
 import { createDemoReservations } from '../lib/demo-reservations.mjs';
+import { registerQuoteCap, quoteCapInput } from '../lib/mcp-quote.mjs';
+import { fallbackHistory } from '../lib/prices.mjs';
 import { fixture, listen, close } from './fixture.mjs';
 
 async function connect(t, origin) {
@@ -22,7 +24,7 @@ test('real MCP client discovers tools, resources, questions, and a booking promp
   const client = await connect(t, origin);
   assert.match(client.getInstructions(), /No|unavailable/);
   const { tools } = await client.listTools();
-  assert.deepEqual(tools.map(tool => tool.name).sort(), ['confirm_demo_reservation', 'get_product', 'get_reservation_requirements', 'get_waitlist_status', 'join_waitlist', 'quote_demo_reservation']);
+  assert.deepEqual(tools.map(tool => tool.name).sort(), ['confirm_demo_reservation', 'get_product', 'get_reservation_requirements', 'get_waitlist_status', 'join_waitlist', 'quote_cap', 'quote_demo_reservation']);
   assert.equal(tools.find(tool => tool.name === 'join_waitlist').annotations.readOnlyHint, false);
   const product = await client.callTool({ name: 'get_product', arguments: {} });
   assert.equal(product.structuredContent.capabilities.purchaseProtection, false);
@@ -160,4 +162,30 @@ test('MCP transport rate limit includes initialization and every call', async t 
   assert.ok(Number(blocked.headers.get('retry-after')) > 0);
   now += 60001;
   assert.equal((await rpc()).status, 200);
+});
+
+test('quote_cap prices a cap from the injected index and returns text plus structured JSON', async () => {
+  const tools = new Map();
+  const fakeServer = { registerTool: (name, config, handler) => tools.set(name, { config, handler }) };
+  const now = Date.parse('2026-10-22T12:00:00Z');
+  registerQuoteCap(fakeServer, { prices: async () => fallbackHistory(), now: () => now });
+  const { config, handler } = tools.get('quote_cap');
+  assert.equal(config.annotations.readOnlyHint, true);
+  const args = quoteCapInput.parse({ gpu: 'H100', count: 64, start: '2026-11-02T09:00:00Z', end: '2026-11-09T09:00:00Z', strike: 2.85 });
+  assert.deepEqual([args.type, args.region, args.config], ['call', 'US East', 'SXM-IB']);
+  const quote = await handler(args);
+  assert.equal(quote.isError, false);
+  assert.equal(quote.structuredContent.method, 'black76-asian-v0');
+  assert.equal(quote.structuredContent.gpuHours, 64 * 168);
+  assert.equal(quote.structuredContent.payNow, quote.structuredContent.premiumTotal + 2);
+  assert.match(quote.content[0].text, /Pays off above \$2\.\d\d per GPU-hour/);
+  assert.match(quote.content[0].text, /demonstration only/);
+  assert.doesNotMatch(quote.content[0].text, /buyback|book-out|cash settlement|sell back|rating|offshore/i);
+  assert.deepEqual(JSON.parse(quote.content[1].text), quote.structuredContent);
+  const lock = await handler({ ...args, type: 'lock' });
+  assert.equal(lock.structuredContent.premiumPerGpuHour, 0);
+  const invalid = await handler({ ...args, count: 3 });
+  assert.equal(invalid.isError, true);
+  assert.equal(invalid.structuredContent.code, 'INVALID_DETAILS');
+  assert.throws(() => quoteCapInput.parse({ ...args, gpu: 'TPU' }));
 });
