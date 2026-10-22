@@ -26,6 +26,7 @@ const staticFiles = new Map([
   ['/contracts.js', ['contracts.js', 'text/javascript; charset=utf-8']],
   ['/contract.js', ['contract.js', 'text/javascript; charset=utf-8']],
   ['/contracts-view.js', ['contracts-view.js', 'text/javascript; charset=utf-8']],
+  ['/checkout.css', ['checkout.css', 'text/css; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],

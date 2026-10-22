@@ -20,6 +20,8 @@ const watch = page => {
 };
 const ready = page => page.waitForFunction(() => document.getElementById('co-q-total').textContent.startsWith('$'));
 const money = async (page, id) => Number((await page.locator('#' + id).innerText()).replace(/[$,]/g, ''));
+const cents = (a, b) => Math.abs(a - b) < 0.005;
+const dialogOpen = page => page.waitForFunction(() => document.getElementById('co-dialog').open);
 const setDate = async (page, id, value) => { await page.locator('#' + id).fill(value); await page.locator('#' + id).dispatchEvent('change'); };
 const plusDays = (date, days) => new Date(Date.parse(date + 'T00:00:00Z') + days * 86400000).toISOString().slice(0, 10);
 const prices = JSON.parse(await readFile(new URL('../data/ornn-index.json', import.meta.url), 'utf8'));
@@ -32,7 +34,7 @@ try {
   await ready(page);
   await page.waitForFunction(() => /cached|live/.test(document.getElementById('co-asof').textContent));
   await page.evaluate(() => document.fonts.ready);
-  check((await page.locator('#co-asof').innerText()).includes('cached'), 'prices from /api/prices are labelled with their source');
+  check(/· (cached|live)\.$/.test(await page.locator('#co-asof').innerText()), 'prices from /api/prices are labelled with their source');
 
   // Default quote: 8 GPUs for one week from the next Monday 09:00 in the viewer's zone.
   check(await page.locator('#co-tz').inputValue() === 'UTC', 'time zone defaults to the viewer zone');
@@ -40,12 +42,19 @@ try {
   check(await page.locator('#co-dur').innerText() === '168 h', 'default window is one week');
   check(await page.locator('#co-q-hours').innerText() === '1,344', 'GPU-hours multiply GPUs by window hours');
   const price = Number((await page.locator('#co-q-price').innerText()).match(/[\d.]+/)[0]);
-  check(price === prices.H100.at(-1)[1], 'locked price is the latest H100 index price');
+  const apiLock = await page.evaluate(async () => {
+    const start = new Date(Date.parse(document.getElementById('co-start-d').value + 'T09:00:00Z')).toISOString();
+    const end = new Date(Date.parse(document.getElementById('co-end-d').value + 'T09:00:00Z')).toISOString();
+    return (await fetch('/api/quote?' + new URLSearchParams({ gpu: 'H100', count: '8', start, end, type: 'lock', region: 'US East', config: 'SXM-IB' }))).json();
+  });
+  check(price === apiLock.strike && cents(price, Math.round(apiLock.forward * 1.02 * 100) / 100), 'fixed price is the pricing engine forward plus 2%');
+  check((await page.locator('#co-q-source').innerText()).includes('pricing v0'), 'quote is labelled as priced by the engine');
   const fee = await money(page, 'co-q-fee'), upfront = await money(page, 'co-q-upfront'), compute = await money(page, 'co-q-compute');
-  check(upfront === fee + 2, 'pay now is protection plus the $2 booking fee');
-  check(compute === Math.round(price * 1344), 'compute if used is price times GPU-hours');
-  check(await money(page, 'co-q-total') === upfront + compute, 'total adds pay now and compute');
-  check(/\/ GPU-h$/.test(await page.locator('#co-q-per').innerText()), 'protection fee shows its per-hour rate');
+  check(fee === 0 && upfront === 2, 'a lock has no fee and pays only the $2 booking fee now');
+  check(cents(compute, price * 1344), 'cost if used is the fixed price times GPU-hours');
+  check(cents(await money(page, 'co-q-total'), upfront + compute), 'all-in adds pay now and cost if used');
+  check((await page.locator('#co-q-per').innerText()) === 'included in the fixed price', 'lock fee explains the margin is in the price');
+  check(await page.locator('#co-q-be-row').isHidden(), 'locks have no break-even line');
   check((await page.locator('#co-win-local').innerText()).includes('Mon') && (await page.locator('#co-win-utc').innerText()).startsWith('UTC '), 'window shows local time and UTC');
   check(await page.locator('.co-timeline li').count() === 4 && !(await page.locator('#co-t-claim').innerText()).includes('—'), 'key-dates timeline is filled in');
   check(await page.locator('#co-buy').isEnabled(), 'valid quote can be bought');
@@ -59,7 +68,10 @@ try {
   check(await page.locator('.co-tab[data-gpu="H200"]').getAttribute('aria-pressed') === 'true', 'selected tab is pressed');
   await page.locator('#co-qty').selectOption('1');
   check(await page.locator('#co-q-hours').innerText() === '168', 'quantity updates GPU-hours');
-  check(await page.locator('#co-qty option').count() === 19, 'quantity offers 1, 2, 4 GPUs and 1 to 16 nodes');
+  check(await page.locator('#co-qty option').count() === 10, 'quantity offers 1 to 256 GPUs in powers of two and a larger-block option');
+  await page.locator('#co-qty').selectOption('rfq');
+  check(await page.locator('#co-rfq a[href="/rfq"]').isVisible() && await page.locator('#co-buy').isDisabled(), 'more than 256 GPUs links to a quote request');
+  await page.locator('#co-qty').selectOption('1');
 
   // Presets.
   await page.locator('[data-preset="1"]').click();
@@ -70,12 +82,34 @@ try {
   check(await page.locator('[data-preset="m1"]').getAttribute('aria-pressed') === 'true', '1 month preset is pressed');
   await page.locator('[data-preset="7"]').click();
 
-  // Lock and Cap.
+  // Lock and price cap.
+  check((await page.locator('[data-kind="cap"] b').innerText()) === 'Price cap (a call)', 'cap button names the call');
   await page.locator('[data-kind="cap"]').click();
-  check(await page.locator('#co-q-total-l').innerText() === 'Total, at most' && await page.locator('#co-q-price-l').innerText() === 'Cap price', 'Cap relabels the quote');
+  check(await page.locator('#co-q-total-l').innerText() === 'All-in, at most' && await page.locator('#co-q-price-l').innerText() === 'Cap price', 'Cap relabels the quote');
   check((await page.locator('#co-svg').textContent()).includes('Cap $'), 'chart marks the cap');
+  check(await page.locator('#co-strike [data-strike]').count() === 3 && await page.locator('[data-strike="1"]').getAttribute('aria-pressed') === 'true', 'strike chips show with today\'s price selected');
+  await ready(page);
+  const atm = Number(await page.locator('#co-strike-in').inputValue());
+  check(Math.abs(atm * 20 - Math.round(atm * 20)) < 1e-6, 'today\'s-price strike is on a five-cent grid');
+  const atmFee = await money(page, 'co-q-fee');
+  await page.locator('[data-strike="1.2"]').click();
+  await ready(page);
+  const otm = Number(await page.locator('#co-strike-in').inputValue());
+  check(cents(otm, Math.round(atm * 1.2 * 100) / 100), '+20% chip raises the strike by a fifth');
+  check(await money(page, 'co-q-fee') < atmFee, 'a higher cap costs less');
+  const be = Number((await page.locator('#co-q-be').innerText()).match(/[\d.]+/)[0]);
+  check(cents(be, otm + Number((await page.locator('#co-q-per').innerText()).match(/[\d.]+/)[0])), 'pays-off-above is the cap plus the fee per GPU-hour');
+  check(cents(await money(page, 'co-q-platform'), Math.round(await money(page, 'co-q-fee') * 15) / 100), 'Dodona fee is 15% of the fee');
+  await page.locator('#co-strike-in').fill('0');
+  check(await page.locator('#co-strike-err').isVisible() && await page.locator('#co-buy').isDisabled(), 'a zero cap price is rejected');
+  await page.locator('#co-strike-in').fill('3.33');
+  await ready(page);
+  check((await page.locator('#co-q-price').innerText()).startsWith('$3.33') && await page.locator('[data-strike="1"]').getAttribute('aria-pressed') === 'false', 'a typed cap price is used');
+  await page.locator('.co-how summary').click();
+  check((await page.locator('#co-h-method').innerText()).includes('black76-asian-v0') && (await page.locator('#co-h-vol').innerText()).includes('weekly'), 'pricing disclosure names the method and the volatility sampling');
+  await page.locator('[data-strike="1"]').click();
   await page.locator('[data-kind="lock"]').click();
-  check(await page.locator('#co-q-total-l').innerText() === 'Total, if used', 'Lock restores the labels');
+  check(await page.locator('#co-q-total-l').innerText() === 'All-in, if used' && await page.locator('#co-strike').isHidden(), 'Lock restores the labels');
 
   // Validation.
   const start = await page.locator('#co-start-d').inputValue();
@@ -101,14 +135,17 @@ try {
   await page.locator('#co-tz').selectOption('UTC');
 
   // Review, consent, receipt.
+  await ready(page);
   const reviewedUpfront = await page.locator('#co-q-upfront').innerText();
   await page.locator('#co-buy').click();
-  check(await page.locator('#co-dialog').evaluate(dialog => dialog.open) && await page.locator('#co-review').isVisible(), 'Buy opens the review');
+  await dialogOpen(page);
+  check(await page.locator('#co-review').isVisible(), 'Buy opens the review');
   check((await page.locator('#co-review-list').innerText()).includes(reviewedUpfront), 'review shows the quoted pay-now amount');
   check(await page.locator('#co-confirm').isDisabled(), 'confirm needs consent');
   await page.locator('#co-back').click();
   check(!(await page.locator('#co-dialog').evaluate(dialog => dialog.open)), 'Back closes the review');
   await page.locator('#co-buy').click();
+  await dialogOpen(page);
   await page.locator('#co-consent').check();
   await page.locator('#co-confirm').click();
   check(await page.locator('#co-receipt').isVisible() && await page.locator('#co-review').isHidden(), 'confirmation shows the receipt');
@@ -117,7 +154,10 @@ try {
   check((await page.locator('#co-receipt-list').innerText()).includes('Claim by'), 'receipt lists the claim deadline');
   await page.screenshot({ path: 'artifacts/checkout-receipt.png' });
   check(writes.length === 0, 'calculator sends no server writes');
-  check(await page.evaluate(() => localStorage.length === 0 && sessionStorage.length === 0), 'calculator uses no browser storage');
+  const bookings = await page.evaluate(() => JSON.parse(sessionStorage.getItem('dodonaDemoBookings') || '[]'));
+  check(bookings.length === 1 && bookings[0].ref === await page.locator('#co-ref').innerText() && bookings[0].type === 'lock' && bookings[0].gpu === 'H200' && bookings[0].count === 1 && bookings[0].region === 'US East', 'receipt appends the booking to the demo session');
+  check(await page.evaluate(() => localStorage.length === 0), 'calculator uses no local storage');
+  check(await page.locator('#co-dash').getAttribute('href') === '/dashboard', 'receipt links to the dashboard');
   await page.locator('#co-again').click();
   check(!(await page.locator('#co-dialog').evaluate(dialog => dialog.open)) && await page.locator('#co-qty').inputValue() === '8', 'Start another resets the form');
   check(await page.locator('[data-kind="lock"]').getAttribute('aria-pressed') === 'true' && await page.locator('#co-dur').innerText() === '168 h', 'reset restores Lock and one week');
@@ -170,6 +210,7 @@ try {
   };
   await accessible('calculator accessibility');
   await audit.locator('#co-buy').click();
+  await dialogOpen(audit);
   await audit.locator('#co-consent').check();
   await audit.locator('#co-confirm').click();
   await accessible('receipt accessibility');
@@ -181,7 +222,9 @@ try {
   watch(offline);
   await offline.setContent(await readFile(new URL('../artifacts/dodona-preview.html', import.meta.url), 'utf8'));
   await ready(offline);
+  check((await offline.locator('#co-q-source').innerText()).startsWith('Indicative (offline)'), 'standalone preview labels the local quote as indicative');
   await offline.locator('#co-buy').click();
+  await dialogOpen(offline);
   await offline.locator('#co-consent').check();
   await offline.locator('#co-confirm').click();
   check(/^DEMO-/.test(await offline.locator('#co-ref').innerText()), 'standalone preview completes a booking offline');
@@ -190,5 +233,5 @@ try {
   await offlineContext.close();
 
   check(errors.length === 0, 'no JavaScript errors or CSP violations: ' + errors.join('; '));
-  console.log(JSON.stringify({ checkoutChecksPassed: checks, serverWrites: writes.length, offlineBookings: true, storage: 'none; no payments, capacity holds, or saved bookings' }, null, 2));
+  console.log(JSON.stringify({ checkoutChecksPassed: checks, serverWrites: writes.length, offlineBookings: true, storage: 'sessionStorage demo bookings only; no payments or capacity holds' }, null, 2));
 } finally { await context.close(); await browser.close(); await close(app); }

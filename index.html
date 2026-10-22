@@ -71,6 +71,7 @@
     <section class="sec" id="how-it-works" aria-labelledby="how-title"><div class="wrap">
       <div class="sec-head"><div><p class="eyebrow">How it works</p><h2 id="how-title">Book a price for<br>your next GPU run.</h2></div><p>Pay for the price protection and a separate booking fee upfront. Pay for the compute itself only if you use it.</p></div>
       <div class="paper-order" id="paper-order" aria-labelledby="co-title">
+        <link rel="stylesheet" href="/checkout.css">
         <div class="co-head"><div><p class="eyebrow">Try it here</p><h3 id="co-title">Book GPU compute</h3></div><span class="co-badge">Demo · no real money</span></div>
         <div class="co-tabs" id="co-tabs" role="group" aria-label="GPU model"></div>
         <div class="co-chart">
@@ -86,7 +87,7 @@
             <fieldset class="co-step">
               <legend><span class="co-num">1</span>Size and region</legend>
               <div class="co-row">
-                <div class="field"><label for="co-qty">Quantity</label><select id="co-qty"></select><span class="co-help" id="co-qty-read"></span></div>
+                <div class="field"><label for="co-qty">Quantity</label><select id="co-qty"></select><span class="co-help" id="co-qty-read"></span><span class="co-help co-rfq" id="co-rfq" hidden>Larger block? <a href="/rfq">Request a quote</a></span></div>
                 <div class="field"><label for="co-region">Region preference</label><select id="co-region"><option>US East (Virginia)</option><option>US West (Oregon)</option><option>Europe (Netherlands)</option></select></div>
               </div>
             </fieldset>
@@ -105,7 +106,13 @@
               <legend><span class="co-num">3</span>Protection</legend>
               <div class="co-types" role="group" aria-label="Protection type">
                 <button type="button" data-kind="lock" aria-pressed="true"><b>Lock</b><span>Fixed price per GPU-hour for the window.</span></button>
-                <button type="button" data-kind="cap" aria-pressed="false"><b>Cap</b><span>Pay market price, never above the cap.</span></button>
+                <button type="button" data-kind="cap" aria-pressed="false"><b>Price cap (a call)</b><span>Pay market price, never above the cap.</span></button>
+              </div>
+              <div class="co-strike" id="co-strike" hidden>
+                <span class="co-label" id="co-strike-l">Cap price</span>
+                <div class="co-chips" role="group" aria-labelledby="co-strike-l"><button type="button" data-strike="1" aria-pressed="true">At today’s price <small></small></button><button type="button" data-strike="1.1" aria-pressed="false">+10% <small></small></button><button type="button" data-strike="1.2" aria-pressed="false">+20% <small></small></button></div>
+                <div class="field co-strike-own"><label for="co-strike-in">Or set your own, $ per GPU-hour</label><input id="co-strike-in" type="number" min="0.05" max="1000" step="0.05" inputmode="decimal" aria-describedby="co-strike-err"></div>
+                <p class="co-error" id="co-strike-err" aria-live="polite" hidden></p>
               </div>
             </fieldset>
           </form>
@@ -114,13 +121,27 @@
             <h4 id="co-quote-title">H100 · Lock</h4>
             <dl class="co-lines">
               <div><dt>GPU-hours</dt><dd id="co-q-hours"></dd></div>
-              <div><dt id="co-q-price-l">Locked price</dt><dd id="co-q-price"></dd></div>
-              <div><dt>Protection fee <small id="co-q-per"></small></dt><dd id="co-q-fee"></dd></div>
-              <div><dt>Booking fee</dt><dd>$2</dd></div>
+              <div><dt id="co-q-price-l">Fixed price</dt><dd id="co-q-price"></dd></div>
+              <div><dt>Fee <small id="co-q-per"></small></dt><dd id="co-q-fee"></dd></div>
+              <div class="co-sub"><dt>of which Dodona fee (15%)</dt><dd id="co-q-platform"></dd></div>
+              <div><dt>Booking fee</dt><dd>$2.00</dd></div>
               <div class="co-upfront"><dt>Pay now</dt><dd id="co-q-upfront"></dd></div>
-              <div><dt id="co-q-compute-l">Compute, if used</dt><dd id="co-q-compute"></dd></div>
-              <div class="co-total"><dt id="co-q-total-l">Total, if used</dt><dd id="co-q-total" aria-live="polite" aria-atomic="true"></dd></div>
+              <div><dt id="co-q-compute-l">You’ll pay if you use it</dt><dd id="co-q-compute"></dd></div>
+              <div id="co-q-be-row" hidden><dt>Pays off above</dt><dd id="co-q-be"></dd></div>
+              <div class="co-total"><dt id="co-q-total-l">All-in, if used</dt><dd id="co-q-total" aria-live="polite" aria-atomic="true"></dd></div>
             </dl>
+            <p class="co-source" id="co-q-source" aria-live="polite"></p>
+            <details class="co-how">
+              <summary>How we priced this</summary>
+              <dl>
+                <div><dt>Forward for the window</dt><dd id="co-h-fwd"></dd></div>
+                <div><dt>Volatility</dt><dd id="co-h-vol"></dd></div>
+                <div><dt>Window</dt><dd id="co-h-win"></dd></div>
+                <div><dt>Method</dt><dd id="co-h-method"></dd></div>
+                <div><dt>Index as of</dt><dd id="co-h-asof"></dd></div>
+              </dl>
+              <p>Ornn daily index, demonstration only; not licensed for commercial valuation.</p>
+            </details>
             <ol class="co-timeline" aria-label="Key dates">
               <li><b>Book now</b><span id="co-t-now"></span></li>
               <li><b>Claim by</b><span id="co-t-claim"></span></li>
@@ -143,7 +164,8 @@
             <h4 id="co-r-title" tabindex="-1">Booked</h4>
             <p class="co-ref" id="co-ref"></p>
             <dl class="co-dl" id="co-receipt-list"></dl>
-            <div class="co-acts"><a class="co-link" id="co-again" href="#paper-order">Start another</a></div>
+            <p class="co-dash-note">Saved in this browser tab for the demo dashboard.</p>
+            <div class="co-acts"><a class="co-link" id="co-again" href="#paper-order">Start another</a><a class="btn co-confirm" id="co-dash" href="/dashboard">Open your dashboard</a></div>
           </div>
         </dialog>
         <noscript><p class="co-error">Enable JavaScript to use the calculator. Nothing has been booked.</p></noscript>
