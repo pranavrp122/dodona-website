@@ -13,10 +13,15 @@ let checks = 0;
 const check = (condition, label) => { assert.ok(condition, label); checks++; };
 const errors = [];
 const writes = [];
+const audits = [];
 const watch = page => {
   page.on('pageerror', error => errors.push(error.message));
   page.on('console', message => { if (message.type() === 'error' && /Content Security Policy|Refused to/.test(message.text())) errors.push(message.text()); });
-  page.on('request', request => { if (!['GET', 'HEAD'].includes(request.method())) writes.push(request.url()); });
+  page.on('request', request => {
+    if (['GET', 'HEAD'].includes(request.method())) return;
+    if (request.url().endsWith('/api/audit/events')) audits.push(JSON.parse(request.postData()));
+    else writes.push(request.url());
+  });
 };
 const ready = page => page.waitForFunction(() => document.getElementById('co-q-total').textContent.startsWith('$'));
 const money = async (page, id) => Number((await page.locator('#' + id).innerText()).replace(/[$,]/g, ''));
@@ -55,6 +60,7 @@ try {
   check(cents(await money(page, 'co-q-total'), upfront + compute), 'all-in adds pay now and cost if used');
   check((await page.locator('#co-q-per').innerText()) === 'included in the fixed price', 'lock fee explains the margin is in the price');
   check(await page.locator('#co-q-be-row').isHidden(), 'locks have no break-even line');
+  check(await page.locator('#co-fee-tag').innerText() === 'model · v0' && /^(live|cached)$/.test(await page.locator('#co-price-tag').innerText()), 'fee and index price carry model and source tags');
   check((await page.locator('#co-win-local').innerText()).includes('Mon') && (await page.locator('#co-win-utc').innerText()).startsWith('UTC '), 'window shows local time and UTC');
   check(await page.locator('.co-timeline li').count() === 4 && !(await page.locator('#co-t-claim').innerText()).includes('—'), 'key-dates timeline is filled in');
   check(await page.locator('#co-buy').isEnabled(), 'valid quote can be bought');
@@ -106,6 +112,7 @@ try {
   await ready(page);
   check((await page.locator('#co-q-price').innerText()).startsWith('$3.33') && await page.locator('[data-strike="1"]').getAttribute('aria-pressed') === 'false', 'a typed cap price is used');
   await page.locator('.co-how summary').click();
+  check(/priced in [\d.]+ ms$/.test(await page.locator('#co-h-asof').innerText()), 'disclosure shows the server compute time');
   check((await page.locator('#co-h-method').innerText()).includes('black76-asian-v0') && (await page.locator('#co-h-vol').innerText()).includes('weekly'), 'pricing disclosure names the method and the volatility sampling');
   await page.locator('[data-strike="1"]').click();
   await page.locator('[data-kind="lock"]').click();
@@ -153,7 +160,8 @@ try {
   check(await page.locator('#co-r-title').evaluate(element => element === document.activeElement), 'receipt heading receives focus');
   check((await page.locator('#co-receipt-list').innerText()).includes('Claim by'), 'receipt lists the claim deadline');
   await page.screenshot({ path: 'artifacts/checkout-receipt.png' });
-  check(writes.length === 0, 'calculator sends no server writes');
+  check(writes.length === 0, 'calculator sends no server writes besides the audit event');
+  check(audits.length === 1 && audits[0].kind === 'booking_created' && audits[0].ref === await page.locator('#co-ref').innerText() && /^Booking · H200 × 1 · .+ · lock \$\d+\.\d\d$/.test(audits[0].summary) && !/@/.test(audits[0].summary), 'receipt fires one booking audit event without personal data');
   const bookings = await page.evaluate(() => JSON.parse(sessionStorage.getItem('dodonaDemoBookings') || '[]'));
   check(bookings.length === 1 && bookings[0].ref === await page.locator('#co-ref').innerText() && bookings[0].type === 'lock' && bookings[0].gpu === 'H200' && bookings[0].count === 1 && bookings[0].region === 'US East', 'receipt appends the booking to the demo session');
   check(await page.evaluate(() => localStorage.length === 0), 'calculator uses no local storage');

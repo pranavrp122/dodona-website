@@ -61,7 +61,7 @@ test('agents can follow the documented token flow without browser JavaScript; li
   t.after(() => f.cleanup());
   const schema = await (await fetch(f.origin + '/openapi.json')).json();
   assert.equal(schema.openapi, '3.1.0');
-  assert.deepEqual(Object.keys(schema.paths).sort(), ['/api/site', '/api/waitlist', '/api/waitlist/status']);
+  assert.deepEqual(Object.keys(schema.paths).sort(), ['/api/quote', '/api/site', '/api/waitlist', '/api/waitlist/status']);
   const fields = schema.components.schemas.Signup;
   assert.deepEqual(fields.required, ['email', 'token']);
   assert.equal(fields.properties.website.const, '');

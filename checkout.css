@@ -32,3 +32,6 @@
   #paper-order .co-how dl>div{grid-template-columns:1fr;gap:0}
   #paper-order .co-acts{flex-wrap:wrap;justify-content:space-between}
 }
+#paper-order .co-tag{display:inline-block;margin-left:6px;padding:1px 7px;border:1px solid currentColor;border-radius:20px;font:600 10px/1.5 var(--body);letter-spacing:.02em;vertical-align:1px;white-space:nowrap}
+#paper-order .co-lines dt .co-tag{color:var(--lime)}
+#paper-order .co-stats .co-tag{color:var(--ink);border-color:var(--border)}

@@ -16,6 +16,7 @@ const DRIFT_CLAMP = 0.3, WEEK_POINTS = 7, MIN_WEEKLY_POINTS = 8, MAX_STRIKE = 10
 const CONFIG = "SXM-IB";
 const PRICE_TIMEOUT = 3000, QUOTE_TIMEOUT = 3000, QUOTE_DEBOUNCE = 250;
 const BOOKINGS_KEY = "dodonaDemoBookings";
+const AUDIT_URL = "/api/audit/events";
 const NS = "http://www.w3.org/2000/svg";
 const $ = id => document.getElementById(id);
 if (!$("paper-order")) return;
@@ -315,6 +316,8 @@ function renderChart() {
     tip.style.left = (px * r.width / W) + "px"; tip.style.top = (py * r.height / H) + "px"; tip.hidden = false;
   };
   svg.onpointerleave = () => { cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); tip.hidden = true; };
+  $("co-price-tag").hidden = !priceSource;
+  $("co-price-tag").textContent = priceSource ? (priceSource.live ? "live" : "cached") : "";
   $("co-asof").textContent = priceSource
     ? `Ornn daily index. Prices as of ${fmtDay(priceSource.asOf)} · ${priceSource.live ? "live" : "cached"}.`
     : "Ornn daily index. Prices as of " + fmtDay(last[0]) + ".";
@@ -361,7 +364,7 @@ function renderHow(q, result) {
   setText("co-h-vol", `${(d.vol * 100).toFixed(0)}% a year, ${d.volSampling}-sampled and annualised, from the Ornn ${q.g} series`);
   setText("co-h-win", `${q.w.hours.toLocaleString("en-US")} h, starting in ${startsIn.toFixed(1)} days · averaging time ${(d.tEffYears * 365).toFixed(1)} days`);
   setText("co-h-method", result.offline ? "Indicative (offline): simple volatility formula" : (d.type === "lock" ? "Forward plus a 2% provider margin" : "Black-76 on the forward, average-price adjusted") + ` · ${d.method}`);
-  setText("co-h-asof", fmtDay(d.asOf));
+  setText("co-h-asof", fmtDay(d.asOf) + (Number.isFinite(d.computeMs) ? ` · priced in ${d.computeMs < 10 ? d.computeMs.toFixed(1) : Math.round(d.computeMs)} ms` : ""));
 }
 
 function renderQuote() {
@@ -388,6 +391,7 @@ function renderQuote() {
   $("co-q-total").textContent = d ? usd2(round2(d.payNow + d.costIfUsed)) : wait;
   $("co-q-source").textContent = d ? (result.offline ? "Indicative (offline): the pricing service did not answer." : "Priced by Dodona pricing v0 on the Ornn daily index.") : q.ok ? "Pricing…" : "";
   $("co-q-source").classList.toggle("co-offline", Boolean(d && result.offline));
+  $("co-fee-tag").hidden = !d || result.offline;
   renderHow(q, result);
   const tz = q.w.tz;
   $("co-t-now").textContent = fmtDate(Date.now(), tz);
@@ -461,6 +465,22 @@ function saveBooking(ref, { q, result }) {
     // Storage blocked (private mode or a sandbox): the receipt still shows; the dashboard will not list it.
   }
 }
+// Fire-and-forget audit event; no personal data, and any failure or non-2xx answer is ignored.
+const fmtShort = t => new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+function auditSummary({ q, result }) {
+  const d = result.data, [sd, sm] = fmtShort(q.w.start).split(" "), end = fmtShort(q.w.end);
+  const dates = end.endsWith(" " + sm) ? `${sd}–${end}` : `${sd} ${sm}–${end}`;
+  const terms = q.kind === "cap" ? `call ${usd2(d.strike)} · fee ${usd2(d.premiumPerGpuHour)}/h` : `lock ${usd2(d.strike)}`;
+  return `Booking · ${q.g} × ${q.n} · ${dates} · ${terms}`;
+}
+function sendAudit(ref, booked) {
+  try {
+    if (!window.fetch) return;
+    fetch(AUDIT_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ kind: "booking_created", ref, summary: auditSummary(booked) }) }).catch(() => {});
+  } catch {
+    // Audit is best effort; the demo receipt never depends on it.
+  }
+}
 function confirmBooking() {
   if (!pending || !$("co-consent").checked) return;
   if (pending.q.w.start < Date.now() + MIN_LEAD) { closeDialog(); renderQuote(); return; }
@@ -468,6 +488,7 @@ function confirmBooking() {
   $("co-ref").textContent = ref;
   fillList($("co-receipt-list"), summaryRows(pending));
   saveBooking(ref, pending);
+  sendAudit(ref, pending);
   $("co-review").hidden = true; $("co-receipt").hidden = false;
   $("co-r-title").focus();
 }
