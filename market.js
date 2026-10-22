@@ -26,7 +26,6 @@
   const pct = value => value == null ? 'n/a' : (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value * 100).toFixed(1) + '%';
   const arrow = value => value > 0 ? '▲ ' : value < 0 ? '▼ ' : '';
   const shortDate = iso => new Date(iso.slice(0, 10) + 'T00:00:00Z').toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
-  const utcTime = iso => new Date(iso).toISOString().slice(11, 16) + ' UTC';
   const monthLabel = month => new Date(month + '-01T00:00:00Z').toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
   const marker = (node, name) => { node.dataset.mk = name; return node; };
 
@@ -155,8 +154,8 @@
     const body = data.error ? [el('p', 'mk-implied-error', `Market-implied prices are unavailable right now: ${data.error}`)]
       : gpus.length ? gpus.map(gpu => impliedTable(gpu, data[gpu], pending))
         : [el('p', 'mk-implied-error', 'No Kalshi ladder says anything about the median today.')];
-    const label = el('p', 'mk-implied-note', `${data.label} · quotes at ${utcTime(data.asOf)}`);
-    const note = el('p', 'mk-implied-note', `${data.note} The bracket comes from bids and asks at 50 cents; the medians read where "above $X" prices cross 50%. Not a Dodona price and not used in any value or quote.`);
+    const label = el('p', 'mk-implied-note', data.label);
+    const note = el('p', 'mk-implied-note', `${data.note} The bracket comes from bids and asks at 50 cents; the medians read where "above $X" prices cross 50%; where no median can be computed, the bracket is the read. Not used in any value or quote.`);
     box.replaceChildren(el('h3', 'mk-sub', 'What Kalshi prices imply for the monthly average'), ...body, label, note);
     box.hidden = false;
   }

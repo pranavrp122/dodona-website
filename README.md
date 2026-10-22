@@ -59,6 +59,14 @@ Agents may submit a signup only when a user asks to join and provides their emai
 - The test valuation method `v0.1-test` lives in `lib/valuation.mjs`. Its formulas and assumptions are documented in `docs/valuation-v0.md`. The sample book is `data/sample-contracts.json`.
 - The pages render on the server, so they read without JavaScript. `contracts.js` and `contract.js` refresh the values from the API and run the map filter and demo forms. They share `contracts-view.js` with the server. The page styles are in `contracts.css`.
 
+## Market strip and methodology
+
+The home page and `/contracts` show a market strip: Ornn daily index tiles (demonstration only; not licensed for commercial valuation) and the status of compute futures at CME, ICE and Kalshi. `GET /api/market` returns that data with `Cache-Control: public, max-age=300`.
+
+The Kalshi market-implied view appears only on the signed-in demo dashboard, never on public pages. The dashboard requests `GET /api/market?implied=1`, which adds an `implied` object and is sent with `Cache-Control: no-store`. The strip renders it only inside a `#market-strip` section marked `data-implied="true"`. For each month it shows a bid/ask bracket, a median from quotes with spreads of 20 cents or less, and a last-trade median with its trade date. It reads Kalshi's public monthly ladders (`KXB200MS`, `KXH100MS`) without a key, holds the results in server memory for 10 minutes, and backs off on rate limits. Kalshi data is never written to disk or logs, never used in a value or quote, and not reachable through any MCP tool.
+
+`/methodology` explains Dodona Value and cap pricing in plain words.
+
 ## MCP reservation demo
 
 The app serves a **stateless Streamable HTTP MCP server at `/mcp`**, using the pinned official SDK. Connect `http://127.0.0.1:3000/mcp` from a local compatible MCP client. For remote Claude/ChatGPT clients that support MCP connectors, first deploy the app behind HTTPS and add `<APP_ORIGIN>/mcp` in that client's connector settings. The endpoint must be connected before a chat can use its tools. The code has been verified with the SDK client, not by connecting a user's Claude or ChatGPT account. No public deployment or automatic connector registration has been performed.

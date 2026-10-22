@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from '../server.mjs';
 import { fallbackHistory } from '../lib/prices.mjs';
-import { createKalshiSource, createMarketSource, eventMonth, monthView, impliedCurve, indexTile, IMPLIED_LABEL, KALSHI_SERIES } from '../lib/market.mjs';
+import { createKalshiSource, createMarketSource, eventMonth, monthView, impliedCurve, indexTile, KALSHI_SERIES } from '../lib/market.mjs';
 import { listen, close } from './fixture.mjs';
 
 const settings = { operatorName: 'Test fixture operator', contactEmail: 'fixture@example.invalid', retentionDays: null };
@@ -144,8 +144,7 @@ test('GET /api/market?implied=1 adds the Kalshi view and is not cached', async t
   assert.equal(response.headers.get('cache-control'), 'no-store');
   const body = await response.json();
   assert.equal(body.implied.source, 'kalshi-public');
-  assert.equal(body.implied.label, IMPLIED_LABEL);
-  assert.equal(body.implied.label, 'Market-implied from Kalshi public prices · display only · not stored');
+  assert.match(body.implied.label, /^Market-implied from Kalshi public quotes at \d{2}:\d{2} UTC · display only · not stored · not a Dodona price$/);
   assert.match(body.implied.note, /thin past November/);
   const [row] = body.implied.B200;
   assert.deepEqual({ month: row.month, implied: row.implied, bracketLow: row.bracketLow, bracketHigh: row.bracketHigh }, { month: '2026-11', implied: 9, bracketLow: 8, bracketHigh: 10 });
