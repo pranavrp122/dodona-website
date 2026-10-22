@@ -19,6 +19,8 @@ const MINUS = '−';
 const ARROW = '<span aria-hidden="true">→</span>';
 
 /* ---------- formatting ---------- */
+// Provenance tag beside a number: live (Ornn index), model (Dodona Value and arithmetic), sample (illustrative data).
+export const tag = kind => `<span class="tag d-tag-${kind}">${kind}</span>`;
 export const kindLabel = kind => KIND_LABEL[kind] || kind;
 export const signedUsd = v => (v == null || !Number.isFinite(v) ? '—' : v > 0 ? '+' + usd(v) : usd(v));
 export const dollars = v => `${v < 0 ? MINUS : ''}$${Math.round(Math.abs(v)).toLocaleString('en-US')}`;
@@ -130,7 +132,7 @@ export function ledgerRow(position, { selected = false, today } = {}) {
     <td class="r d-num">${used ? '—' : escapeHtml(gpuHours(v.remainingHours))}</td>
     <td class="r d-num">${perHour(position.pricePerGpuHour)}${call ? ' cap' : ''}<span class="d-sub">index ${perHour(v.spot * v.basis)}</span>${call && !used ? `<span class="d-sub">${moneyLine(position)}</span>` : ''}</td>
     ${valueCell}
-    <td><span class="d-status st-${status.cls}">${escapeHtml(status.text)}</span>${listedLink}</td>
+    <td><span class="d-status st-${status.cls}">${escapeHtml(status.text)}</span>${listedLink}${position.warning ? `<span class="d-warn-pill">${escapeHtml(position.warning)}</span>` : ''}</td>
   </tr>`;
 }
 
@@ -140,21 +142,21 @@ export const ledgerRows = (portfolio, selectedId) =>
 export function kpiRows(kpis) {
   const next = kpis.nextDeadline;
   const rows = [
-    ['Remaining committed cost', usd(kpis.remainingCommittedCost), `Fixed prices and offtakes · plus ${usd(kpis.optionalAtStrike)} optional at cap prices`],
-    ['Premiums paid', usd(kpis.premiumsPaid), `${kpis.callCount} price caps · paid to the provider`],
-    ['GPU-hours remaining', gpuHours(kpis.gpuHoursRemaining), `${kpis.openPositions} open positions`],
-    ['Net Dodona Value', signedUsd(kpis.netValue), `${signedUsd(kpis.change.d7)} this week`],
-    ['Average, cents on the dollar', cents(kpis.centsOnDollar), 'Fixed prices and offtakes · above 100 = below market'],
+    ['Remaining committed cost', usd(kpis.remainingCommittedCost), `Fixed prices and offtakes · plus ${usd(kpis.optionalAtStrike)} optional at cap prices`, 'sample'],
+    ['Premiums paid', usd(kpis.premiumsPaid), `${kpis.callCount} price caps · paid to the provider`, 'model'],
+    ['GPU-hours remaining', gpuHours(kpis.gpuHoursRemaining), `${kpis.openPositions} open positions`, 'sample'],
+    ['Net Dodona Value', signedUsd(kpis.netValue), `${signedUsd(kpis.change.d7)} this week`, 'model'],
+    ['Average, cents on the dollar', cents(kpis.centsOnDollar), 'Fixed prices and offtakes · above 100 = below market', 'model'],
     ['Next deadline', next ? dayMonth(next.date) : 'None', next ? `${next.action} ${next.label} · ${next.days} days` : 'Nothing to claim'],
   ];
-  return rows.map(([term, value, note]) => `<div class="d-kpi"><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(value)}<small>${escapeHtml(note)}</small></dd></div>`).join('');
+  return rows.map(([term, value, note, kind]) => `<div class="d-kpi"><dt>${escapeHtml(term)}${kind ? ' ' + tag(kind) : ''}</dt><dd>${escapeHtml(value)}<small>${escapeHtml(note)}</small></dd></div>`).join('');
 }
 
 export const changeChips = change => [['1D', change.d1], ['7D', change.d7], ['30D', change.d30]]
   .map(([k, v]) => `<span class="d-chip"><b>${k}</b><span class="${tone(v)}">${escapeHtml(signedUsd(v))}</span></span>`).join('');
 
 export function pricesLine(prices, methodVersion) {
-  const state = prices.live ? '<span class="d-live is-live">Live</span>' : '<span class="d-live">Cached</span>';
+  const state = prices.live ? tag('live') : '<span class="tag">cached</span>';
   return `Ornn daily index as of ${escapeHtml(shortDate(prices.asOf))} ${state} · method ${escapeHtml(methodVersion)}`;
 }
 

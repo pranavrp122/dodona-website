@@ -13,7 +13,8 @@ const esc = v.escapeHtml;
 
 const state = {
   data: null, session: null, screen: 'overview', selected: null,
-  exercise: null, listing: false, whatIf: 0, listed: new Map(), read: new Set(), shock: 0,
+  exercise: null, listing: false, countering: false, whatIf: 0, listed: new Map(), read: new Set(), shock: 0,
+  stale: false, shortfall: false,
   provider: { block: 'all', window: 'weekend', cap: 1.1, floor: 0.9, collarCap: 1.2 },
 };
 
@@ -46,6 +47,13 @@ function toast(message) {
   box.append(item);
   while (box.children.length > 3) box.firstChild.remove();
   setTimeout(() => item.remove(), 5200);
+}
+
+// Fire-and-forget audit event; the audit route may be absent, so every failure is ignored. Summaries carry no personal data.
+function audit(kind, ref, summary) {
+  try {
+    fetch('/api/audit/events', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ref, summary }) }).catch(() => {});
+  } catch { /* audit is best effort */ }
 }
 
 /* ---------- chart hover layer ---------- */
@@ -100,7 +108,12 @@ function attachHover(wrap, points, describe) {
 }
 
 /* ---------- positions with local demo state applied ---------- */
-const positions = () => (state.data?.positions || []).map(p => (state.listed.has(p.id) ? { ...p, status: 'listed', ...state.listed.get(p.id) } : p));
+const SHORTFALL = { id: 'scenario-shortfall', severity: 'warn', kind: 'Delivery', go: 'positions/H3', text: 'Provider delivered 60 of 64 H100 for H3 · 4 GPUs credited at $5.40 × remaining hours' };
+const positions = () => (state.data?.positions || []).map(p => {
+  const listed = state.listed.has(p.id) ? { ...p, status: 'listed', ...state.listed.get(p.id) } : p;
+  return state.shortfall && p.id === 'H3' ? { ...listed, warning: 'Delivery shortfall · credited' } : listed;
+});
+const allAlerts = () => (state.shortfall ? [SHORTFALL, ...state.data.alerts] : state.data.alerts);
 const byId = id => positions().find(p => p.id === id);
 const change = (p, back) => (p.history.length > back ? p.history.at(-1).value - p.history.at(-1 - back).value : 0);
 
@@ -141,7 +154,7 @@ function renderLedger() {
 }
 
 /* ---------- position detail ---------- */
-const termRow = (term, value, note = '') => `<div><dt>${esc(term)}${note ? `<span>${esc(note)}</span>` : ''}</dt><dd>${esc(value)}</dd></div>`;
+const termRow = (term, value, note = '', kind = '') => `<div><dt>${esc(term)}${kind ? ' ' + v.tag(kind) : ''}${note ? `<span>${esc(note)}</span>` : ''}</dt><dd>${esc(value)}</dd></div>`;
 const calcRows = rows => `<dl>${rows.map(([t, d], i) => `<div${i === rows.length - 1 ? ' class="is-total"' : ''}><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl>`;
 
 function termSheet(p) {
@@ -153,7 +166,7 @@ function termSheet(p) {
     termRow('Window', v.windowLabel(p.start, p.end), `${v.utcStamp(p.start)} to ${v.utcStamp(p.end)}`),
     termRow('GPU-hours left', v.hoursText(val.remainingHours)),
     termRow(call ? 'Cap price' : 'Contract price', `${v.perHour(p.pricePerGpuHour)}/GPU-h`),
-    termRow('Index today', `${v.perHour(val.spot)}/GPU-h`, `Ornn ${p.gpu} · basis ×${val.basis.toFixed(2)}`),
+    termRow('Index today', `${v.perHour(val.spot)}/GPU-h`, `Ornn ${p.gpu} · basis ×${val.basis.toFixed(2)}`, state.data.prices.live ? 'live' : ''),
   ];
   if (call) {
     rows.push(
@@ -227,7 +240,7 @@ function exercisePanel(p) {
   const copy = deliver
     ? `You pay the cap price and the partner neocloud provisions the cluster from ${v.utcStamp(p.start)}.`
     : `You take delivery at the cap price and Dodona lists the block for resale. Best bid today: ${v.perHour(ex.bid)}/GPU-h, from the provider or another business.`;
-  return `<div class="d-calc" role="region" aria-label="Review exercise"><p class="eyebrow">Step 2 · review ${deliver ? 'delivery' : 'resale'}</p><p>${esc(copy)}</p>${calcRows(rows)}
+  return `<div class="d-calc" role="region" aria-label="Review exercise"><p class="eyebrow">Step 2 · review ${deliver ? 'delivery' : 'resale'} ${v.tag('model')}</p><p>${esc(copy)}</p>${calcRows(rows)}
     <div class="d-acts"><button type="button" class="btn btn-sm btn-ink" data-act="ex-confirm" id="d-ex-confirm">Confirm ${deliver ? 'delivery' : 'resale'}</button><button type="button" class="btn btn-sm d-btn-line" data-act="ex-cancel">Cancel</button></div></div>`;
 }
 
@@ -241,6 +254,13 @@ function listForm(p) {
     <p class="fine">Today's Dodona Value is ${esc(offtake ? v.cents(val.centsOnDollar) : v.perHour(Number(fair)) + '/GPU-h')}. Listings are anonymous until both sides agree.</p></form>`;
 }
 
+function counterForm(p) {
+  return `<form class="d-form" id="d-offer-form" novalidate><div class="field"><label for="d-counter">Counter-offer, cents on the dollar</label>
+    <input id="d-counter" type="number" inputmode="decimal" required min="50" max="150" step="0.5" value="${esc(Math.round((p.bestOfferCents + p.askingCents) / 2))}"></div>
+    <button type="submit" class="btn btn-sm btn-ink">Send counter-offer</button>
+    <p class="fine">Best offer today: ${esc(p.bestOfferCents)}¢ against your ask of ${esc(p.askingCents)}¢. Both sides stay anonymous until agreed.</p></form>`;
+}
+
 function detailActions(p) {
   if (p.phase === 'used') return '';
   const listed = p.status === 'listed';
@@ -249,7 +269,7 @@ function detailActions(p) {
     ? `<button type="button" class="btn btn-sm d-btn-line" data-act="ex" data-mode="deliver" ${pressed('deliver')}>Exercise · deliver</button><button type="button" class="btn btn-sm d-btn-line" data-act="ex" data-mode="resell" ${pressed('resell')}>Exercise · resell the hours</button>`
     : '';
   const listing = listed
-    ? '<a class="btn btn-sm d-btn-line" href="/contracts">Listed · view the board</a>'
+    ? `<a class="btn btn-sm d-btn-line" href="/contracts">Listed · view the board</a>${p.bestOfferCents ? `<button type="button" class="btn btn-sm d-btn-line" data-act="counter" aria-expanded="${state.countering}">Counter the ${esc(p.bestOfferCents)}¢ offer</button>` : ''}`
     : `<button type="button" class="btn btn-sm d-btn-line" data-act="list" aria-expanded="${state.listing}">List for sale</button>`;
   return `<div class="d-acts">${exercise}${listing}</div>`;
 }
@@ -273,14 +293,15 @@ function renderDetail() {
   if (!p) { box.innerHTML = '<p class="d-empty">Select a position to see its term sheet, 90-day value and actions.</p>'; return; }
   const live = p.phase !== 'used';
   const call = p.kind === 'call';
-  box.innerHTML = `<div class="d-d-head"><p class="eyebrow">${esc(p.id)} · ${esc(v.kindLabel(p.kind))}${p.source === 'booking' ? ' · booked this session' : ''}</p>
+  box.innerHTML = `<div class="d-d-head"><p class="eyebrow">${esc(p.id)} · ${esc(v.kindLabel(p.kind))}${p.source === 'booking' ? ' · booked this session' : ''} ${v.tag(p.source === 'booking' ? 'model' : 'sample')}</p>
       <h2 class="d-h3">${esc(p.label)}</h2><p class="d-d-sub">${esc(p.region)} · ${esc(p.provider.label)}</p>${detailHeadline(p)}</div>
     <div class="d-d-body">
-      ${live ? `<div><p class="eyebrow">90-day Dodona Value</p><div class="d-chart-wrap" id="d-detail-chart">${v.positionChart(p)}</div></div>` : ''}
+      ${live ? `<div><p class="eyebrow">90-day Dodona Value ${v.tag('model')}</p><div class="d-chart-wrap" id="d-detail-chart">${v.positionChart(p)}</div></div>` : ''}
       ${call && live ? whatIfBlock(p) : ''}
       ${detailActions(p)}
       ${call && live && state.exercise ? exercisePanel(p) : ''}
       ${live && state.listing && p.status !== 'listed' ? listForm(p) : ''}
+      ${live && state.countering && p.bestOfferCents ? counterForm(p) : ''}
       <h3 class="d-h3">Term sheet</h3>${termSheet(p)}${howComputed(p)}
     </div>`;
   if (live) attachHover($('d-detail-chart'), p.history, point => [v.shortDate(point.date), `Dodona Value ${v.signedUsd(point.value)}`]);
@@ -291,6 +312,7 @@ function select(id, { scroll = false } = {}) {
   state.selected = id;
   state.exercise = null;
   state.listing = false;
+  state.countering = false;
   state.whatIf = 0;
   renderLedger();
   renderDetail();
@@ -306,7 +328,7 @@ function alertItem(alert, full) {
 }
 
 function renderAlerts() {
-  const alerts = state.data.alerts;
+  const alerts = allAlerts();
   $('d-alerts-mini').innerHTML = alerts.slice(0, 4).map(a => alertItem(a, false)).join('');
   $('d-alerts-full').innerHTML = alerts.map(a => alertItem(a, true)).join('') || '<li class="d-muted">No alerts.</li>';
   const unread = alerts.filter(a => !state.read.has(a.id)).length;
@@ -328,11 +350,12 @@ function nextWindow(kind) {
 }
 
 async function fetchQuote(params) {
+  if (state.stale) return { premium: v.PLACEHOLDER_PREMIUM, placeholder: 'Quotes paused · index is 3 days old' };
   try {
     const response = await fetch(`/api/quote?${new URLSearchParams(params)}`, { headers: { Accept: 'application/json' }, signal: AbortSignal.timeout(QUOTE_TIMEOUT_MS) });
     if (response.ok) {
       const quote = await response.json();
-      if (Number.isFinite(quote.premiumPerGpuHour)) return { premium: quote.premiumPerGpuHour, quote, placeholder: null };
+      if (Number.isFinite(quote.premiumPerGpuHour)) return { premium: quote.premiumPerGpuHour, quote, placeholder: null, computeMs: Number.isFinite(quote.computeMs) ? quote.computeMs : null };
     }
     return { premium: v.PLACEHOLDER_PREMIUM, placeholder: response.status === 501 ? 'Pricing engine not connected' : 'Quote unavailable' };
   } catch {
@@ -377,13 +400,13 @@ async function renderProvider() {
       <div class="d-pick"><span>Block</span>${seg('block', [['all', `All idle weekend GPUs (${pv.idleWeekend.gpus})`], ['64', '64 GPUs'], ['128', '128 GPUs']])}</div>
       <div class="d-pick"><span>Window</span>${seg('window', [['weekend', 'Next weekend · 48 h'], ['week', 'Next week · 168 h']])}</div>
       <div class="d-pick"><span>Cap price</span>${seg('cap', [[1, chip(index, 1, "Today's index")], [1.1, chip(index, 1.1, '+10%')], [1.2, chip(index, 1.2, '+20%')]])}</div>
-      <p class="fine">${esc(pv.name)} · ${pv.units.toLocaleString('en-US')} ${esc(pv.gpu)} ${esc(pv.config)} in ${esc(pv.region)} · ${v.percent(pv.utilisation)} utilised · Ornn ${esc(pv.gpu)} index ${esc(v.perHour(index))}/GPU-h. Window ${esc(v.utcStamp(win.start))} to ${esc(v.utcStamp(win.end))}.</p>
+      <p class="fine">${v.tag('sample')} ${esc(pv.name)} · ${pv.units.toLocaleString('en-US')} ${esc(pv.gpu)} ${esc(pv.config)} in ${esc(pv.region)} · ${v.percent(pv.utilisation)} utilised · Ornn ${esc(pv.gpu)} index ${esc(v.perHour(index))}/GPU-h. Window ${esc(v.utcStamp(win.start))} to ${esc(v.utcStamp(win.end))}.</p>
       ${scenarioTable(rows)}
       <p class="fine">With the cap: premium income plus either the market rental (cap unused) or the whole block at the cap price (cap used).</p>
     </div>
     <div class="d-step">
-      <div class="d-result"><p class="eyebrow">Premium income, paid now</p><strong>${esc(v.dollars(capQuote.premium * gpuHours))}</strong>
-        <p>${esc(v.perHour(capQuote.premium))}/GPU-h on ${esc(v.hoursText(gpuHours))} · cap ${esc(v.perHour(strike))}/GPU-h</p>${placeholderFlag(capQuote)}</div>
+      <div class="d-result"><p class="eyebrow">Premium income, paid now ${v.tag('model')}</p><strong>${esc(v.dollars(capQuote.premium * gpuHours))}</strong>
+        <p>${esc(v.perHour(capQuote.premium))}/GPU-h on ${esc(v.hoursText(gpuHours))} · cap ${esc(v.perHour(strike))}/GPU-h</p>${placeholderFlag(capQuote)}${capQuote.computeMs != null ? `<p class="d-quote-ms">priced in ${esc(Math.round(capQuote.computeMs))} ms</p>` : ''}</div>
       <div class="d-panel d-step"><h2>2 · Buy a floor</h2>
         <div class="d-pick"><span>Floor price</span>${seg('floor', [[1, chip(index, 1, 'Today')], [0.9, chip(index, 0.9, '−10%')], [0.8, chip(index, 0.8, '−20%')]])}</div>
         <div class="d-pick"><span>Cap price sold to pay for it</span>${seg('collarCap', [[1.1, chip(index, 1.1, '+10%')], [1.2, chip(index, 1.2, '+20%')], [1.3, chip(index, 1.3, '+30%')]])}</div>
@@ -451,6 +474,10 @@ function renderSettings() {
       ${kv([['Read key', 'dod_test_••••••••7f3a'], ['Scope', 'Positions and values, read only'], ['Endpoint', '/api/portfolio']])}</div>
     <div class="d-panel"><div class="d-panel-head"><h2>Billing</h2></div>
       ${kv([['Method', 'Invoices by ACH, no card fees'], ['Next invoice', v.shortDate(nextInvoice)], ['Funds', 'Dodona never holds funds']])}</div>
+    <div class="d-panel"><div class="d-panel-head"><h2>Demo scenarios</h2></div><div class="d-scenarios">
+      <button type="button" class="btn btn-sm d-btn-line" data-act="scenario" data-id="stale" aria-pressed="${state.stale}">Stale quote · index 3 days old, quotes paused</button>
+      <button type="button" class="btn btn-sm d-btn-line" data-act="scenario" data-id="shortfall" aria-pressed="${state.shortfall}">Delivery shortfall · H3 delivered 60 of 64</button>
+      <p class="fine">Scripted for the demo. They change this page only.</p></div></div>
     <div class="d-panel"><div class="d-panel-head"><h2>Session</h2></div><p>Signed in as ${esc(s.email)} in this browser tab.</p>
       <p><button type="button" class="btn btn-sm btn-ink" data-act="sign-out">Sign out</button></p></div>`;
 }
@@ -485,8 +512,23 @@ function confirmExercise(p) {
   toast(state.exercise === 'deliver'
     ? `Demo: delivery confirmed for ${p.id}. You pay ${v.dollars(ex.pay)}; the partner neocloud provisions the cluster. Nothing was sent.`
     : `Demo: you take delivery of ${p.id} at the cap price and the block is listed for resale at ${v.perHour(ex.bid)}/GPU-h, net about ${v.dollars(ex.net)}. Nothing was sent.`);
+  audit('exercise_confirmed', p.id, `Exercise · ${state.exercise === 'deliver' ? 'deliver' : 'resell'} · ${p.id} · ${p.count} ${p.gpu} · ${v.perHour(p.pricePerGpuHour)}`);
   state.exercise = null;
   renderDetail();
+}
+
+function runScenario(id) {
+  if (id === 'stale') {
+    state.stale = !state.stale;
+    $('d-stale').hidden = !state.stale;
+  } else {
+    state.shortfall = !state.shortfall;
+    renderLedger();
+    renderDetail();
+    renderAlerts();
+  }
+  renderSettings();
+  toast(id === 'stale' ? (state.stale ? 'Scenario on: quotes paused until the index updates.' : 'Scenario off: quotes resume.') : (state.shortfall ? 'Scenario on: delivery shortfall on H3.' : 'Scenario off: delivery shortfall cleared.'));
 }
 
 function onClick(event) {
@@ -504,6 +546,9 @@ function onClick(event) {
       break;
     case 'ex-cancel': state.exercise = null; renderDetail(); break;
     case 'ex-confirm': confirmExercise(p); break;
+    case 'counter': state.countering = !state.countering; state.exercise = null; state.listing = false; renderDetail(); $('d-counter')?.focus(); break;
+    case 'scenario': runScenario(target.dataset.id); break;
+    case 'stale-dismiss': state.stale = false; $('d-stale').hidden = true; if (state.screen === 'settings') renderSettings(); break;
     case 'list': state.listing = !state.listing; state.exercise = null; renderDetail(); $('d-ask')?.focus(); break;
     case 'read': state.read.add(target.dataset.id); writeJson(READ_KEY, [...state.read]); renderAlerts(); break;
     case 'pick': state.provider[target.dataset.key] = ['block', 'window'].includes(target.dataset.key) ? target.dataset.value : Number(target.dataset.value); renderProvider(); break;
@@ -512,7 +557,19 @@ function onClick(event) {
   }
 }
 
+function onCounter(event) {
+  event.preventDefault();
+  const p = byId(state.selected);
+  const cents = Number($('d-counter').value);
+  if (!(cents >= 50 && cents <= 150)) { toast('Enter a counter-offer between 50¢ and 150¢.'); return; }
+  state.countering = false;
+  renderDetail();
+  audit('offer_sent', p.id, `Offer · ${p.id} · ${cents}c`);
+  toast(`Demo: counter-offer of ${cents}¢ on ${p.id} recorded. Nothing was sent to the other side.`);
+}
+
 function onSubmit(event) {
+  if (event.target.id === 'd-offer-form') { onCounter(event); return; }
   if (event.target.id !== 'd-list-form') return;
   event.preventDefault();
   const p = byId(state.selected);
@@ -523,6 +580,7 @@ function onSubmit(event) {
     return;
   }
   state.listed.set(p.id, offtake ? { askingCents: ask } : { askingPerGpuHour: ask });
+  audit('listing_created', p.id, `Listing · ${p.id} · ${offtake ? `${ask}c` : `${v.perHour(ask)}/GPU-h`}`);
   state.listing = false;
   renderLedger();
   renderDetail();
@@ -581,7 +639,7 @@ async function start() {
     if (row && event.target === row && (event.key === 'Enter' || event.key === ' ')) { event.preventDefault(); select(row.dataset.row, { scroll: true }); }
   });
   $('d-csv').addEventListener('click', downloadCsv);
-  $('d-read-all').addEventListener('click', () => { state.data.alerts.forEach(a => state.read.add(a.id)); writeJson(READ_KEY, [...state.read]); renderAlerts(); });
+  $('d-read-all').addEventListener('click', () => { allAlerts().forEach(a => state.read.add(a.id)); writeJson(READ_KEY, [...state.read]); renderAlerts(); });
   renderAccount();
   try {
     state.data = await loadPortfolio();
