@@ -132,6 +132,29 @@ test('invalid inputs throw RangeError with a plain message', () => {
   assert.throws(() => quoteFromHistory({ ...base, gpu: 'constructor' }, history, { now: NOW }), RangeError);
 });
 
+test('a valuation date can be an ISO string and booking rules can be skipped to mark held positions', () => {
+  assert.deepEqual(quoteCap(base, series, { now: '2026-10-22T12:00:00Z' }), quote());
+  assert.equal(quoteCap(base, series, { now: '2026-10-22' }).inputs.now, '2026-10-22T00:00:00.000Z');
+  assert.throws(() => quoteCap(base, series, { now: 'yesterday' }), RangeError);
+
+  const mark = { ...base, count: 64, start: '2026-11-16T00:00:00Z', end: '2026-11-23T00:00:00Z', strike: 2.5 };
+  assert.throws(() => quoteCap({ ...mark, count: 48 }, series, { now: NOW }), /GPU count/);
+  const odd = quoteCap({ ...mark, count: 48 }, series, { now: NOW, skipBookingRules: true });
+  assert.equal(odd.gpuHours, 48 * 168);
+
+  const inside = quoteCap(mark, series, { now: '2026-11-18', skipBookingRules: true });
+  assert.ok(inside.tEffYears > 0 && inside.tYears < 7 / 365);
+  near(inside.inputs.tMidYears, inside.tYears / 2, 1e-12, 'remaining midpoint');
+  const expired = quoteCap(mark, series, { now: '2026-12-01', skipBookingRules: true });
+  assert.equal(expired.tYears, 0);
+  assert.equal(expired.tEffYears, 0);
+  assert.equal(expired.premiumPerGpuHour, Math.max(0.01, Math.ceil((expired.forward - 2.5) * 100 - 1e-9) / 100));
+
+  assert.throws(() => quoteCap({ ...mark, end: mark.start }, series, { now: NOW, skipBookingRules: true }), /after the start/);
+  assert.throws(() => quoteCap({ ...mark, strike: 0 }, series, { now: NOW, skipBookingRules: true }), /Strike/);
+  assert.throws(() => quoteCap({ ...mark, count: 0 }, series, { now: NOW, skipBookingRules: true }), /GPU count/);
+});
+
 test('query parsing keeps strings and rejects non-numbers', () => {
   const params = new URLSearchParams({ gpu: 'H100', count: '64', start: base.start, end: base.end, type: 'put', strike: '2.5', region: 'US East', config: 'SXM-IB' });
   assert.deepEqual(quoteInputFromQuery(params), { ...base, type: 'put', strike: 2.5 });
@@ -148,7 +171,9 @@ test('GET /api/quote returns quotes with no-store and 400 JSON errors', async t 
   const ok = await fetch(query());
   assert.equal(ok.status, 200);
   assert.equal(ok.headers.get('cache-control'), 'no-store');
-  assert.deepEqual(await ok.json(), JSON.parse(JSON.stringify(quoteCap({ ...base, strike: 2.5 }, series, { now: NOW }))));
+  const { computeMs, ...body } = await ok.json();
+  assert.ok(Number.isFinite(computeMs) && computeMs >= 0, 'computeMs is reported');
+  assert.deepEqual(body, JSON.parse(JSON.stringify(quoteCap({ ...base, strike: 2.5 }, series, { now: NOW }))));
   assert.equal((await (await fetch(query({ type: 'put' }))).json()).type, 'put');
   assert.equal((await (await fetch(query({ type: 'lock' }))).json()).premiumPerGpuHour, 0);
 
