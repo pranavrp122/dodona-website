@@ -269,7 +269,7 @@ function detailActions(p) {
     ? `<button type="button" class="btn btn-sm d-btn-line" data-act="ex" data-mode="deliver" ${pressed('deliver')}>Exercise · deliver</button><button type="button" class="btn btn-sm d-btn-line" data-act="ex" data-mode="resell" ${pressed('resell')}>Exercise · resell the hours</button>`
     : '';
   const listing = listed
-    ? `<a class="btn btn-sm d-btn-line" href="/contracts">Listed · view the board</a>${p.bestOfferCents ? `<button type="button" class="btn btn-sm d-btn-line" data-act="counter" aria-expanded="${state.countering}">Counter the ${esc(p.bestOfferCents)}¢ offer</button>` : ''}`
+    ? `<span class="d-status st-listed">Listed for sale</span>${p.bestOfferCents ? `<button type="button" class="btn btn-sm d-btn-line" data-act="counter" aria-expanded="${state.countering}">Counter the ${esc(p.bestOfferCents)}¢ offer</button>` : ''}`
     : `<button type="button" class="btn btn-sm d-btn-line" data-act="list" aria-expanded="${state.listing}">List for sale</button>`;
   return `<div class="d-acts">${exercise}${listing}</div>`;
 }

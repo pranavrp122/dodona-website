@@ -16,7 +16,6 @@ const DAY_MS = 86400000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const KIND_LABEL = { lock: 'Fixed price', call: 'Price cap', offtake: 'Offtake' };
 const MINUS = '−';
-const ARROW = '<span aria-hidden="true">→</span>';
 
 /* ---------- formatting ---------- */
 // Provenance tag beside a number: live (Ornn index), model (Dodona Value and arithmetic), sample (illustrative data).
@@ -120,7 +119,6 @@ export function ledgerRow(position, { selected = false, today } = {}) {
   const call = position.kind === 'call';
   const used = position.phase === 'used';
   const status = statusText(position, today);
-  const listedLink = position.status === 'listed' ? ` <a class="d-board-link" href="/contracts">On the board ${ARROW}</a>` : '';
   const valueCell = used
     ? '<td class="r d-num d-muted">n/a<span class="d-sub">window used</span></td><td class="r d-num d-muted">—</td>'
     : `<td class="r d-num ${call ? (v.moneyness > 0 ? 'is-gain' : 'd-oom') : tone(v.value)}">${signedUsd(v.value)}<span class="d-sub">${signedUsd(v.low)} to ${signedUsd(v.high)}</span></td>
@@ -132,7 +130,7 @@ export function ledgerRow(position, { selected = false, today } = {}) {
     <td class="r d-num">${used ? '—' : escapeHtml(gpuHours(v.remainingHours))}</td>
     <td class="r d-num">${perHour(position.pricePerGpuHour)}${call ? ' cap' : ''}<span class="d-sub">index ${perHour(v.spot * v.basis)}</span>${call && !used ? `<span class="d-sub">${moneyLine(position)}</span>` : ''}</td>
     ${valueCell}
-    <td><span class="d-status st-${status.cls}">${escapeHtml(status.text)}</span>${listedLink}${position.warning ? `<span class="d-warn-pill">${escapeHtml(position.warning)}</span>` : ''}</td>
+    <td><span class="d-status st-${status.cls}">${escapeHtml(status.text)}</span>${position.warning ? `<span class="d-warn-pill">${escapeHtml(position.warning)}</span>` : ''}</td>
   </tr>`;
 }
 

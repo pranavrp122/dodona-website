@@ -127,6 +127,7 @@ export function createApp({
   prices = getPriceHistory,
   market = createMarketSource({ prices }),
   formStore = formStoreFromEnvironment(),
+  contractValues = false,
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -240,13 +241,13 @@ export function createApp({
           if (!/^application\/json(?:\s*;|$)/i.test(request.headers['content-type'] || '')) throw new RequestError(415, 'Content-Type must be application/json.');
           const body = await readJson(request);
           response.setHeader('Cache-Control', 'no-store');
-          return await handleMcp(request, response, body, { settings: siteSettings, origin, secret: tokenSecret, now, address, getWaitlistStatus, joinWaitlist, logger });
+          return await handleMcp(request, response, body, { settings: siteSettings, origin, contractValues, secret: tokenSecret, now, address, getWaitlistStatus, joinWaitlist, logger });
         } catch (error) {
           if (error instanceof RequestError) return json(response, error.status, { jsonrpc: '2.0', id: null, error: { code: -32000, message: error.message, data: error.details } }, error.status === 429 ? { 'Retry-After': String(error.details.retryAfter || 60) } : {});
           throw error;
         }
       }
-      const document = discoveryDocument(url.pathname, { settings: siteSettings, origin });
+      const document = discoveryDocument(url.pathname, { settings: siteSettings, origin, contractValues });
       if (document) {
         if (!['GET', 'HEAD'].includes(request.method)) return json(response, 405, { message: 'Method not allowed.' }, { Allow: 'GET, HEAD' });
         const content = Buffer.from(document.body);
@@ -275,7 +276,7 @@ export function createApp({
         response.writeHead(page.status, { 'Content-Type': page.type, 'Content-Length': content.length, 'Cache-Control': page.cacheControl });
         return response.end(request.method === 'HEAD' ? undefined : content);
       }
-      if (['GET', 'HEAD'].includes(request.method)) {
+      if (contractValues && ['GET', 'HEAD'].includes(request.method)) {
         const page = await contractsDocument(url, { prices, now, settings: siteSettings, origin });
         if (page) {
           const content = Buffer.from(page.body);
@@ -335,7 +336,7 @@ export function createApp({
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
-    const server = createApp();
+    const server = createApp({ contractValues: process.env.SHOW_CONTRACT_VALUES === '1' });
     const host = process.env.HOST || '127.0.0.1';
     const port = Number(process.env.PORT || 3000);
     server.on('error', error => { console.error(error.code === 'EADDRINUSE' ? 'The requested port is already in use.' : 'Server startup failed.'); process.exitCode = 1; });

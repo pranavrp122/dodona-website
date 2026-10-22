@@ -174,15 +174,12 @@ test('/methodology renders the method page with its key headings', async t => {
 
 test('public pages carry the strip without any Kalshi view', async t => {
   const origin = await appWithStubs(t, stubFetch({}));
-  for (const path of ['/', '/contracts']) {
-    const html = await (await fetch(origin + path)).text();
-    assert.match(html, /<section class="mk-sec" id="market-strip"/, path);
-    assert.match(html, /Market data loads with JavaScript/, path);
-    assert.match(html, /<script src="\/market\.js" defer><\/script>/, path);
-    assert.doesNotMatch(html, /data-implied|data-mk="implied"/, path);
-  }
+  const html = await (await fetch(origin + '/')).text();
+  assert.match(html, /<section class="mk-sec" id="market-strip"/);
+  assert.match(html, /Market data loads with JavaScript/);
+  assert.match(html, /<script src="\/market\.js" defer><\/script>/);
+  assert.doesNotMatch(html, /data-implied|data-mk="implied"/);
   const script = await (await fetch(origin + '/market.js')).text();
   assert.match(script, /dataset\.implied === 'true'/);
   assert.equal((await fetch(origin + '/market.css')).status, 200);
-  assert.match(await (await fetch(origin + '/contracts')).text(), /<a href="\/methodology">Methodology<\/a>/);
 });

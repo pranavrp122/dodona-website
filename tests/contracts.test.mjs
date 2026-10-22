@@ -12,7 +12,7 @@ const now = () => Date.parse(today + 'T12:00:00Z');
 const settings = { operatorName: 'Test fixture operator', contactEmail: 'fixture@example.invalid', retentionDays: null };
 
 async function app(t) {
-  const server = createApp({ store: null, prices: async () => fallbackHistory(), now, siteSettings: settings });
+  const server = createApp({ store: null, prices: async () => fallbackHistory(), now, siteSettings: settings, contractValues: true });
   const origin = await listen(server);
   t.after(() => close(server));
   return origin;

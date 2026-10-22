@@ -52,6 +52,8 @@ Agents may submit a signup only when a user asks to join and provides their emai
 
 ## Contract values (sample)
 
+This area is hidden by default because the demo focuses on price caps. Set `SHOW_CONTRACT_VALUES=1` to serve `/contracts`, `/contracts/<id>` and `/api/contracts` and to list them in `llms.txt` and the sitemap. When it is off those paths return the usual 404 and no page links to them.
+
 `/contracts` is a listing board of sample GPU rental contracts. Each one has a daily **Dodona Value**, much like a home-value estimate for compute. `/contracts/<id>` shows one contract with its value, a 90-day value history, a term sheet and the method in plain words. "List for sale" and "Make an offer" are demo-only forms. They create, send and store nothing, and Dodona never holds funds. The contracts and loans are illustrative and name no real counterparties. Dodona Values are impersonal analytics, not ratings or offers.
 
 - `GET /api/prices` returns the Ornn daily GPU index for H100, H200, B200, A100 and RTX 5090. `lib/prices.mjs` fetches it server-side, with a 5 s timeout per request and a one-hour cache. When Ornn is unreachable it serves the saved copy in `data/ornn-index.json` with `live: false`.
@@ -61,7 +63,7 @@ Agents may submit a signup only when a user asks to join and provides their emai
 
 ## Market strip and methodology
 
-The home page and `/contracts` show a market strip: Ornn daily index tiles (demonstration only; not licensed for commercial valuation) and the status of compute futures at CME, ICE and Kalshi. `GET /api/market` returns that data with `Cache-Control: public, max-age=300`.
+The home page shows a market strip: Ornn daily index tiles (demonstration only; not licensed for commercial valuation) and the status of compute futures at CME, ICE and Kalshi. `GET /api/market` returns that data with `Cache-Control: public, max-age=300`.
 
 The Kalshi market-implied view appears only on the signed-in demo dashboard, never on public pages. The dashboard requests `GET /api/market?implied=1`, which adds an `implied` object and is sent with `Cache-Control: no-store`. The strip renders it only inside a `#market-strip` section marked `data-implied="true"`. For each month it shows a bid/ask bracket, a median from quotes with spreads of 20 cents or less, and a last-trade median with its trade date. It reads Kalshi's public monthly ladders (`KXB200MS`, `KXH100MS`) without a key, holds the results in server memory for 10 minutes, and backs off on rate limits. Kalshi data is never written to disk or logs, never used in a value or quote, and not reachable through any MCP tool.
 
