@@ -48,12 +48,13 @@ const staticFiles = new Map([
   ['/dashboard.css', ['dashboard.css', 'text/css; charset=utf-8']],
   ['/dashboard.js', ['dashboard.js', 'text/javascript; charset=utf-8']],
   ['/dashboard-view.js', ['dashboard-view.js', 'text/javascript; charset=utf-8']],
+  ['/theme.js', ['theme.js', 'text/javascript; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
   ['/assets/social-card.png', ['assets/social-card.png', 'image/png']],
   ['/assets/favicon.svg', ['assets/favicon.svg', 'image/svg+xml']],
-  ...['bricolage-grotesque-latin-standard-normal.woff2', 'albert-sans-latin-wght-normal.woff2'].map(name =>
+  ...['bricolage-grotesque-latin-standard-normal.woff2', 'albert-sans-latin-wght-normal.woff2', 'open-sans-latin-wght-normal.woff2'].map(name =>
     [`/assets/fonts/${name}`, [`assets/fonts/${name}`, 'font/woff2']]),
 ]);
 const unavailable = 'We can’t accept signups right now. Please check back later.';

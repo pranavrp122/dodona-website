@@ -18,8 +18,11 @@ const KIND_LABEL = { lock: 'Fixed price', call: 'Price cap', offtake: 'Offtake' 
 const MINUS = '−';
 
 /* ---------- formatting ---------- */
-// Provenance tag beside a number: live (Ornn index), model (Dodona Value and arithmetic), sample (illustrative data).
-export const tag = kind => `<span class="tag d-tag-${kind}">${kind}</span>`;
+// Provenance tag beside a number: live (Ornn index), model (Dodona Value and arithmetic), sample (illustrative data), demo (simulated for the demo).
+const TAG_TEXT = { demo: 'demo data' };
+export const tag = kind => `<span class="tag d-tag-${kind}">${TAG_TEXT[kind] || kind}</span>`;
+// Inline icon from the Lucide sprite at the top of dashboard.html.
+export const icon = (name, cls = '') => `<svg class="ic${cls ? ' ' + cls : ''}" aria-hidden="true" focusable="false"><use href="#i-${name}"/></svg>`;
 export const kindLabel = kind => KIND_LABEL[kind] || kind;
 export const signedUsd = v => (v == null || !Number.isFinite(v) ? '—' : v > 0 ? '+' + usd(v) : usd(v));
 export const dollars = v => `${v < 0 ? MINUS : ''}$${Math.round(Math.abs(v)).toLocaleString('en-US')}`;
@@ -42,23 +45,33 @@ export function windowLabel(start, end) {
 
 /* ---------- arithmetic shared by server and browser ---------- */
 
-// Exercising a call at a given index: deliver at the cap, or take delivery and resell the block on the board.
+// Caps settle on the average daily index over the window. Expected average if the index were `index` today:
+// the forward for the days still to come, blended by days with the average already printed inside the window.
+export function windowAverageAt(position, index) {
+  const v = position.valuation;
+  const forward = index * v.forwardFactor;
+  const w = v.windowAverage;
+  return w && w.realised != null ? w.realised * w.realisedWeight + forward * (1 - w.realisedWeight) : forward;
+}
+
+// Exercising a call at a given index. Deliver: take the hours, billed at the lower of the window average and the cap.
+// Resell: take delivery and sell the block on the board at a bid from today's index.
 export function exerciseQuote(position, index) {
   const v = position.valuation;
   const K = position.pricePerGpuHour;
   const hours = v.remainingHours;
   const regional = index * v.basis;
+  const average = windowAverageAt(position, index) * v.basis;
   const bid = Math.max(regional * (position.utilisation ?? 1) - RESALE_SPREAD, 0);
   const gross = Math.max(bid - K, 0) * hours;
   const fee = gross * RESALE_FEE;
-  return { hours, regional, pay: K * hours, atIndex: regional * hours, saving: (regional - K) * hours, bid, gross, fee, net: gross - fee };
+  return { hours, regional, average, pay: Math.min(average, K) * hours, atAverage: average * hours, saving: (average - K) * hours, bid, gross, fee, net: gross - fee };
 }
 
-// Intrinsic value of a call if the index were `index` today: max(F·b − K, 0) × hours × discount.
+// Intrinsic value of a call if the index were `index` today: max(Ā·b − K, 0) × hours × discount on the expected window average Ā.
 export function intrinsicAt(position, index) {
   const v = position.valuation;
-  const forward = index * v.forwardFactor * v.basis;
-  return Math.max(forward - position.pricePerGpuHour, 0) * v.remainingHours * v.discountFactor;
+  return Math.max(windowAverageAt(position, index) * v.basis - position.pricePerGpuHour, 0) * v.remainingHours * v.discountFactor;
 }
 
 // Provider selling a cap on idle hours: market-only revenue against premium plus (if used) the block rented at the cap.
@@ -107,11 +120,49 @@ export function statusText(position, today) {
   return { cls: 'upcoming', text: `Upcoming · ${position.kind === 'call' ? 'exercise' : 'claim'} by ${dayMonth(deadlineOf(position))}` };
 }
 
+// Status is always an icon plus a word, never colour alone.
+const STATUS_LOOK = {
+  upcoming: ['clock', 'info'], window: ['circle-play', 'success'], listed: ['tag', 'accent'], used: ['circle-check', 'neutral'], held: ['calendar', 'neutral'],
+  ok: ['circle-check', 'success'], watch: ['triangle-alert', 'warning'], breach: ['circle-x', 'error'],
+};
+const TYPE_ICON = { call: 'arrow-up-to-line', lock: 'lock', offtake: 'package' };
+
+export const pill = (iconName, toneName, text) => `<span class="pill tone-${toneName}">${icon(iconName)}<span>${escapeHtml(text)}</span></span>`;
+export const statusPill = (cls, text) => pill(...(STATUS_LOOK[cls] || ['info', 'neutral']), text);
+export const typePill = kind => pill(TYPE_ICON[kind] || 'layers', 'neutral', kindLabel(kind));
+
+// Row and split-panel actions: one primary by status, the rest outlined; a third and later action goes under "More".
+export function positionActions(position) {
+  const view = { act: 'view', label: 'View', icon: 'eye' };
+  if (position.phase === 'used') return [{ ...view, primary: true }];
+  if (position.status === 'listed') {
+    return position.bestOfferCents ? [{ act: 'counter', label: 'Counter offer', icon: 'message-square', primary: true }, view] : [{ ...view, primary: true }];
+  }
+  const list = { act: 'list', label: 'List for sale', icon: 'tag' };
+  if (position.kind === 'call') {
+    return [{ act: 'ex', mode: 'deliver', label: 'Exercise', icon: 'zap', primary: true }, list, { act: 'ex', mode: 'resell', label: 'Resell the hours', icon: 'zap' }, { ...view, label: 'View details' }];
+  }
+  return [{ ...view, primary: true }, list];
+}
+
+const actionAttrs = (a, id) => `data-act="${escapeHtml(a.act)}"${a.mode ? ` data-mode="${escapeHtml(a.mode)}"` : ''}${id ? ` data-pos="${escapeHtml(id)}"` : ''}${a.pressed == null ? '' : ` aria-pressed="${a.pressed}"`}${a.expanded == null ? '' : ` aria-expanded="${a.expanded}"`}`;
+
+export function actionBar(actions, { id = '', menuId, label = 'More actions' } = {}) {
+  const button = a => `<button type="button" class="btn btn-sm${a.primary ? ' btn-primary' : ''}" ${actionAttrs(a, id)}>${icon(a.icon)}<span>${escapeHtml(a.label)}</span></button>`;
+  const inline = actions.slice(0, 2).map(button).join('');
+  const rest = actions.slice(2);
+  const more = rest.length
+    ? `<div class="c-more"><button type="button" class="btn btn-sm btn-icon" data-act="more" aria-haspopup="menu" aria-expanded="false" aria-controls="${escapeHtml(menuId)}" aria-label="${escapeHtml(label)}">${icon('ellipsis')}</button>
+      <div class="c-menu" id="${escapeHtml(menuId)}" role="menu" hidden>${rest.map(a => `<button type="button" role="menuitem" class="c-menu-item" ${actionAttrs(a, id)}>${icon(a.icon)}<span>${escapeHtml(a.label)}</span></button>`).join('')}</div></div>`
+    : '';
+  return `<div class="c-acts">${inline}${more}</div>`;
+}
+
 function moneyLine(position) {
   const m = position.valuation.moneyness;
   return m > 0
-    ? `<span class="is-gain">+${perHour(m)} in the money</span>`
-    : `<span class="d-oom">${MINUS}${perHour(-m)} · not needed yet</span>`;
+    ? `<span class="is-gain">window avg +${perHour(m)} over cap</span>`
+    : `<span class="d-oom">window avg ${MINUS}${perHour(-m)} · not needed yet</span>`;
 }
 
 export function ledgerRow(position, { selected = false, today } = {}) {
@@ -119,23 +170,175 @@ export function ledgerRow(position, { selected = false, today } = {}) {
   const call = position.kind === 'call';
   const used = position.phase === 'used';
   const status = statusText(position, today);
+  const id = escapeHtml(position.id);
   const valueCell = used
-    ? '<td class="r d-num d-muted">n/a<span class="d-sub">window used</span></td><td class="r d-num d-muted">—</td>'
-    : `<td class="r d-num ${call ? (v.moneyness > 0 ? 'is-gain' : 'd-oom') : tone(v.value)}">${signedUsd(v.value)}<span class="d-sub">${signedUsd(v.low)} to ${signedUsd(v.high)}</span></td>
-      <td class="r d-num ${call ? 'd-oom' : tone(v.centsOnDollar - 100)}">${call ? '—<span class="d-sub">price cap</span>' : cents(v.centsOnDollar)}</td>`;
-  return `<tr data-row="${escapeHtml(position.id)}" tabindex="0" aria-selected="${selected}">
+    ? '<td class="r d-num d-muted">n/a<span class="d-sub">window used</span></td>'
+    : `<td class="r d-num"><span class="${call ? (v.moneyness > 0 ? 'is-gain' : 'd-oom') : tone(v.value)}">${signedUsd(v.value)}</span><span class="d-sub">${signedUsd(v.low)} to ${signedUsd(v.high)}</span>${call ? '' : `<span class="d-sub ${tone(v.centsOnDollar - 100)}">${cents(v.centsOnDollar)} on the dollar</span>`}</td>`;
+  return `<tr data-row="${id}" tabindex="0" aria-selected="${selected}">
     <td><div class="d-pos"><span class="d-gpu d-gpu-${escapeHtml(position.gpu)}">${escapeHtml(position.gpu)}</span><div>
-      <a class="d-pos-l" href="#positions/${escapeHtml(position.id)}">${escapeHtml(kindLabel(position.kind))} · ${escapeHtml(position.count.toLocaleString('en-US'))} ${escapeHtml(position.gpu)} · ${escapeHtml(windowLabel(position.start, position.end))}</a>
-      <span class="d-pos-s">${escapeHtml(position.id)} · ${escapeHtml(position.region)} · ${escapeHtml(position.provider.label)}</span></div></div></td>
+      <span class="d-pos-l">${escapeHtml(position.count.toLocaleString('en-US'))} ${escapeHtml(position.gpu)} · ${escapeHtml(windowLabel(position.start, position.end))}</span>
+      <span class="d-pos-s">${id} · ${escapeHtml(position.region)}</span></div></div></td>
+    <td>${typePill(position.kind)}</td>
     <td class="r d-num">${used ? '—' : escapeHtml(gpuHours(v.remainingHours))}</td>
     <td class="r d-num">${perHour(position.pricePerGpuHour)}${call ? ' cap' : ''}<span class="d-sub">index ${perHour(v.spot * v.basis)}</span>${call && !used ? `<span class="d-sub">${moneyLine(position)}</span>` : ''}</td>
     ${valueCell}
-    <td><span class="d-status st-${status.cls}">${escapeHtml(status.text)}</span>${position.warning ? `<span class="d-warn-pill">${escapeHtml(position.warning)}</span>` : ''}</td>
+    <td>${statusPill(status.cls, status.text)}${position.warning ? `<span class="d-warn-pill">${icon('triangle-alert')}${escapeHtml(position.warning)}</span>` : ''}</td>
+    <td class="c-act-cell">${actionBar(positionActions(position), { id: position.id, menuId: `d-menu-${position.id}`, label: `More actions for ${position.id}` })}</td>
   </tr>`;
 }
 
 export const ledgerRows = (portfolio, selectedId) =>
   portfolio.positions.map(p => ledgerRow(p, { selected: p.id === selectedId, today: portfolio.asOf })).join('');
+
+// Compact list for the overview: each row links to the position on the Positions screen.
+export function positionSummary(portfolio) {
+  return portfolio.positions.map(p => {
+    const status = statusText(p, portfolio.asOf);
+    const used = p.phase === 'used';
+    const value = used ? `<span class="d-muted">${escapeHtml(signedUsd(p.used.saving))} saved</span>` : `<span class="${p.kind === 'call' ? (p.valuation.moneyness > 0 ? 'is-gain' : 'd-oom') : tone(p.valuation.value)}">${escapeHtml(signedUsd(p.valuation.value))}</span>`;
+    return `<li><a class="c-mini-row" href="#positions/${escapeHtml(p.id)}"><span class="d-gpu d-gpu-${escapeHtml(p.gpu)}">${escapeHtml(p.gpu)}</span>
+      <span class="c-mini-main"><span class="d-pos-l">${escapeHtml(p.count.toLocaleString('en-US'))} ${escapeHtml(p.gpu)} · ${escapeHtml(kindLabel(p.kind))}</span>${statusPill(status.cls, status.text)}</span>
+      <span class="c-mini-val d-num">${value}</span>${icon('arrow-right', 'c-mini-go')}</a></li>`;
+  }).join('');
+}
+
+/* ---------- console panels: coverage, savings, upcoming dates, billing ---------- */
+export const PLANNED_GPUS = 300;
+export const BOOKING_FEE = 2;
+export const PLATFORM_SHARE = 0.15;
+const HOUR_MS = 3600000;
+const noonOf = asOf => Date.parse(asOf.slice(0, 10) + 'T12:00:00Z');
+const sumOf = (items, pick) => items.reduce((total, item) => total + pick(item), 0);
+
+// Committed GPU-hours that fall in the next `days`, against a planned use of PLANNED_GPUS running around the clock (demo assumption).
+export function coverage(positions, asOf, days) {
+  const from = noonOf(asOf);
+  const to = from + days * DAY_MS;
+  const inRange = p => p.count * Math.max(0, Math.min(Date.parse(p.end), to) - Math.max(Date.parse(p.start), from)) / HOUR_MS;
+  const live = positions.filter(p => p.phase !== 'used');
+  const fixed = sumOf(live.filter(p => p.kind !== 'call'), inRange);
+  const capped = sumOf(live.filter(p => p.kind === 'call'), inRange);
+  const planned = PLANNED_GPUS * days * 24;
+  return { days, planned, fixed, capped, open: Math.max(planned - fixed - capped, 0), excess: Math.max(fixed + capped - planned, 0), share: (fixed + capped) / planned };
+}
+
+// How far through its window each in-window position is.
+export const windowProgress = (positions, asOf) => positions.filter(p => p.phase === 'window').map(p => {
+  const [start, end] = [Date.parse(p.start), Date.parse(p.end)];
+  return { id: p.id, gpu: p.gpu, count: p.count, share: Math.min(Math.max((noonOf(asOf) - start) / (end - start), 0), 1) };
+});
+
+// Saving against the index on finished windows (from the daily index) and on hours already used in open windows (today's index).
+export function savingsToDate(positions, asOf) {
+  const rows = positions.filter(p => p.phase === 'used' || p.phase === 'window').map(p => {
+    if (p.phase === 'used') return { id: p.id, gpu: p.gpu, count: p.count, kind: p.kind, saving: p.used.saving, basis: 'Window finished · daily index' };
+    const hours = p.count * Math.max(0, noonOf(asOf) - Date.parse(p.start)) / HOUR_MS;
+    const gap = p.kind === 'call' ? p.valuation.moneyness : p.valuation.spot * p.valuation.basis - p.pricePerGpuHour;
+    return { id: p.id, gpu: p.gpu, count: p.count, kind: p.kind, saving: (p.kind === 'call' ? Math.max(gap, 0) : gap) * hours, basis: p.kind === 'call' ? 'In window · hours used so far at the expected window average' : "In window · hours used so far at today's index" };
+  });
+  return { rows, total: sumOf(rows, r => r.saving) };
+}
+
+// Dated events in the next `days`: exercise and claim deadlines, windows opening and closing.
+export function upcomingEvents(positions, asOf, days = 30) {
+  const from = noonOf(asOf);
+  const to = from + days * DAY_MS;
+  const events = [];
+  for (const p of positions.filter(x => x.phase !== 'used')) {
+    const name = `${p.count.toLocaleString('en-US')} ${p.gpu} ${kindLabel(p.kind).toLowerCase()}`;
+    if (p.phase === 'upcoming' && p.kind !== 'offtake' && p.status !== 'listed') {
+      events.push({ at: deadlineOf(p), id: p.id, icon: 'clock', tone: 'warning', text: `${p.kind === 'call' ? 'Exercise' : 'Claim'} deadline · ${name}` });
+    }
+    if (p.phase === 'upcoming') events.push({ at: p.start, id: p.id, icon: 'circle-play', tone: 'info', text: `Window opens · ${name}` });
+    events.push({ at: p.end, id: p.id, icon: 'flag', tone: 'neutral', text: `Window closes · ${name}` });
+  }
+  return events.filter(e => Date.parse(e.at) >= from && Date.parse(e.at) <= to).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
+}
+
+// Premiums and fees by month of purchase. Fixed prices carry no Dodona fee; price caps carry a booking fee, and the platform share sits inside the premium.
+export function billingMonths(positions, asOf) {
+  const months = new Map();
+  for (const p of positions.filter(x => x.kind === 'call' && x.boughtOn)) {
+    const month = p.boughtOn.slice(0, 7);
+    const row = months.get(month) || { month, premiums: 0, bookingFees: 0, positions: [] };
+    months.set(month, { ...row, premiums: row.premiums + p.valuation.premiumPaid, bookingFees: row.bookingFees + BOOKING_FEE, positions: [...row.positions, p.id] });
+  }
+  const current = asOf.slice(0, 7);
+  return [...months.values()].sort((a, b) => b.month.localeCompare(a.month)).map(row => ({
+    ...row, id: `INV-${row.month.replace('-', '')}`, platformFee: row.premiums * PLATFORM_SHARE, total: row.premiums + row.bookingFees,
+    status: row.month < current ? 'paid' : 'due',
+  }));
+}
+
+export const monthLabel = month => `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+const pct = share => `${Math.round(share * 100)}%`;
+const short = amount => (Math.abs(amount) >= 1000 ? `$${(amount / 1000).toFixed(amount >= 100000 ? 0 : 1)}k` : dollars(amount));
+const positionName = p => `${p.count.toLocaleString('en-US')} ${p.gpu} ${kindLabel(p.kind).toLowerCase()}`;
+
+// Bars carry their share in data-w / data-h; the browser turns it into a CSS custom property (no inline styles under the CSP).
+export function coveragePanel(positions, asOf) {
+  const bar = c => {
+    const scale = Math.max(c.planned, c.fixed + c.capped);
+    return `<div class="c-bar" role="img" aria-label="${escapeHtml(`${gpuHours(c.fixed)} fixed, ${gpuHours(c.capped)} capped, ${gpuHours(c.open)} open`)}"><i class="is-fixed" data-w="${(c.fixed / scale * 100).toFixed(1)}"></i><i class="is-cap" data-w="${(c.capped / scale * 100).toFixed(1)}"></i></div>`;
+  };
+  const rows = [30, 90].map(days => coverage(positions, asOf, days)).map(c => `<div class="c-cov-row">
+      <div class="c-cov-top"><span>Next ${c.days} days</span><b>${pct(Math.min(c.share, 9.99))} covered</b></div>${bar(c)}
+      <p class="fine">${escapeHtml(gpuHours(c.fixed + c.capped))} committed of ${escapeHtml(gpuHours(c.planned))} planned · ${c.excess
+        ? escapeHtml(`${gpuHours(c.excess)} more than planned, worth listing`)
+        : escapeHtml(`${gpuHours(c.open)} open to the index`)}</p></div>`).join('');
+  const use = windowProgress(positions, asOf).map(w => `<div class="c-use-row"><span>${escapeHtml(w.id)} · ${escapeHtml(`${w.count} ${w.gpu}`)}</span><div class="c-bar" role="img" aria-label="${pct(w.share)} of the window used"><i data-w="${(w.share * 100).toFixed(1)}"></i></div><b class="d-num">${pct(w.share)}</b></div>`).join('');
+  return `<div class="c-cov">${rows}
+    <ul class="c-key"><li><i class="is-fixed"></i>Fixed price and offtake</li><li><i class="is-cap"></i>Price cap</li><li><i class="is-open"></i>Open</li></ul>
+    ${use ? `<div class="c-use"><p class="eyebrow">In window now · share of the window used</p>${use}</div>` : ''}</div>
+    <p class="c-note">${tag('demo')} Planned use assumes ${PLANNED_GPUS} GPUs running around the clock. Committed hours come from your positions.</p>`;
+}
+
+export function savingsPanel(positions, asOf, netValue) {
+  const s = savingsToDate(positions, asOf);
+  const rows = s.rows.map(r => `<li><span>${escapeHtml(`${r.id} · ${positionName(r)}`)}<small>${escapeHtml(r.basis)}</small></span><span class="${tone(r.saving)}">${escapeHtml(signedUsd(r.saving))}</span></li>`).join('');
+  return `<p class="c-big-num ${tone(s.total)}">${escapeHtml(signedUsd(s.total))}</p>
+    <p class="fine">Saved against the index on finished windows and on hours already used ${tag('model')}</p>
+    <ul class="c-list">${rows || '<li><span>No windows have started yet.</span><span></span></li>'}</ul>
+    <p class="c-note">Still to come on open positions: <b class="${tone(netValue)}">${escapeHtml(signedUsd(netValue))}</b> of Dodona Value. In-window figures use today's index, not each day's.</p>`;
+}
+
+export function upcomingPanel(positions, asOf) {
+  const today = noonOf(asOf);
+  const items = upcomingEvents(positions, asOf).map(e => {
+    const d = new Date(e.at);
+    const days = Math.max(0, Math.ceil((Date.parse(e.at) - today) / DAY_MS));
+    return `<li><span class="c-day"><b>${d.getUTCDate()}</b><small>${MONTHS[d.getUTCMonth()]}</small></span>
+      <span class="c-date-text tone-${e.tone}">${icon(e.icon)}<span>${escapeHtml(e.text)}<small>${escapeHtml(`${d.toISOString().slice(11, 16)} UTC · in ${days} day${days === 1 ? '' : 's'}`)}</small></span></span>
+      <a class="btn btn-sm btn-icon" href="#positions/${escapeHtml(e.id)}" aria-label="${escapeHtml(`Open ${e.id}`)}">${icon('arrow-right')}</a></li>`;
+  }).join('');
+  return items || '<li class="d-muted">Nothing due in the next 30 days.</li>';
+}
+
+export function billingPanel(positions, asOf) {
+  const invoices = billingMonths(positions, asOf);
+  const end = new Date(noonOf(asOf));
+  const months = Array.from({ length: 6 }, (_, i) => new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth() - 5 + i, 1)).toISOString().slice(0, 7));
+  const byMonth = new Map(invoices.map(row => [row.month, row]));
+  const top = Math.max(1, ...invoices.map(row => row.total));
+  const bars = months.map(m => { const total = byMonth.get(m)?.total || 0; return `<div><span>${total ? escapeHtml(short(total)) : ''}</span><i data-h="${(total / top * 100).toFixed(1)}"></i></div>`; }).join('');
+  const rows = invoices.map(row => `<tr><th scope="row">${escapeHtml(row.id)}</th><td>${escapeHtml(monthLabel(row.month))}</td><td class="r d-num">${escapeHtml(dollars(row.premiums))}</td><td class="r d-num">${escapeHtml(dollars(row.platformFee))}</td><td class="r d-num">${escapeHtml(dollars(row.bookingFees))}</td><td class="r d-num">${escapeHtml(dollars(row.total))}</td>
+    <td>${row.status === 'paid' ? pill('circle-check', 'success', 'Paid') : pill('clock', 'warning', 'Due')}</td>
+    <td><button type="button" class="btn btn-sm btn-icon" data-toast="Demo: invoice ${escapeHtml(row.id)} is not generated. Nothing was downloaded." aria-label="${escapeHtml(`Download ${row.id}`)}">${icon('download')}</button></td></tr>`).join('');
+  return `<div class="c-billing"><div><p class="eyebrow">Premiums and fees by month</p><div class="c-bars" role="img" aria-label="Monthly totals for the last six months">${bars}</div>
+      <div class="c-bars-x">${months.map(m => `<span>${MONTHS[Number(m.slice(5, 7)) - 1]}</span>`).join('')}</div></div>
+    <div class="d-scroll"><table class="d-table"><caption class="visually-hidden">Invoices</caption><thead><tr><th scope="col">Invoice</th><th scope="col">Month</th><th scope="col" class="r">Premiums</th><th scope="col" class="r">of which platform fee</th><th scope="col" class="r">Booking fees</th><th scope="col" class="r">Total</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="8" class="d-muted">No premiums or fees yet.</td></tr>'}</tbody></table></div></div>
+    <p class="c-note">${tag('demo')} Price caps carry a ${dollars(BOOKING_FEE)} booking fee, and Dodona's platform fee is ${Math.round(PLATFORM_SHARE * 100)}% of the cap premium, shown inside it. Fixed prices carry no Dodona fee. Paid by ACH, no card fees; Dodona never holds funds.</p>`;
+}
+
+// Severity icon per alert: move arrow, deadline clock, offer, warning triangle, error, info circle.
+export function alertLook(alert) {
+  const toneOf = { gain: 'success', loss: 'error', warn: 'warning', offer: 'accent', info: 'info' }[alert.severity] || 'neutral';
+  if (alert.kind === 'Index move') return [alert.severity === 'loss' ? 'trending-down' : 'trending-up', toneOf];
+  if (alert.kind === 'Deadline') return ['clock', toneOf];
+  if (alert.kind === 'Offer') return ['message-square', toneOf];
+  return [{ loss: 'circle-x', warn: 'triangle-alert', gain: 'circle-check' }[alert.severity] || 'info', toneOf];
+}
 
 export function kpiRows(kpis) {
   const next = kpis.nextDeadline;

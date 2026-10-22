@@ -2,8 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from '../server.mjs';
 import { fallbackHistory } from '../lib/prices.mjs';
-import { getPortfolio, parseBookings, BookingError } from '../lib/portfolio.mjs';
-import { exerciseQuote, intrinsicAt, providerScenarios, fleetUnderShock, FOOTER_LINE } from '../dashboard-view.js';
+import { getPortfolio, parseBookings, BookingError, valueCall } from '../lib/portfolio.mjs';
+import {
+  exerciseQuote, intrinsicAt, providerScenarios, fleetUnderShock, FOOTER_LINE,
+  coverage, savingsToDate, upcomingEvents, billingMonths, PLANNED_GPUS, BOOKING_FEE,
+} from '../dashboard-view.js';
 import { listen, close } from './fixture.mjs';
 
 const settings = { operatorName: 'Test fixture operator', contactEmail: 'fixture@example.invalid', retentionDays: null };
@@ -50,7 +53,8 @@ test('calls: intrinsic only without the pricing engine, time value with it', asy
   const bare = (await getPortfolio({ prices, today: TODAY, quoteCap: null })).positions.find(x => x.id === 'H7');
   assert.equal(bare.valuation.timeValue, null);
   close6(bare.valuation.value, bare.valuation.intrinsic, 'value is intrinsic');
-  close6(bare.valuation.moneyness, 2.78 - 2.5, 'moneyness at the cached index');
+  close6(bare.valuation.moneyness, 2.78 * bare.valuation.forwardFactor - 2.5, 'moneyness on the expected window average, not the spot print');
+  assert.equal(bare.valuation.windowAverage.realised, null, 'no realised days before the window');
   close6(bare.valuation.breakEven, 2.75, 'break-even');
   close6(intrinsicAt(bare, bare.valuation.spot), bare.valuation.intrinsic, 'client intrinsic matches server');
   const throwing = () => { throw new Error('not implemented'); };
@@ -61,12 +65,29 @@ test('calls: intrinsic only without the pricing engine, time value with it', asy
   close6(priced.valuation.value, 0.4 * priced.valuation.remainingHours, 'value equals the option price');
 });
 
+test('a cap in its window values on the days-weighted blend of the realised average and the forward', () => {
+  const series = Array.from({ length: 40 }, (_, i) => [new Date(Date.UTC(2026, 9, 1 + i)).toISOString().slice(0, 10), i < 30 ? 2 + i * 0.01 : 2.6]);
+  const today = series[33][0];
+  const cap = { gpu: 'H100', count: 10, pricePerGpuHour: 2.4, premiumPerGpuHour: 0.1, region: 'US East', config: 'SXM-IB', start: series[30][0] + 'T00:00:00Z', end: series[38][0] + 'T00:00:00Z' };
+  const val = valueCall(cap, series, { today, quoteCap: null });
+  const w = val.windowAverage;
+  assert.equal(w.points, 4, 'four printed days inside the window');
+  close6(w.realised, 2.6, 'realised average of the window so far');
+  close6(w.realisedWeight, 3 / 8, 'three of eight days elapsed at the start of today');
+  close6(w.expected, 2.6 * (3 / 8) + val.spot * val.forwardFactor * (5 / 8), 'blend by days');
+  close6(val.moneyness, w.expected * val.basis - 2.4, 'moneyness on the blend');
+  close6(val.intrinsic, Math.max(w.expected * val.basis - 2.4, 0) * val.remainingHours * val.discountFactor, 'intrinsic on the blend');
+  close6(intrinsicAt({ ...cap, valuation: val }, val.spot), val.intrinsic, 'browser what-if matches the server');
+});
+
 test('exercise arithmetic for H7 at an index of $3.00', async () => {
   const h7 = (await getPortfolio({ prices, today: TODAY, quoteCap: null })).positions.find(x => x.id === 'H7');
   const x = exerciseQuote(h7, 3);
+  const average = 3 * h7.valuation.forwardFactor;
   assert.equal(x.hours, 64 * 7 * 24);
-  close6(x.pay, 2.5 * 10752, 'pay the cap');
-  close6(x.saving, 0.5 * 10752, 'saving vs index');
+  close6(x.average, average, 'expected window average at an index of $3.00');
+  close6(x.pay, Math.min(average, 2.5) * 10752, 'billed at the lower of the window average and the cap');
+  close6(x.saving, (average - 2.5) * 10752, 'saving vs the window average');
   close6(x.bid, 2.9, 'best bid = index × utilisation − $0.10');
   close6(x.gross, 0.4 * 10752, 'resale proceeds');
   close6(x.fee, 0.004 * 10752, '1% fee');
@@ -133,4 +154,63 @@ test('GET /dashboard renders the ledger, the attribution line and no inline scri
   assert.doesNotMatch(html, /<!-- D_[A-Z_]+ -->/, 'every marker is filled');
   assert.doesNotMatch(html.toLowerCase(), /buyback|book-out|cash settlement|sell back|offshore|rating/);
   for (const path of ['/dashboard.js', '/dashboard.css', '/dashboard-view.js']) assert.equal((await fetch(origin + path)).status, 200, path);
+});
+
+test('GET /theme.js and the console font are served with the right content types', async t => {
+  const origin = await app(t);
+  const theme = await fetch(origin + '/theme.js');
+  assert.equal(theme.status, 200);
+  assert.match(theme.headers.get('content-type'), /^text\/javascript/);
+  assert.match(await theme.text(), /dodonaTheme/);
+  const font = await fetch(origin + '/assets/fonts/open-sans-latin-wght-normal.woff2');
+  assert.equal(font.status, 200);
+  assert.equal(font.headers.get('content-type'), 'font/woff2');
+});
+
+test('console markup: theme script first, no inline script or style, rows are keyboard targets, sprite covers every icon', async t => {
+  const origin = await app(t);
+  const html = await (await fetch(origin + '/dashboard')).text();
+  const head = html.slice(0, html.indexOf('</head>'));
+  assert.ok(head.indexOf('<script src="/theme.js"></script>') < head.indexOf('<link rel="stylesheet"'), 'theme.js runs before the stylesheets, not deferred');
+  for (const tagText of html.match(/<script\b[^>]*>/g)) assert.ok(/\ssrc="\/[^"]+"/.test(tagText) || tagText.includes('application/ld+json'), `external or structured data only: ${tagText}`);
+  assert.doesNotMatch(html, /\sstyle="/);
+  const rows = html.match(/<tr data-row="[^"]+"[^>]*>/g);
+  assert.equal(rows.length, 7);
+  for (const row of rows) assert.ok(row.includes('tabindex="0"') && /aria-selected="(true|false)"/.test(row), row);
+  assert.ok(!html.includes('type="radio"'), 'no radio cell');
+  const symbols = new Set([...html.matchAll(/<symbol id="i-([a-z-]+)"/g)].map(m => m[1]));
+  const nav = html.slice(html.indexOf('<nav class="d-rail"'), html.indexOf('</nav>', html.indexOf('<nav class="d-rail"')));
+  const navIcons = [...nav.matchAll(/href="#i-([a-z-]+)"/g)].map(m => m[1]);
+  assert.ok(navIcons.length >= 8);
+  for (const name of navIcons) assert.ok(symbols.has(name), `nav icon ${name}`);
+  for (const [, name] of html.matchAll(/href="#i-([a-z-]+)"/g)) assert.ok(symbols.has(name), `page icon ${name}`);
+  const scripts = (await (await fetch(origin + '/dashboard.js')).text()) + (await (await fetch(origin + '/dashboard-view.js')).text());
+  for (const [, name] of scripts.matchAll(/icon\('([a-z-]+)'/g)) assert.ok(symbols.has(name), `script icon ${name}`);
+  for (const [, name] of scripts.matchAll(/icon: '([a-z-]+)'/g)) assert.ok(symbols.has(name), `action icon ${name}`);
+  assert.ok(html.includes('<!-- lucide (ISC) -->'));
+  assert.ok(html.includes('data-act="more"'), 'third and later row actions sit under More');
+  assert.ok(html.includes('class="btn btn-sm btn-primary"'), 'one primary action per row');
+});
+
+test('console panels: coverage, savings, upcoming dates and billing come from the positions', async () => {
+  const p = await getPortfolio({ prices, today: TODAY, quoteCap: null });
+  const c30 = coverage(p.positions, TODAY, 30);
+  close6(c30.planned, PLANNED_GPUS * 30 * 24, 'planned hours');
+  close6(c30.fixed, 64 * 14 * 24 + 8 * 121, 'H1 in full plus what is left of H3');
+  close6(c30.capped, 64 * 118, 'H7 up to the end of the 30 days');
+  const c90 = coverage(p.positions, TODAY, 90);
+  assert.ok(c90.capped > c30.capped && c90.fixed > c30.fixed, 'longer horizon picks up H2 and H5');
+  const savings = savingsToDate(p.positions, TODAY);
+  assert.deepEqual(savings.rows.map(r => r.id).sort(), ['H3', 'H6']);
+  close6(savings.rows.find(r => r.id === 'H6').saving, p.positions.find(x => x.id === 'H6').used.saving, 'finished window uses the daily saving');
+  const events = upcomingEvents(p.positions, TODAY);
+  assert.ok(events.length >= 4);
+  assert.deepEqual(events.map(e => e.at), [...events.map(e => e.at)].sort((a, b) => Date.parse(a) - Date.parse(b)), 'dated in order');
+  assert.ok(events.some(e => e.id === 'H1' && e.text.startsWith('Claim deadline')) && events.some(e => e.id === 'H7' && e.text.startsWith('Exercise deadline')));
+  assert.ok(!events.some(e => e.id === 'H2' && e.text.includes('deadline')), 'H2 deadline is past 30 days');
+  const invoices = billingMonths(p.positions, TODAY);
+  assert.deepEqual(invoices.map(i => [i.id, i.status]), [['INV-202610', 'due'], ['INV-202609', 'paid']]);
+  close6(invoices[1].premiums, 0.12 * 256 * 62 * 24, 'H2 premium billed in September');
+  close6(invoices[0].total, 0.25 * 64 * 7 * 24 + BOOKING_FEE, 'H7 premium plus a booking fee in October');
+  close6(invoices[0].platformFee, invoices[0].premiums * 0.15, 'platform share sits inside the premium');
 });
