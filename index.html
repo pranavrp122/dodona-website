@@ -22,6 +22,8 @@
   <link rel="stylesheet" href="/styles.css">
   <script src="/waitlist.js" defer></script>
   <script src="/checkout.js" defer></script>
+  <link rel="stylesheet" href="/market.css">
+  <script src="/market.js" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -67,6 +69,12 @@
       </div>
     </div></section>
     <nav class="section-nav wrap" aria-label="On this page"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#flexibility">Selling</a><a href="#faq">Questions</a><a href="#early-access">Sign up</a><a href="/contracts">Contract values</a></nav>
+
+    <section class="mk-sec" id="market-strip" aria-labelledby="mk-title"><div class="wrap">
+      <div class="mk-head"><div><p class="eyebrow">Market today</p><h2 id="mk-title" class="mk-title">GPU rental prices</h2></div><p class="mk-asof" data-mk="asof">Ornn daily index · demonstration only; not licensed for commercial valuation</p></div>
+      <div class="mk-tiles" data-mk="tiles"><p class="mk-fallback">Market data loads with JavaScript.</p></div>
+      <div class="mk-lower"><div class="mk-futures" data-mk="futures" hidden></div></div>
+    </div></section>
 
     <section class="sec" id="how-it-works" aria-labelledby="how-title"><div class="wrap">
       <div class="sec-head"><div><p class="eyebrow">How it works</p><h2 id="how-title">Book a price for<br>your next GPU run.</h2></div><p>Pay for the price protection and a separate booking fee upfront. Pay for the compute itself only if you use it.</p></div>
