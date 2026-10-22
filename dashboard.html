@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · Demo account — Dodona</title>
+  <meta name="description" content="Demo customer dashboard: price caps, fixed prices and offtakes on GPU compute, each with a daily Dodona Value.">
+  <meta name="robots" content="noindex">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/market.css">
+  <script type="module" src="/dashboard.js"></script>
+  <script src="/market.js" defer></script>
+</head>
+<body class="d-body">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="d-banner" role="note"><b>Demo</b><span><!-- D_BANNER --></span></div>
+  <div class="d-stale" id="d-stale" role="alert" hidden><span>Index is 3 days old · quotes paused</span><button type="button" class="d-ghost" data-act="stale-dismiss">Dismiss</button></div>
+  <p class="d-backing">Every contract is backed by reserved GPUs at a partner neocloud (simulated). Dodona never holds funds and never takes the other side.</p>
+
+  <div class="d-app">
+    <nav class="d-rail" aria-label="Dashboard">
+      <a class="d-mark" href="/" aria-label="Dodona home">D</a>
+      <a href="#overview" data-nav="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 10h16M4 15h10M4 20h7"/></svg><span class="d-lbl">Overview</span></a>
+      <a href="#positions" data-nav="positions"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM4 9h16M9 9v11"/></svg><span class="d-lbl">Positions</span></a>
+      <a href="/contracts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16M7 4L4 7M7 4l3 3M17 20V4M17 20l-3-3M17 20l3-3"/></svg><span class="d-lbl">Board</span></a>
+      <a href="#provider" data-nav="provider"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v5H4zM4 13h16v5H4zM7 8.5h.01M7 15.5h.01"/></svg><span class="d-lbl">Provider</span></a>
+      <a href="#lender" data-nav="lender"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg><span class="d-lbl">Lender</span></a>
+      <a href="#alerts" data-nav="alerts"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0112 0v5l2 2H4z"/><path d="M10 20.5a2 2 0 004 0"/></svg><span class="d-lbl">Alerts</span><span class="d-badge" id="d-badge" hidden></span></a>
+      <a href="#settings" data-nav="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg><span class="d-lbl">Settings</span></a>
+      <a href="/audit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><span class="d-lbl">Audit trail</span></a>
+    </nav>
+
+    <main id="main" class="d-main">
+      <section class="d-signin" id="d-signin" aria-labelledby="d-signin-h" hidden>
+        <p class="eyebrow">Dodona · Demo</p>
+        <h1 id="d-signin-h">Sign in to see your positions</h1>
+        <p>Your dashboard shows every price cap, fixed price and offtake you hold, with a Dodona Value marked daily against the Ornn index.</p>
+        <div class="d-signin-acts">
+          <a class="btn btn-ink" href="/signup">Sign up</a>
+          <button type="button" class="btn d-btn-line" id="d-demo-login">Continue with a demo account</button>
+        </div>
+        <p class="fine">The demo account is "Sample Labs". Nothing is stored on a server; the session lives in this browser tab.</p>
+      </section>
+
+      <div id="d-content">
+        <section class="d-screen" data-screens="overview" aria-labelledby="d-acct-h">
+          <div class="d-acct">
+            <div class="d-acct-top">
+              <div class="d-acct-id">
+                <h1 id="d-acct-h" class="d-org" data-bind="org">Sample Labs</h1>
+                <span class="d-mono d-muted">Positions account <span data-bind="account">•••• 4417</span></span>
+                <span class="d-kyb" data-bind="kyb">KYB verified</span>
+              </div>
+              <div class="d-acct-id">
+                <span class="d-muted" data-bind="email">ops@samplelabs.example</span>
+                <a class="btn btn-sm d-btn-lime" href="/#paper-order">New booking</a>
+              </div>
+            </div>
+            <div class="d-hero">
+              <p class="eyebrow">Total Dodona Value <span class="tag d-tag-model">model</span></p>
+              <p class="d-hero-fig"><span class="d-big" id="d-hero-value"><!-- D_HERO_VALUE --></span><span class="d-hero-cents" id="d-hero-cents"><!-- D_HERO_CENTS --></span></p>
+              <p class="d-hero-say" id="d-hero-say">What your remaining GPU-hours are worth at today's index, compared with what you committed to pay for them.</p>
+              <div class="d-chips" id="d-hero-chips"><!-- D_CHIPS --></div>
+              <div class="d-chart-wrap" id="d-chart"><!-- D_CHART --></div>
+              <ul class="d-legend">
+                <li><i class="is-market"></i>Market value of your remaining hours</li>
+                <li><i class="is-cost"></i>Committed cost (fixed prices and offtakes)</li>
+                <li><i class="is-band"></i>Gap = Dodona Value</li>
+              </ul>
+              <p class="fine d-prices" id="d-prices"><!-- D_PRICES --></p>
+            </div>
+            <div class="d-book">
+              <dl class="d-kpis" id="d-kpis"><!-- D_KPIS --></dl>
+              <section id="market-strip" data-implied="true"></section>
+              <div class="d-panel-head d-book-alerts"><h2>Alerts</h2><a class="d-ghost" href="#alerts">All alerts</a></div>
+              <ul class="d-alerts" id="d-alerts-mini"><li class="d-muted">Alerts load with JavaScript.</li></ul>
+            </div>
+          </div>
+        </section>
+
+        <section class="d-screen d-split" data-screens="overview positions" aria-labelledby="d-ledger-h">
+          <div class="d-panel">
+            <div class="d-panel-head"><h2 id="d-ledger-h">Positions <span class="tag d-tag-sample">sample</span></h2><span class="fine">Illustrative · select a row for its term sheet</span></div>
+            <div class="d-scroll">
+              <table class="d-ledger">
+                <caption class="visually-hidden">Positions ledger. Select a row to open its detail.</caption>
+                <thead><tr><th scope="col">Position</th><th scope="col" class="r">Hours left</th><th scope="col" class="r">Price / index</th><th scope="col" class="r">Dodona Value <span class="tag d-tag-model">model</span></th><th scope="col" class="r">¢ on $</th><th scope="col">Status</th></tr></thead>
+                <tbody id="d-rows"><!-- D_ROWS --></tbody>
+              </table>
+            </div>
+          </div>
+          <aside class="d-panel d-detail" id="d-detail" aria-label="Selected position" aria-live="polite">
+            <p class="d-empty">Select a position to see its term sheet, 90-day value and actions.</p>
+            <noscript><p class="d-empty">Position detail, exercise and listing need JavaScript.</p></noscript>
+          </aside>
+        </section>
+
+        <section class="d-screen" data-screens="provider" aria-labelledby="d-provider-h" hidden>
+          <div class="d-screen-head"><div><p class="eyebrow" data-bind="provider-name">Provider view</p><h1 id="d-provider-h">Sell a cap on idle hours</h1>
+            <p>Earn a premium today on hours you might not fill. If the index rises past the cap, the buyer takes the block at the cap price and your cluster is fully rented.</p></div></div>
+          <div class="d-provider-grid" id="d-provider"></div>
+        </section>
+
+        <section class="d-screen" data-screens="lender" aria-labelledby="d-lender-h" hidden>
+          <div class="d-screen-head"><div><h1 id="d-lender-h">Lender view</h1><p>GPU fleets marked daily from the rental income they can still earn. Move the rent shock to see value, loan-to-value and months to breach.</p></div>
+            <button type="button" class="btn btn-sm btn-ink" id="d-csv">Download CSV</button></div>
+          <div class="d-panel d-shock"><label for="d-shock-in">Rent shock on the Ornn index</label><input type="range" id="d-shock-in" min="0" max="40" step="1" value="0"><output id="d-shock-out" for="d-shock-in">0%</output>
+            <p class="fine">Status: OK below 60% loan-to-value, watch below 75%, breach at 75% or above.</p></div>
+          <div class="d-panel"><div class="d-panel-head"><h2>Facilities <span class="tag d-tag-sample">sample</span></h2><span class="fine">Fleet value and loan-to-value <span class="tag d-tag-model">model</span></span></div><div class="d-scroll"><table class="d-table">
+            <caption class="visually-hidden">Facilities and loan-to-value</caption>
+            <thead><tr><th scope="col">Facility</th><th scope="col">Fleet</th><th scope="col">Installed</th><th scope="col" class="r">Loan balance</th><th scope="col" class="r">Fleet value</th><th scope="col">Loan-to-value</th><th scope="col">Status</th><th scope="col" class="r">Months to breach</th></tr></thead>
+            <tbody id="d-fleets"></tbody></table></div>
+            <p class="fine d-pad">Fleet value: discounted rental income over remaining useful life plus a 10% residual, 75% utilisation, 48-month life. Months to breach assume the loan amortises straight-line over 60 months and fleet value runs off with remaining life. Illustrative.</p></div>
+        </section>
+
+        <section class="d-screen" data-screens="alerts" aria-labelledby="d-alerts-h" hidden>
+          <div class="d-screen-head"><div><h1 id="d-alerts-h">Alerts</h1><p>Index moves, deadlines, offers and collateral flags, generated from today's numbers.</p></div>
+            <button type="button" class="btn btn-sm d-btn-line" id="d-read-all">Mark all read</button></div>
+          <div class="d-panel"><ul class="d-alerts" id="d-alerts-full"></ul></div>
+        </section>
+
+        <section class="d-screen" data-screens="settings" aria-labelledby="d-settings-h" hidden>
+          <div class="d-screen-head"><div><h1 id="d-settings-h">Settings</h1><p>Organisation, team, notifications, API and billing.</p></div></div>
+          <div class="d-set-grid" id="d-settings"></div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <footer class="d-footer"><div class="d-footer-inner"><p><!-- D_FOOTER --></p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/contracts">Board</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+  <div class="d-toasts" id="d-toasts" role="status" aria-live="polite"></div>
+</body>
+</html>
