@@ -10,7 +10,7 @@ import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
 import { getPriceHistory } from './lib/prices.mjs';
 import { contractsDocument } from './lib/contracts.mjs';
-import { createMarketSource, handleMethodology } from './lib/market.mjs';
+import { createMarketSource, handleMarket, handleMethodology } from './lib/market.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -217,7 +217,7 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
-      if (url.pathname === '/api/market' && request.method === 'GET') return json(response, 200, await market(), { 'Cache-Control': 'public, max-age=300' });
+      if (url.pathname === '/api/market' && request.method === 'GET') return await handleMarket(url, response, market, json);
       if (url.pathname === '/methodology' && ['GET', 'HEAD'].includes(request.method)) return await handleMethodology(request, response, { settings: siteSettings, origin });
       if (placeholderRoutes.has(`${request.method} ${url.pathname}`)) return json(response, 501, { error: 'not implemented' });
       if (['GET', 'HEAD'].includes(request.method) && placeholderPages.has(url.pathname)) {
