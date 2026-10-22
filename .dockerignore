@@ -9,3 +9,4 @@ scripts
 supabase
 *.csv
 *.log
+data/audit.jsonl
