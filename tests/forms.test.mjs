@@ -109,7 +109,7 @@ test('without storage, valid submissions honestly return 503 and status has no t
     assert.match((await response.json()).message, /./);
   }
   const status = await fetch(f.origin + '/api/forms/status?form=signup');
-  assert.equal(status.status, 503);
+  assert.equal(status.status, 200);
   assert.deepEqual(await status.json(), { available: false, message: 'Signups are stored once the database is connected.' });
 });
 
