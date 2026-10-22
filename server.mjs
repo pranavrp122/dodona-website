@@ -34,6 +34,10 @@ const staticFiles = new Map([
     [`/assets/fonts/${name}`, [`assets/fonts/${name}`, 'font/woff2']]),
 ]);
 const unavailable = 'We can’t accept signups right now. Please check back later.';
+// Placeholders for the demo build; each route is replaced when its feature lands.
+const placeholderRoutes = new Set(['GET /api/quote', 'GET /api/portfolio', 'POST /api/signups', 'POST /api/contact', 'POST /api/rfq', 'GET /api/market']);
+const placeholderPages = new Map([['/dashboard', 'Dashboard'], ['/signup', 'Sign up'], ['/methodology', 'Methodology']]);
+const comingSoonPage = title => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} | Dodona</title><!-- CANONICAL --><link rel="stylesheet" href="/styles.css"></head><body><main class="wrap"><h1>${title}</h1><p>Coming soon.</p><p><a href="/">Back to Dodona</a></p></main></body></html>`;
 
 class RequestError extends Error {
   constructor(status, message, details = {}) { super(message); this.status = status; this.details = details; }
@@ -209,6 +213,12 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
+      if (placeholderRoutes.has(`${request.method} ${url.pathname}`)) return json(response, 501, { error: 'not implemented' });
+      if (['GET', 'HEAD'].includes(request.method) && placeholderPages.has(url.pathname)) {
+        const content = Buffer.from(renderPage(comingSoonPage(placeholderPages.get(url.pathname)), { settings: siteSettings, origin, path: url.pathname }));
+        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': content.length, 'Cache-Control': 'no-cache' });
+        return response.end(request.method === 'HEAD' ? undefined : content);
+      }
       if (['GET', 'HEAD'].includes(request.method)) {
         const page = await contractsDocument(url, { prices, now, settings: siteSettings, origin });
         if (page) {
