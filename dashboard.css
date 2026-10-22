@@ -244,7 +244,7 @@
 .d-result .tag.d-tag-model{color:var(--lime);border-color:#e0ff4f66}
 .d-warn-pill{display:block;width:max-content;max-width:170px;margin-top:4px;background:var(--warn-soft);color:var(--warn);border-radius:20px;padding:2px 8px;font-size:11.5px;font-weight:600}
 .d-stale{position:sticky;top:var(--banner-h);z-index:39;display:flex;justify-content:center;align-items:center;gap:12px;background:var(--warn-soft);color:var(--warn);font-weight:600;font-size:13px;padding:6px 16px;border-bottom:1px solid var(--rule)}
-.d-book .market-strip{border-top:1px solid var(--rule);padding:12px 24px}
+.d-book #market-strip:not(:empty){border-top:1px solid var(--rule);padding:12px 24px}
 .d-quote-ms{font-size:11.5px;color:#9fb3c0;margin-top:6px}
 .d-scenarios{display:grid;gap:8px;padding:4px 16px 14px}
 .d-scenarios .btn{justify-content:flex-start}

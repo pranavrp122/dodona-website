@@ -125,7 +125,7 @@ test('GET /dashboard renders the ledger, the attribution line and no inline scri
   assert.ok(html.includes(FOOTER_LINE));
   assert.ok(html.includes('Demo account · sample data · nothing here is a live price, order or account'));
   assert.ok(html.includes('<script type="module" src="/dashboard.js"></script>'));
-  assert.ok(html.includes('<section id="market-strip" data-implied="true" class="market-strip">'), 'market strip container behind the sign-in');
+  assert.ok(html.includes('<section id="market-strip" data-implied="true"></section>'), 'market strip container behind the sign-in');
   assert.ok(html.includes('<script src="/market.js" defer></script>') && html.includes('href="/market.css"'));
   assert.ok(html.includes('href="/audit"'), 'audit trail in the rail');
   assert.ok(html.includes('class="tag d-tag-model"') && html.includes('class="tag d-tag-sample"'), 'provenance tags');
