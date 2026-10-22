@@ -161,7 +161,7 @@ try {
   check((await page.locator('#co-receipt-list').innerText()).includes('Claim by'), 'receipt lists the claim deadline');
   await page.screenshot({ path: 'artifacts/checkout-receipt.png' });
   check(writes.length === 0, 'calculator sends no server writes besides the audit event');
-  check(audits.length === 1 && audits[0].kind === 'booking_created' && audits[0].ref === await page.locator('#co-ref').innerText() && /^Booking · H200 × 1 · .+ · lock \$\d+\.\d\d$/.test(audits[0].summary) && !/@/.test(audits[0].summary), 'receipt fires one booking audit event without personal data');
+  check(audits.length === 1 && audits[0].kind === 'booking_created' && audits[0].ref === await page.locator('#co-ref').innerText() && /^Booking · H200 × 1 · .+ · fixed \$\d+\.\d\d · fee \$0\.00\/h$/.test(audits[0].summary) && !/@/.test(audits[0].summary), 'receipt fires one booking audit event without personal data');
   const bookings = await page.evaluate(() => JSON.parse(sessionStorage.getItem('dodonaDemoBookings') || '[]'));
   check(bookings.length === 1 && bookings[0].ref === await page.locator('#co-ref').innerText() && bookings[0].type === 'lock' && bookings[0].gpu === 'H200' && bookings[0].count === 1 && bookings[0].region === 'US East', 'receipt appends the booking to the demo session');
   check(await page.evaluate(() => localStorage.length === 0), 'calculator uses no local storage');

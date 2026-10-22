@@ -470,7 +470,7 @@ const fmtShort = t => new Date(t).toLocaleDateString("en-GB", { day: "numeric", 
 function auditSummary({ q, result }) {
   const d = result.data, [sd, sm] = fmtShort(q.w.start).split(" "), end = fmtShort(q.w.end);
   const dates = end.endsWith(" " + sm) ? `${sd}–${end}` : `${sd} ${sm}–${end}`;
-  const terms = q.kind === "cap" ? `call ${usd2(d.strike)} · fee ${usd2(d.premiumPerGpuHour)}/h` : `lock ${usd2(d.strike)}`;
+  const terms = `${q.kind === "cap" ? "call" : "fixed"} ${usd2(d.strike)} · fee ${usd2(d.premiumPerGpuHour)}/h`;
   return `Booking · ${q.g} × ${q.n} · ${dates} · ${terms}`;
 }
 function sendAudit(ref, booked) {
