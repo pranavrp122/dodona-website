@@ -1,0 +1,100 @@
+{
+  "note": "Sample portfolio for demonstration. Parties, terms and balances are illustrative.",
+  "account": {
+    "organisation": "Sample Labs",
+    "email": "ops@samplelabs.example",
+    "accountNumber": "4417",
+    "kyb": "verified",
+    "kybDate": "2026-10-14"
+  },
+  "positions": [
+    {
+      "id": "H1", "kind": "lock",
+      "label": "64 H100 · fixed price · 3–17 Nov 2026",
+      "gpu": "H100", "count": 64, "pricePerGpuHour": 2.6,
+      "start": "2026-11-03T14:00:00Z", "end": "2026-11-17T14:00:00Z",
+      "region": "US East", "config": "SXM-IB",
+      "provider": { "label": "Partner neocloud · reserved capacity (simulated)", "creditTier": "Delivery-backed", "bondPriceCents": 100 },
+      "termType": "take-or-pay", "status": "held",
+      "premiumPerGpuHour": 0, "boughtOn": "2026-10-14", "indexAtPurchase": 2.67, "utilisation": null,
+      "note": "Sample position for demonstration."
+    },
+    {
+      "id": "H2", "kind": "call",
+      "label": "256 H100 · price cap · Dec 2026–Jan 2027",
+      "gpu": "H100", "count": 256, "pricePerGpuHour": 3.1,
+      "start": "2026-12-01T00:00:00Z", "end": "2027-02-01T00:00:00Z",
+      "region": "US West", "config": "SXM-IB",
+      "provider": { "label": "Partner neocloud · reserved capacity (simulated)", "creditTier": "Delivery-backed", "bondPriceCents": 100 },
+      "termType": "call", "status": "held",
+      "premiumPerGpuHour": 0.12, "boughtOn": "2026-09-15", "indexAtPurchase": 2.53, "utilisation": 0.85,
+      "note": "Sample position for demonstration."
+    },
+    {
+      "id": "H3", "kind": "lock",
+      "label": "8 H200 · fixed price · 20–27 Oct 2026",
+      "gpu": "H200", "count": 8, "pricePerGpuHour": 5.4,
+      "start": "2026-10-20T13:00:00Z", "end": "2026-10-27T13:00:00Z",
+      "region": "Europe", "config": "SXM-IB",
+      "provider": { "label": "Partner neocloud · reserved capacity (simulated)", "creditTier": "Delivery-backed", "bondPriceCents": 100 },
+      "termType": "take-or-pay", "status": "held",
+      "premiumPerGpuHour": 0, "boughtOn": "2026-10-06", "indexAtPurchase": 5.07, "utilisation": null,
+      "note": "Sample position for demonstration."
+    },
+    {
+      "id": "H4", "kind": "offtake",
+      "label": "512 H100 · offtake · Feb–Jul 2027",
+      "gpu": "H100", "count": 512, "pricePerGpuHour": 2.4,
+      "start": "2027-02-01T00:00:00Z", "end": "2027-08-01T00:00:00Z",
+      "region": "Europe", "config": "SXM-IB",
+      "provider": { "label": "Tier-1 neocloud", "creditTier": "B+", "bondPriceCents": 78 },
+      "termType": "take-or-pay", "status": "held",
+      "premiumPerGpuHour": 0, "boughtOn": null, "indexAtPurchase": null, "utilisation": null,
+      "note": "Sample position for demonstration."
+    },
+    {
+      "id": "H5", "kind": "offtake",
+      "label": "128 B200 · offtake · Jan–Jun 2027",
+      "gpu": "B200", "count": 128, "pricePerGpuHour": 9.2,
+      "start": "2027-01-01T00:00:00Z", "end": "2027-07-01T00:00:00Z",
+      "region": "US East", "config": "SXM-IB",
+      "provider": { "label": "Hyperscaler reseller", "creditTier": "A", "bondPriceCents": 100 },
+      "termType": "take-or-pay", "status": "listed", "askingCents": 96, "bestOfferCents": 93,
+      "premiumPerGpuHour": 0, "boughtOn": null, "indexAtPurchase": null, "utilisation": null,
+      "note": "Sample position for demonstration."
+    },
+    {
+      "id": "H6", "kind": "lock",
+      "label": "32 A100 · fixed price · 1–30 Sep 2026",
+      "gpu": "A100", "count": 32, "pricePerGpuHour": 0.82,
+      "start": "2026-09-01T04:00:00Z", "end": "2026-10-01T04:00:00Z",
+      "region": "US West", "config": "SXM-IB",
+      "provider": { "label": "Partner neocloud · reserved capacity (simulated)", "creditTier": "Delivery-backed", "bondPriceCents": 100 },
+      "termType": "take-or-pay", "status": "held",
+      "premiumPerGpuHour": 0, "boughtOn": "2026-08-12", "indexAtPurchase": 1.05, "utilisation": null,
+      "note": "Sample position for demonstration."
+    },
+    {
+      "id": "H7", "kind": "call",
+      "label": "64 H100 · price cap · 16–23 Nov 2026",
+      "gpu": "H100", "count": 64, "pricePerGpuHour": 2.5,
+      "start": "2026-11-16T14:00:00Z", "end": "2026-11-23T14:00:00Z",
+      "region": "US East", "config": "SXM-IB",
+      "provider": { "label": "Partner neocloud · reserved capacity (simulated)", "creditTier": "Delivery-backed", "bondPriceCents": 100 },
+      "termType": "call", "status": "held",
+      "premiumPerGpuHour": 0.25, "boughtOn": "2026-10-05", "indexAtPurchase": 2.52, "utilisation": 1,
+      "note": "Sample position for demonstration."
+    }
+  ],
+  "facilities": [
+    { "id": "A", "label": "Facility A", "gpu": "H100", "units": 1024, "installedOn": "2025-03-01", "utilization": 0.75, "usefulLifeMonths": 48, "loanBalance": 18000000, "amortisationMonths": 60 },
+    { "id": "B", "label": "Facility B", "gpu": "H200", "units": 512, "installedOn": "2026-01-01", "utilization": 0.75, "usefulLifeMonths": 48, "loanBalance": 14200000, "amortisationMonths": 60 },
+    { "id": "C", "label": "Facility C", "gpu": "A100", "units": 2048, "installedOn": "2023-06-01", "utilization": 0.75, "usefulLifeMonths": 48, "loanBalance": 9500000, "amortisationMonths": 60 }
+  ],
+  "provider": {
+    "name": "Northstar Compute (demo)",
+    "gpu": "H100", "config": "SXM-IB", "region": "US East",
+    "units": 1024, "utilisation": 0.72,
+    "idleWeekend": { "gpus": 256, "hours": 48 }
+  }
+}
