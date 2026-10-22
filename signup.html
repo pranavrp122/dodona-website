@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Open a business account — Dodona</title>
+  <meta name="description" content="Open a Dodona business account to price caps and fixed prices on GPU-hours, backed by reserved GPUs at partner neoclouds.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/forms.css">
+  <script type="module" src="/forms.js"></script>
+  <script type="module" src="/signup.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Main"><a href="/contracts">Board</a><a href="/rfq">Request a quote</a><a href="/contact">Contact</a></nav></div></header>
+  <main class="wrap form-page" id="main">
+    <div class="form-intro">
+      <p class="eyebrow">Business account</p>
+      <h1>Open an account.</h1>
+      <p class="form-lede">Price a cap on GPU-hours, lock a fixed price, or sell caps on hours you might not fill. Every contract is backed by reserved GPUs at a partner neocloud.</p>
+      <ol class="next-steps" aria-label="What happens next">
+        <li><span>1</span><div><strong>Tell us who you are</strong><p>Your work email, company and what you do with compute.</p></div></li>
+        <li><span>2</span><div><strong>Business check</strong><p>Accounts are for businesses. We verify the company before any live contract; until then your account shows as pending.</p></div></li>
+        <li><span>3</span><div><strong>Open your dashboard</strong><p>See sample positions, price a cap and try the board in demo mode.</p></div></li>
+      </ol>
+      <p class="form-fine">Demo build: nothing here is a live price, order or account. Dodona never holds funds and never takes the other side of a contract.</p>
+    </div>
+    <div class="form-card">
+      <form id="signup-form" data-form="signup" action="/api/signups" method="post" novalidate
+        data-success="Account created. Opening your dashboard…"
+        data-unavailable="Signups are stored once the database is connected. Continuing in demo mode.">
+        <fieldset class="form-step">
+          <legend><span class="step-tag">Step 1</span> About you</legend>
+          <div class="field"><label for="email">Work email <span class="required">(required)</span></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" maxlength="254" required aria-describedby="email-error"><span id="email-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="company">Company <span class="required">(required)</span></label><input id="company" name="company" type="text" autocomplete="organization" maxlength="120" required aria-describedby="company-error"><span id="company-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="role">Your role <span class="required">(required)</span></label><select id="role" name="role" required aria-describedby="role-error"><option value="">Choose one</option><option value="buyer">I buy compute</option><option value="provider">I provide compute</option><option value="lender">I lend or insure</option><option value="other">Other</option></select><span id="role-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="use-case">What you want to do <span class="optional">(optional)</span></label><textarea id="use-case" name="useCase" rows="3" maxlength="280" placeholder="For example: cap our H100 cost for a training run in Q1." aria-describedby="useCase-error"></textarea><span id="useCase-error" class="field-error" hidden></span></div>
+        </fieldset>
+        <fieldset class="form-step">
+          <legend><span class="step-tag">Step 2</span> Business account</legend>
+          <div class="field check-field"><input id="business" name="business" type="checkbox" required aria-describedby="business-error"><label for="business">I’m signing up on behalf of a business <span class="required">(required)</span></label><span id="business-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="website">Company website <span class="optional">(optional)</span></label><input id="website" name="website" type="text" inputmode="url" autocomplete="url" placeholder="company.com" maxlength="200" aria-describedby="website-error"><span id="website-error" class="field-error" hidden></span></div>
+        </fieldset>
+        <div class="honeypot" aria-hidden="true"><label for="nickname">Leave this field empty</label><input id="nickname" name="nickname" type="text" tabindex="-1" autocomplete="off"></div>
+        <button class="btn btn-ink" type="submit">Create account</button>
+        <p class="form-message" role="status" aria-live="polite" aria-atomic="true"></p>
+        <p class="signup-note">We use your details to set up your account and contact you about it. <a href="/privacy">How we use your information</a>.</p>
+        <noscript><p class="field-error">JavaScript is required to submit this form. Nothing has been saved.</p></noscript>
+      </form>
+    </div>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Dodona is in development. Real-money trading is unavailable.</p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/contact">Contact</a><a href="/rfq">Request a quote</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

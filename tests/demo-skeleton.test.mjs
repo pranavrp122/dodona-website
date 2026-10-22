@@ -16,8 +16,8 @@ async function app(t) {
 }
 
 const apiPlaceholders = [
-  ['GET', '/api/quote'], ['GET', '/api/portfolio'], ['POST', '/api/signups'],
-  ['POST', '/api/contact'], ['POST', '/api/rfq'], ['GET', '/api/market'],
+  ['GET', '/api/quote'], ['GET', '/api/portfolio'],
+  ['GET', '/api/market'],
 ];
 
 test('placeholder API routes return 501 not implemented', async t => {
@@ -31,7 +31,7 @@ test('placeholder API routes return 501 not implemented', async t => {
 
 test('placeholder pages render a coming soon page', async t => {
   const origin = await app(t);
-  for (const path of ['/dashboard', '/signup', '/methodology']) {
+  for (const path of ['/dashboard', '/methodology']) {
     const response = await fetch(origin + path);
     assert.equal(response.status, 200, path);
     assert.match(response.headers.get('content-type'), /^text\/html/);

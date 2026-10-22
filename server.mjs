@@ -10,6 +10,8 @@ import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
 import { getPriceHistory } from './lib/prices.mjs';
 import { contractsDocument } from './lib/contracts.mjs';
+import { createFormRoutes } from './lib/forms.mjs';
+import { formStoreFromEnvironment } from './lib/signups.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -25,6 +27,9 @@ const staticFiles = new Map([
   ['/contracts.js', ['contracts.js', 'text/javascript; charset=utf-8']],
   ['/contract.js', ['contract.js', 'text/javascript; charset=utf-8']],
   ['/contracts-view.js', ['contracts-view.js', 'text/javascript; charset=utf-8']],
+  ['/forms.js', ['forms.js', 'text/javascript; charset=utf-8']],
+  ['/signup.js', ['signup.js', 'text/javascript; charset=utf-8']],
+  ['/forms.css', ['forms.css', 'text/css; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -35,8 +40,8 @@ const staticFiles = new Map([
 ]);
 const unavailable = 'We can’t accept signups right now. Please check back later.';
 // Placeholders for the demo build; each route is replaced when its feature lands.
-const placeholderRoutes = new Set(['GET /api/quote', 'GET /api/portfolio', 'POST /api/signups', 'POST /api/contact', 'POST /api/rfq', 'GET /api/market']);
-const placeholderPages = new Map([['/dashboard', 'Dashboard'], ['/signup', 'Sign up'], ['/methodology', 'Methodology']]);
+const placeholderRoutes = new Set(['GET /api/quote', 'GET /api/portfolio', 'GET /api/market']);
+const placeholderPages = new Map([['/dashboard', 'Dashboard'], ['/methodology', 'Methodology']]);
 const comingSoonPage = title => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} | Dodona</title><!-- CANONICAL --><link rel="stylesheet" href="/styles.css"></head><body><main class="wrap"><h1>${title}</h1><p>Coming soon.</p><p><a href="/">Back to Dodona</a></p></main></body></html>`;
 
 class RequestError extends Error {
@@ -106,6 +111,7 @@ export function createApp({
   rateLimit = 20,
   logger = console,
   prices = getPriceHistory,
+  formStore = formStoreFromEnvironment(),
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -142,6 +148,7 @@ export function createApp({
     const entry = attempts.get(key);
     if (++entry.count > max) throw new RequestError(429, 'Too many requests. Please try again shortly.', { code: 'RATE_LIMIT', retryAfter: Math.ceil((entry.until - time) / 1000) });
   }
+  const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;
     if (now() - health.at < (health.available ? 30000 : 2000)) return health.available;
@@ -213,6 +220,7 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
+      if (await forms.handle(request, response, url)) return;
       if (placeholderRoutes.has(`${request.method} ${url.pathname}`)) return json(response, 501, { error: 'not implemented' });
       if (['GET', 'HEAD'].includes(request.method) && placeholderPages.has(url.pathname)) {
         const content = Buffer.from(renderPage(comingSoonPage(placeholderPages.get(url.pathname)), { settings: siteSettings, origin, path: url.pathname }));
