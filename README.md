@@ -71,7 +71,7 @@ The Kalshi market-implied view appears only on the signed-in demo dashboard, nev
 
 ## Cap pricing (v0)
 
-A cap is priced with Black-76 on the Ornn index forward, with an average-price adjustment because a cap covers every hour in its window. It reuses the valuation's volatility and drift, so a quote and a Dodona Value read the same market. The formulas are in `docs/pricing-v0.md` and the engine is `lib/pricing.mjs`.
+A cap is priced with Black-76 on the Ornn index forward, with an average-price adjustment because a cap covers every hour in its window and settles on the window's average index price. It reuses the valuation's volatility and drift, so a quote and a Dodona Value read the same market. The formulas are in `docs/pricing-v0.md` and the engine is `lib/pricing.mjs`.
 
 - `GET /api/quote?gpu=H100&count=64&start=<iso>&end=<iso>&type=call&strike=2.50&region=US%20East&config=SXM-IB` returns the premium per GPU-hour, total premium, fees, pay-now amount, cost if used, break-even, forward, spot, volatility, method, `asOf` and `computeMs`. `type` is `call`, `lock` or `put` (the provider floor). Invalid input returns 400 with `{ error }`. Responses are `no-store`. The route is listed in `/openapi.json`.
 - The home page calculator calls the route on every change and falls back to an offline estimate when it cannot reach it. Demo receipts are kept in `sessionStorage` so the dashboard can show them as upcoming positions.

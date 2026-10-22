@@ -389,7 +389,7 @@ function renderQuote() {
   $("co-q-compute").textContent = d ? usd2(d.costIfUsed) : wait;
   $("co-q-be").textContent = d && d.breakEven != null ? perHour(d.breakEven) : wait;
   $("co-q-total").textContent = d ? usd2(round2(d.payNow + d.costIfUsed)) : wait;
-  $("co-q-source").textContent = d ? (result.offline ? "Indicative (offline): the pricing service did not answer." : "Priced by Dodona pricing v0 on the Ornn daily index.") : q.ok ? "Pricing…" : "";
+  $("co-q-source").textContent = d ? (result.offline ? "Indicative (offline): the pricing service did not answer." : "Priced by Dodona pricing v0 on the Ornn daily index." + (cap ? " Hours are billed at the lower of the window’s average index price and the cap." : "")) : q.ok ? "Pricing…" : "";
   $("co-q-source").classList.toggle("co-offline", Boolean(d && result.offline));
   $("co-fee-tag").hidden = !d || result.offline;
   renderHow(q, result);
@@ -422,7 +422,7 @@ function summaryRows({ q, result }) {
     ["Window", `${fmtLong(q.w.start, q.w.tz)} → ${fmtLong(q.w.end, q.w.tz)}`, `${q.w.hours} h · ${q.gpuHours.toLocaleString("en-US")} GPU-hours`],
     ["UTC", fmtUtcRange(q.w.start, q.w.end)],
     ["Claim by", fmtLong(q.claim, q.w.tz), "Unclaimed bookings expire; the upfront fee is kept."],
-    cap ? ["Protection", `Price cap at ${perHour(d.strike)}`, `Pays off above ${perHour(d.breakEven)}`]
+    cap ? ["Protection", `Price cap at ${perHour(d.strike)}`, `Hours billed at the lower of the window’s average index price and the cap. Pays off above ${perHour(d.breakEven)}`]
       : ["Protection", `Fixed price ${perHour(d.strike)}`, "The forward price plus a 2% provider margin"],
     ["Pay now", usd2(d.payNow), `Fee ${usd2(d.premiumTotal)} (of which Dodona fee ${usd2(d.platformFee)}) + booking ${usd2(BOOKING_FEE)}`, true],
     [cap ? "Most you’ll pay if you use it" : "You’ll pay if you use it", usd2(d.costIfUsed)],

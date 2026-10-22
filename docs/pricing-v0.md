@@ -2,6 +2,10 @@
 
 This is how the demo prices a price cap (a call), a price floor (a put) and a fixed-price lock on a block of GPU-hours. It is a demo method, not an offer or advice. The code is `lib/pricing.mjs`; every function is pure for given inputs, price history and clock.
 
+## What settles
+
+A cap settles on the average of the daily index over its window, never on one day's price. Payoff = max(window average of the daily index − strike, 0) × GPU-hours. The holder's effective rate is min(window average, strike) per GPU-hour. A floor is the mirror image: max(strike − window average, 0) × GPU-hours. The t/3 rule in step 2 of the formulas is the pricing consequence of this settlement.
+
 ## In plain words
 
 A cap lets a business pay the market rate for a block of GPU-hours, but never more than the cap price. The fee for that right depends on three things: where the price is expected to be during the window (the forward), how much it moves (volatility), and how far away and how long the window is. A floor is the mirror image for a provider. A lock fixes the price outright, so it has no fee; the provider's 2% margin over the forward is built into the price.
