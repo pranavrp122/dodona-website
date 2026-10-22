@@ -14,7 +14,7 @@
 .a-h2{font-size:clamp(26px,2.6vw,34px);line-height:1.1}
 .a-log-head .fine{margin:0;max-width:none}
 .a-filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-.a-filter{display:inline-flex;align-items:center;min-height:36px;padding:6px 13px;border-radius:30px;border:1px solid #052b4233;font-size:13px;font-weight:600;text-decoration:none;text-transform:capitalize;background:var(--ground)}
+.a-filter{display:inline-flex;align-items:center;min-height:36px;padding:6px 13px;border-radius:30px;border:1px solid #052b4233;font-size:13px;font-weight:600;text-decoration:none;background:var(--ground)}
 .a-filter:hover{background:var(--lavender)}
 .a-filter.is-active{background:var(--ink);color:white;border-color:var(--ink)}
 
@@ -25,7 +25,7 @@
 .a-table tbody tr:last-child>*{border-bottom:0}
 .a-table tbody tr:target{background:var(--lavender)}
 .a-table time{white-space:nowrap;color:var(--muted)}
-.a-kind{display:inline-flex;border:1px solid #052b4238;border-radius:30px;font-size:12px;font-weight:600;padding:3px 9px;white-space:nowrap;text-transform:capitalize}
+.a-kind{display:inline-flex;border:1px solid #052b4238;border-radius:30px;font-size:12px;font-weight:600;padding:3px 9px;white-space:nowrap}
 .a-ref{font-family:var(--a-mono);font-size:13px;white-space:nowrap}
 .a-hash,.a-hash code{font-family:var(--a-mono);font-size:12.5px;white-space:nowrap}
 a.a-hash{color:var(--violet);text-underline-offset:3px}

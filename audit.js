@@ -1,6 +1,8 @@
 /** Audit trail page: refreshes the log every 30 seconds, filters by kind, and re-hashes the chain in the browser. */
 const REFRESH_MS = 30000;
 const GENESIS = '0'.repeat(64);
+// Same labels as KIND_LABELS in lib/audit.mjs.
+const LABELS = { quote: 'Quote', booking_created: 'Booking', exercise_confirmed: 'Exercise', listing_created: 'Listing', offer_sent: 'Offer', signup: 'Signup', rfq: 'RFQ', mark: 'Mark', system: 'System' };
 const rows = document.getElementById('a-rows');
 const filters = document.getElementById('a-filters');
 const updated = document.getElementById('a-updated');
@@ -51,7 +53,7 @@ function renderRows(entries) {
     const time = element('td');
     time.append(element('time', { datetime: entry.ts }, `${entry.ts.slice(0, 19).replace('T', ' ')} UTC`));
     const kindCell = element('td');
-    kindCell.append(element('span', { class: 'a-kind' }, entry.kind.replace('_', ' ')));
+    kindCell.append(element('span', { class: 'a-kind' }, LABELS[entry.kind] || entry.kind));
     row.append(time, kindCell, element('td', { class: 'a-ref' }, entry.ref || '—'), element('td', {}, entry.summary), hashCell(entry.hash, false), hashCell(entry.prevHash, true));
     fragment.append(row);
   }

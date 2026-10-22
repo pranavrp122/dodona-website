@@ -145,5 +145,7 @@ test('GET /audit renders the page with server-rendered rows and no inline script
   assert.match(html, /<script type="module" src="\/audit\.js"><\/script>/);
   assert.doesNotMatch(html, /<script>/);
   assert.equal(KINDS.filter(kind => html.includes(`data-kind="${kind}"`)).length, KINDS.length);
+  assert.match(html, /data-kind="rfq">RFQ</);
+  assert.match(html, /<span class="a-kind">Offer<\/span>/);
   for (const path of ['/audit.js', '/audit.css']) assert.equal((await fetch(origin + path)).status, 200, path);
 });
