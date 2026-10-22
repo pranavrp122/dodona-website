@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact — Dodona</title>
+  <meta name="description" content="Write to the Dodona team about caps on GPU-hours, providing capacity, or lending against GPU fleets.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/forms.css">
+  <script type="module" src="/forms.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Main"><a href="/contracts">Board</a><a href="/rfq">Request a quote</a><a href="/signup">Open an account</a></nav></div></header>
+  <main class="wrap form-page" id="main">
+    <div class="form-intro">
+      <p class="eyebrow">Contact</p>
+      <h1>Talk to the team.</h1>
+      <p class="form-lede">Questions about caps on GPU-hours, providing capacity, or lending against a fleet. A person reads every message.</p>
+      <ul class="topic-list" aria-label="Common topics">
+        <li><strong>Buying compute</strong><span>Caps and fixed prices on a block of GPU-hours.</span></li>
+        <li><strong>Providing compute</strong><span>Selling caps on hours you might not fill, and floors to show your lenders.</span></li>
+        <li><strong>Lending or insuring</strong><span>Daily Dodona Value on contracts behind a GPU fleet.</span></li>
+      </ul>
+      <p class="form-fine">Pricing a specific block? <a href="/rfq">Request a quote</a> instead and we’ll reply with numbers.</p>
+    </div>
+    <div class="form-card">
+      <form id="contact-form" data-form="contact" action="/api/contact" method="post" novalidate
+        data-success="Thanks, we’ll reply by email.">
+        <div class="field"><label for="name">Your name <span class="required">(required)</span></label><input id="name" name="name" type="text" autocomplete="name" maxlength="80" required aria-describedby="name-error"><span id="name-error" class="field-error" hidden></span></div>
+        <div class="field"><label for="email">Email <span class="required">(required)</span></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" maxlength="254" required aria-describedby="email-error"><span id="email-error" class="field-error" hidden></span></div>
+        <div class="field"><label for="company">Company <span class="optional">(optional)</span></label><input id="company" name="company" type="text" autocomplete="organization" maxlength="120" aria-describedby="company-error"><span id="company-error" class="field-error" hidden></span></div>
+        <div class="field"><label for="message">Message <span class="required">(required)</span></label><textarea id="message" name="message" rows="6" maxlength="2000" required aria-describedby="message-error"></textarea><span id="message-error" class="field-error" hidden></span></div>
+        <div class="honeypot" aria-hidden="true"><label for="nickname">Leave this field empty</label><input id="nickname" name="nickname" type="text" tabindex="-1" autocomplete="off"></div>
+        <button class="btn btn-ink" type="submit">Send message</button>
+        <p class="form-message" role="status" aria-live="polite" aria-atomic="true"></p>
+        <p class="signup-note">We use your details only to reply. <a href="/privacy">How we use your information</a>.</p>
+        <noscript><p class="field-error">JavaScript is required to send this form. Nothing has been sent.</p></noscript>
+      </form>
+    </div>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Dodona is in development. Real-money trading is unavailable.</p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/rfq">Request a quote</a><a href="/signup">Open an account</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

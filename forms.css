@@ -1,0 +1,66 @@
+/* Signup, contact and quote-request pages. Builds on the tokens and .field styles in styles.css. */
+.form-page{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:72px;align-items:start;padding-block:64px 88px}
+.form-intro{position:sticky;top:120px}
+.form-intro h1{font-size:clamp(40px,5.2vw,68px);line-height:1.02;margin-bottom:22px}
+.form-lede{font-size:18px;line-height:1.55;color:var(--muted);max-width:40ch}
+.form-fine{margin-top:30px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;line-height:1.6;color:var(--muted);max-width:46ch}
+.form-fine a{color:var(--ink)}
+
+.next-steps{list-style:none;padding:0;margin:36px 0 0;border-top:1px solid var(--ink)}
+.next-steps li{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:18px 0;border-bottom:1px solid var(--border)}
+.next-steps li>span{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;background:var(--lime);font:700 14px/1 var(--display)}
+.next-steps strong{display:block;font-size:16px;margin-bottom:3px}
+.next-steps p{font-size:14px;color:var(--muted);line-height:1.5}
+
+.topic-list{list-style:none;padding:0;margin:36px 0 0;border-top:1px solid var(--ink)}
+.topic-list li{display:grid;gap:3px;padding:16px 0;border-bottom:1px solid var(--border)}
+.topic-list strong{font-size:16px}
+.topic-list span{font-size:14px;color:var(--muted)}
+
+.rfq-terms{margin:36px 0 0;border-top:1px solid var(--ink)}
+.rfq-terms>div{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:18px;padding:16px 0;border-bottom:1px solid var(--border)}
+.rfq-terms dt{font-weight:600;font-size:15px}
+.rfq-terms dd{margin:0;font-size:14px;color:var(--muted);line-height:1.5}
+
+.form-page .form-card{background:white;border:1px solid var(--border);box-shadow:0 1px 0 #052b420f,0 24px 48px -28px #052b4240;padding:34px}
+.form-step{border:0;margin:0 0 8px;padding:0}
+.form-step+.form-step{margin-top:12px;padding-top:22px;border-top:1px dashed #052b4233}
+.form-step legend{display:flex;align-items:center;gap:10px;padding:0;margin-bottom:16px;font:650 19px/1.2 var(--display)}
+.step-tag{font:600 11px/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:#4534ba;background:var(--lavender);border-radius:20px;padding:6px 10px}
+
+.field select[aria-invalid=true],.field textarea[aria-invalid=true]{border-color:#a32433}
+.field input:focus-visible,.field select:focus-visible,.field textarea:focus-visible{outline:3px solid var(--violet);outline-offset:1px;border-color:var(--violet)}
+.field-pair{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+
+.check-field{grid-template-columns:auto 1fr;align-items:start;column-gap:12px;padding:14px;border-radius:10px;background:var(--panel)}
+.check-field input{width:20px;height:20px;min-height:0;margin:2px 0 0;accent-color:var(--violet)}
+.check-field label{font-size:14px;font-weight:600}
+.check-field .field-error{grid-column:1/-1}
+.check-field:has(input[aria-invalid=true]){outline:1px solid #a32433}
+
+.type-field{border:0;padding:0;margin:0 0 18px}
+.type-field legend{font-size:13px;font-weight:600;padding:0;margin-bottom:7px}
+.type-options{display:flex;flex-wrap:wrap;gap:8px}
+.type-options label{position:relative;cursor:pointer}
+.type-options input{position:absolute;opacity:0;width:1px;height:1px}
+.type-options span{display:inline-flex;align-items:center;min-height:44px;padding:10px 16px;border:1px solid #052b4233;border-radius:999px;font-size:14px;font-weight:600;background:white;transition:background .15s,border-color .15s}
+.type-options label:hover span{border-color:var(--ink)}
+.type-options input:checked+span{background:var(--ink);border-color:var(--ink);color:white}
+.type-options input:focus-visible+span{outline:3px solid var(--violet);outline-offset:2px}
+
+.form-page .btn{width:100%;margin-top:8px}
+.form-page .btn:disabled{opacity:.7;cursor:wait}
+.form-page .form-message[data-state=unavailable]{color:#4534ba}
+.form-page .form-message[data-state=loading]{color:var(--muted)}
+.form-page .signup-note{color:var(--muted);margin-top:6px}
+
+@media (max-width:900px){
+  .form-page{grid-template-columns:1fr;gap:40px;padding-block:40px 64px}
+  .form-intro{position:static}
+}
+@media (max-width:560px){
+  .form-page .form-card{padding:22px 18px}
+  .field-pair{grid-template-columns:1fr}
+  .rfq-terms>div{grid-template-columns:1fr;gap:4px}
+  .form-lede{font-size:16px}
+}

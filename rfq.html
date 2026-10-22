@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Request a quote — Dodona</title>
+  <meta name="description" content="Request a quote for a price cap, a fixed price or a price floor on a block of GPU-hours.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/forms.css">
+  <script type="module" src="/forms.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Main"><a href="/contracts">Board</a><a href="/signup">Open an account</a><a href="/contact">Contact</a></nav></div></header>
+  <main class="wrap form-page" id="main">
+    <div class="form-intro">
+      <p class="eyebrow">Request a quote</p>
+      <h1>Price a larger block.</h1>
+      <p class="form-lede">For blocks above the calculator’s range, or windows and terms it does not cover. Tell us the GPU, the count and the window; we price it and come back by email.</p>
+      <dl class="rfq-terms">
+        <div><dt>Price cap (a call)</dt><dd>You pay a fee now. If the index rises above your cap, you still get the hours at the cap.</dd></div>
+        <div><dt>Fixed price</dt><dd>One price per GPU-hour for the whole window, no fee up front.</dd></div>
+        <div><dt>Price floor (a put)</dt><dd>For providers: a minimum rate on hours you sell, to show your lenders.</dd></div>
+      </dl>
+      <p class="form-fine">Every contract is backed by reserved GPUs at a partner neocloud, with physical delivery by default. Quotes are indicative until signed.</p>
+    </div>
+    <div class="form-card">
+      <form id="rfq-form" data-form="rfq" data-prefill action="/api/rfq" method="post" novalidate
+        data-success="We’ll send a quote within one business day. Quotes are indicative until signed.">
+        <div class="field-pair">
+          <div class="field"><label for="email">Work email <span class="required">(required)</span></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" maxlength="254" required aria-describedby="email-error"><span id="email-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="company">Company <span class="required">(required)</span></label><input id="company" name="company" type="text" autocomplete="organization" maxlength="120" required aria-describedby="company-error"><span id="company-error" class="field-error" hidden></span></div>
+        </div>
+        <div class="field-pair">
+          <div class="field"><label for="gpu">GPU <span class="required">(required)</span></label><select id="gpu" name="gpu" required aria-describedby="gpu-error"><option value="H100">H100</option><option value="H200">H200</option><option value="B200">B200</option><option value="A100">A100</option></select><span id="gpu-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="count">Number of GPUs <span class="required">(required)</span></label><input id="count" name="count" type="number" inputmode="numeric" min="1" max="100000" step="1" placeholder="512" required aria-describedby="count-error"><span id="count-error" class="field-error" hidden></span></div>
+        </div>
+        <div class="field-pair">
+          <div class="field"><label for="start">Start date <span class="required">(required)</span></label><input id="start" name="start" type="date" required aria-describedby="start-error"><span id="start-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="end">End date <span class="required">(required)</span></label><input id="end" name="end" type="date" required aria-describedby="end-error"><span id="end-error" class="field-error" hidden></span></div>
+        </div>
+        <fieldset class="field type-field">
+          <legend>Contract type <span class="required">(required)</span></legend>
+          <div class="type-options">
+            <label><input type="radio" name="type" value="cap" checked><span>Price cap</span></label>
+            <label><input type="radio" name="type" value="lock"><span>Fixed price</span></label>
+            <label><input type="radio" name="type" value="floor"><span>Price floor</span></label>
+          </div>
+          <span id="type-error" class="field-error" hidden></span>
+        </fieldset>
+        <div class="field"><label for="strike">Target price per GPU-hour, USD <span class="optional">(optional)</span></label><input id="strike" name="strike" type="number" inputmode="decimal" min="0.01" max="1000" step="0.01" placeholder="2.50" aria-describedby="strike-error"><span id="strike-error" class="field-error" hidden></span></div>
+        <div class="field"><label for="notes">Notes <span class="optional">(optional)</span></label><textarea id="notes" name="notes" rows="3" maxlength="500" placeholder="Region, interconnect, flexibility on dates…" aria-describedby="notes-error"></textarea><span id="notes-error" class="field-error" hidden></span></div>
+        <div class="honeypot" aria-hidden="true"><label for="nickname">Leave this field empty</label><input id="nickname" name="nickname" type="text" tabindex="-1" autocomplete="off"></div>
+        <button class="btn btn-ink" type="submit">Request a quote</button>
+        <p class="form-message" role="status" aria-live="polite" aria-atomic="true"></p>
+        <p class="signup-note">We use your details only to send the quote. <a href="/privacy">How we use your information</a>.</p>
+        <noscript><p class="field-error">JavaScript is required to send this form. Nothing has been sent.</p></noscript>
+      </form>
+    </div>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Dodona is in development. Real-money trading is unavailable.</p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/contact">Contact</a><a href="/signup">Open an account</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>
