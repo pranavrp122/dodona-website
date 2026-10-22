@@ -50,6 +50,15 @@ Canonical URLs, absolute discovery links, and the sitemap use **only `APP_ORIGIN
 
 Agents may submit a signup only when a user asks to join and provides their email. They fetch a token from `GET /api/waitlist/status`, wait at least 1.5 seconds, then POST the JSON fields described by the schema. A confirmed `200 {"status":"saved"}` is the only success signal; configured Supabase remains required. The existing token checks, origin checks, rate limits, validation, and duplicate handling apply. No cross-origin browser permissions or credential access were added. API interest values retain the original vocabulary; the guide maps them to the clearer form labels. Agent instructions do not expose an endpoint to trade, request a buyback, provision compute, or read/remove signup records.
 
+## Contract values (sample)
+
+`/contracts` is a listing board of sample GPU rental contracts. Each one has a daily **Dodona Value**, much like a home-value estimate for compute. `/contracts/<id>` shows one contract with its value, a 90-day value history, a term sheet and the method in plain words. "List for sale" and "Make an offer" are demo-only forms. They create, send and store nothing, and Dodona never holds funds. The contracts and loans are illustrative and name no real counterparties. Dodona Values are impersonal analytics, not ratings or offers.
+
+- `GET /api/prices` returns the Ornn daily GPU index for H100, H200, B200, A100 and RTX 5090. `lib/prices.mjs` fetches it server-side, with a 5 s timeout per request and a one-hour cache. When Ornn is unreachable it serves the saved copy in `data/ornn-index.json` with `live: false`.
+- `GET /api/contracts` returns the board: contracts with valuations, region totals, and the lender view of the sample GPU-backed loans. `GET /api/contracts/<id>` returns one contract with its valuation, history and inputs. An unknown id returns a 404.
+- The test valuation method `v0.1-test` lives in `lib/valuation.mjs`. Its formulas and assumptions are documented in `docs/valuation-v0.md`. The sample book is `data/sample-contracts.json`.
+- The pages render on the server, so they read without JavaScript. `contracts.js` and `contract.js` refresh the values from the API and run the map filter and demo forms. They share `contracts-view.js` with the server. The page styles are in `contracts.css`.
+
 ## MCP reservation demo
 
 The app serves a **stateless Streamable HTTP MCP server at `/mcp`**, using the pinned official SDK. Connect `http://127.0.0.1:3000/mcp` from a local compatible MCP client. For remote Claude/ChatGPT clients that support MCP connectors, first deploy the app behind HTTPS and add `<APP_ORIGIN>/mcp` in that client's connector settings. The endpoint must be connected before a chat can use its tools. The code has been verified with the SDK client, not by connecting a user's Claude or ChatGPT account. No public deployment or automatic connector registration has been performed.

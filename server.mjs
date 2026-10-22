@@ -8,6 +8,8 @@ import { createClientAddressResolver } from './lib/proxy.mjs';
 import { readSiteSettings, collectionDetailsReady, renderPage } from './lib/site.mjs';
 import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
+import { getPriceHistory } from './lib/prices.mjs';
+import { contractsDocument } from './lib/contracts.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -19,6 +21,10 @@ const staticFiles = new Map([
   ['/checkout.js', ['checkout.js', 'text/javascript; charset=utf-8']],
   ['/paper-order.js', ['paper-order.js', 'text/javascript; charset=utf-8']],
   ['/demo-model.js', ['demo-model.js', 'text/javascript; charset=utf-8']],
+  ['/contracts.css', ['contracts.css', 'text/css; charset=utf-8']],
+  ['/contracts.js', ['contracts.js', 'text/javascript; charset=utf-8']],
+  ['/contract.js', ['contract.js', 'text/javascript; charset=utf-8']],
+  ['/contracts-view.js', ['contracts-view.js', 'text/javascript; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -95,6 +101,7 @@ export function createApp({
   now = Date.now,
   rateLimit = 20,
   logger = console,
+  prices = getPriceHistory,
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -201,13 +208,14 @@ export function createApp({
         return response.end(request.method === 'HEAD' ? undefined : content);
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
-      // Temporary until the prices module lands.
-      if (url.pathname === '/api/prices' && request.method === 'GET') {
-        let data;
-        try { data = JSON.parse(await readFile(resolve(root, 'data/ornn-index.json'), 'utf8')); }
-        catch { return json(response, 503, { message: 'Prices are unavailable.' }); }
-        const asOf = Object.values(data).map(series => series.at(-1)?.[0] || '').sort().at(-1);
-        return json(response, 200, { asOf, source: 'ornn', live: false, data });
+      if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
+      if (['GET', 'HEAD'].includes(request.method)) {
+        const page = await contractsDocument(url, { prices, now, settings: siteSettings, origin });
+        if (page) {
+          const content = Buffer.from(page.body);
+          response.writeHead(page.status, { 'Content-Type': page.type, 'Content-Length': content.length, 'Cache-Control': page.cacheControl });
+          return response.end(request.method === 'HEAD' ? undefined : content);
+        }
       }
       if (url.pathname === '/readyz' && request.method === 'GET') {
         limit(clientAddress(request), 'status', 120, 60000);

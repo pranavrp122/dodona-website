@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><!-- C_TITLE --> · Contract value — Dodona</title>
+  <meta name="description" content="A sample GPU rental contract with its daily Dodona Value, value history, term sheet and the method behind the number.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/contracts.css">
+  <script type="module" src="/contract.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Contract values"><a href="/contracts">All contract values</a><a href="/">Back to Dodona</a></nav></div></header>
+  <main id="main">
+    <section class="sec c-detail-top" aria-labelledby="contract-heading">
+      <div class="wrap">
+        <a class="text-link c-back" href="/contracts"><span aria-hidden="true">←</span> The board</a>
+        <h1 id="contract-heading" class="c-title"><!-- C_TITLE --></h1>
+        <div class="c-detail-grid">
+          <div class="c-summary" id="c-summary"><!-- C_SUMMARY --></div>
+          <div class="c-actions" id="c-actions"><!-- C_ACTIONS --></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec c-chart-sec" aria-labelledby="chart-heading">
+      <div class="wrap">
+        <h2 id="chart-heading" class="c-h2">Value over the last 90 days</h2>
+        <p class="fine">Each point re-values the contract on that day, using that day's index and the hours still remaining then.</p>
+        <div class="c-chart" id="c-chart"><!-- C_CHART --></div>
+      </div>
+    </section>
+
+    <section class="sec c-terms-sec" aria-labelledby="terms-heading">
+      <div class="wrap">
+        <h2 id="terms-heading" class="c-h2">Term sheet</h2>
+        <div class="c-terms-grid" id="c-terms"><!-- C_TERMS --></div>
+        <details class="c-method">
+          <summary>How this value is computed</summary>
+          <ol>
+            <li><strong>Market today.</strong> Take the latest index price for this GPU. Measure how much it moves week to week (volatility) and its recent trend (drift). Weekly changes are used because the daily index swings and snaps back, which overstates risk over months. Cap the trend at 30% a year and halve it, because 90 days is weak evidence.</li>
+            <li><strong>Expected prices.</strong> Project the price forward month by month along that trend: F(t) = index × e^(drift × t).</li>
+            <li><strong>This exact contract.</strong> Adjust for location and hardware. Europe is 4% higher. PCIe is 15% lower than SXM with InfiniBand.</li>
+            <li><strong>Hours left.</strong> Count the GPU-hours left in each remaining month. The remaining cost is those hours × the contract price.</li>
+            <li><strong>Provider risk.</strong> Read a default risk from the provider's bond price. A 78c bond implies about 11% a year of credit spread. Weight later months by the chance the provider is still there.</li>
+            <li><strong>Discount.</strong> Bring each month back to today at 5% a year.</li>
+            <li><strong>Value.</strong> Add up hours × (expected market price − contract price), discounted and credit-weighted. If the holder can cancel, months where the market is below the contract price count as zero.</li>
+            <li><strong>Range.</strong> Re-run with prices one volatility move lower and higher over the contract's midpoint tenor.</li>
+            <li><strong>Cents on the dollar.</strong> (Remaining cost + value) ÷ remaining cost × 100. Above 100 means the locked price beats the market.</li>
+          </ol>
+          <p class="fine">Method v0.1-test. Formulas and assumptions are in the project's valuation note. Buyer credit, seasonality and liquidity are not modelled yet.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Sample contract for demonstration. Parties and terms are illustrative. This is not an offer. Dodona Values are illustrative, impersonal analytics, not ratings or advice. Dodona never holds funds.</p><div class="footer-links"><a href="/contracts">All contract values</a><a href="/">Back to Dodona</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

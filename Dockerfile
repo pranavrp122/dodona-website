@@ -5,8 +5,9 @@ COPY --chown=node:node package.json package-lock.json ./
 RUN --mount=type=secret,id=npm_ca \
     if [ -f /run/secrets/npm_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/npm_ca; fi; \
     npm ci --omit=dev --ignore-scripts --no-audit --no-fund --cache /tmp/npm-cache && rm -rf /tmp/npm-cache
-COPY --chown=node:node index.html privacy.html agents.html styles.css waitlist.js checkout.js paper-order.js demo-model.js server.mjs package.json site.json ./
+COPY --chown=node:node index.html privacy.html agents.html styles.css waitlist.js checkout.js paper-order.js demo-model.js contracts.html contract.html contracts.css contracts.js contract.js contracts-view.js server.mjs package.json site.json ./
 COPY --chown=node:node lib ./lib
+COPY --chown=node:node data ./data
 COPY --chown=node:node assets ./assets
 USER node
 EXPOSE 3000
