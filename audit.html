@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Audit trail — Dodona</title>
+  <meta name="description" content="Every quote, booking, exercise and daily mark in the Dodona demo, appended to a SHA-256 hash chain so each number can be reconciled.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/audit.css">
+  <script type="module" src="/audit.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Audit trail"><a href="/contracts">Contract values</a><a href="/audit" aria-current="page">Audit trail</a><a href="/">Back to Dodona</a></nav></div></header>
+  <main id="main">
+    <section class="sec a-hero" aria-labelledby="audit-heading">
+      <div class="wrap">
+        <p class="eyebrow">Demo · Append-only log</p>
+        <h1 id="audit-heading" class="a-title">Audit trail</h1>
+        <p class="a-lede">Every quote, booking, exercise and daily mark is appended here with a SHA-256 chain, so each number can be reconciled later. Demo entries are simulated.</p>
+        <div class="a-verify">
+          <button class="btn btn-ink btn-sm" id="a-verify" type="button" hidden>Verify chain in your browser</button>
+          <p class="a-result" id="a-result" role="status" aria-live="polite"><!-- A_STATUS --></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec a-log-sec" aria-labelledby="log-heading">
+      <div class="wrap">
+        <div class="a-log-head">
+          <h2 id="log-heading" class="a-h2">Latest entries</h2>
+          <p class="fine" id="a-updated">Newest first. Each row's hash covers its own fields and the hash of the row before it.</p>
+        </div>
+        <nav class="a-filters" id="a-filters" aria-label="Filter by kind"><!-- A_FILTERS --></nav>
+        <div class="a-table-wrap">
+          <table class="a-table">
+            <thead><tr><th scope="col">Time</th><th scope="col">Kind</th><th scope="col">Ref</th><th scope="col">Summary</th><th scope="col">Hash</th><th scope="col">Prev</th></tr></thead>
+            <tbody id="a-rows"><!-- A_ROWS --></tbody>
+          </table>
+        </div>
+        <details class="a-how">
+          <summary>How the chain works</summary>
+          <p>Each entry's hash is SHA-256 of the previous entry's hash, a newline, and the entry's fields (id, time, kind, ref, summary, data) as JSON with sorted keys and no spaces. The first entry links to 64 zeros. Changing any past entry changes its hash and breaks every link after it. The verify button fetches the latest entries and recomputes every hash in your browser, without trusting the server's own check.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Demo data. Hashes are real.</p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/contracts">Contract values</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

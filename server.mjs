@@ -10,6 +10,7 @@ import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
 import { getPriceHistory } from './lib/prices.mjs';
 import { contractsDocument } from './lib/contracts.mjs';
+import { auditDocument, acceptEvent, AuditError, recordStartup } from './lib/audit.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -25,6 +26,8 @@ const staticFiles = new Map([
   ['/contracts.js', ['contracts.js', 'text/javascript; charset=utf-8']],
   ['/contract.js', ['contract.js', 'text/javascript; charset=utf-8']],
   ['/contracts-view.js', ['contracts-view.js', 'text/javascript; charset=utf-8']],
+  ['/audit.js', ['audit.js', 'text/javascript; charset=utf-8']],
+  ['/audit.css', ['audit.css', 'text/css; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -213,6 +216,15 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
+      if (url.pathname === '/api/audit/events' && request.method === 'POST') {
+        const expectedOrigin = origin || `http://${request.headers.host}`;
+        if (request.headers.origin && request.headers.origin !== expectedOrigin || request.headers['sec-fetch-site'] === 'cross-site') throw new RequestError(403, 'Use the Dodona site origin.');
+        limit(clientAddress(request), 'audit', 30, 60000);
+        if (!/^application\/json(?:\s*;|$)/i.test(request.headers['content-type'] || '')) throw new RequestError(415, 'Content-Type must be application/json.');
+        const body = await readJson(request);
+        try { return json(response, 202, acceptEvent(body)); }
+        catch (error) { throw error instanceof AuditError ? new RequestError(error.status, error.message) : error; }
+      }
       if (placeholderRoutes.has(`${request.method} ${url.pathname}`)) return json(response, 501, { error: 'not implemented' });
       if (['GET', 'HEAD'].includes(request.method) && placeholderPages.has(url.pathname)) {
         const content = Buffer.from(renderPage(comingSoonPage(placeholderPages.get(url.pathname)), { settings: siteSettings, origin, path: url.pathname }));
@@ -221,6 +233,14 @@ export function createApp({
       }
       if (['GET', 'HEAD'].includes(request.method)) {
         const page = await contractsDocument(url, { prices, now, settings: siteSettings, origin });
+        if (page) {
+          const content = Buffer.from(page.body);
+          response.writeHead(page.status, { 'Content-Type': page.type, 'Content-Length': content.length, 'Cache-Control': page.cacheControl });
+          return response.end(request.method === 'HEAD' ? undefined : content);
+        }
+      }
+      if (['GET', 'HEAD'].includes(request.method)) {
+        const page = await auditDocument(url, { settings: siteSettings, origin });
         if (page) {
           const content = Buffer.from(page.body);
           response.writeHead(page.status, { 'Content-Type': page.type, 'Content-Length': content.length, 'Cache-Control': page.cacheControl });
@@ -277,6 +297,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     server.on('error', error => { console.error(error.code === 'EADDRINUSE' ? 'The requested port is already in use.' : 'Server startup failed.'); process.exitCode = 1; });
     server.listen(port, host, () => {
       console.log(`Dodona server listening on port ${port}.`);
+      recordStartup();
       console.log(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Supabase configured; signup requests will verify storage.' : 'Supabase is not configured. Signups will honestly show unavailable.');
     });
   } catch {

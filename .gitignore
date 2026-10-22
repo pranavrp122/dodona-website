@@ -6,3 +6,4 @@ artifacts/
 *.log
 exports/
 *.csv
+data/audit.jsonl
