@@ -10,6 +10,7 @@ import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
 import { getPriceHistory } from './lib/prices.mjs';
 import { contractsDocument } from './lib/contracts.mjs';
+import { createMarketSource, handleMethodology } from './lib/market.mjs';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
 const interests = new Set(['', 'Individual trading', 'Business hedging', 'Partnership']);
@@ -25,6 +26,8 @@ const staticFiles = new Map([
   ['/contracts.js', ['contracts.js', 'text/javascript; charset=utf-8']],
   ['/contract.js', ['contract.js', 'text/javascript; charset=utf-8']],
   ['/contracts-view.js', ['contracts-view.js', 'text/javascript; charset=utf-8']],
+  ['/market.js', ['market.js', 'text/javascript; charset=utf-8']],
+  ['/market.css', ['market.css', 'text/css; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -106,6 +109,7 @@ export function createApp({
   rateLimit = 20,
   logger = console,
   prices = getPriceHistory,
+  market = createMarketSource({ prices }),
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -213,6 +217,8 @@ export function createApp({
       }
       if (url.pathname === '/healthz' && request.method === 'GET') return json(response, 200, { status: 'ok' });
       if (url.pathname === '/api/prices' && request.method === 'GET') return json(response, 200, await prices(), { 'Cache-Control': 'public, max-age=300' });
+      if (url.pathname === '/api/market' && request.method === 'GET') return json(response, 200, await market(), { 'Cache-Control': 'public, max-age=300' });
+      if (url.pathname === '/methodology' && ['GET', 'HEAD'].includes(request.method)) return await handleMethodology(request, response, { settings: siteSettings, origin });
       if (placeholderRoutes.has(`${request.method} ${url.pathname}`)) return json(response, 501, { error: 'not implemented' });
       if (['GET', 'HEAD'].includes(request.method) && placeholderPages.has(url.pathname)) {
         const content = Buffer.from(renderPage(comingSoonPage(placeholderPages.get(url.pathname)), { settings: siteSettings, origin, path: url.pathname }));
