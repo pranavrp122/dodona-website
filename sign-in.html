@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sign in · Demo platform — Dodona</title>
+  <meta name="description" content="Sign in to the Dodona demo platform with a demo email, or use one of the seeded demo accounts.">
+  <meta name="robots" content="noindex">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
+  <script type="module" src="/sign-in.js"></script>
+</head>
+<body class="d-body">
+  <!-- P_SPRITE -->
+  <a class="skip-link" href="#main">Skip to content</a>
+  <!-- P_TOP -->
+  <main id="main" class="p-signin-wrap">
+    <header class="p-signin-head">
+      <p class="eyebrow">Dodona · Demo platform</p>
+      <h1>Sign in to the console</h1>
+      <p id="si-lede">Use any email to make a demo account; nothing is verified and no real money moves. Buyers and lenders land in the console, providers in the provider portal and admins in the admin portal.</p>
+    </header>
+
+    <section class="c-ctr p-signin-head" id="si-signed" aria-label="Already signed in" hidden>
+      <div class="p-signed"><p>You are signed in as <b id="si-signed-who"></b>.</p>
+        <div class="c-acts"><a class="btn btn-primary" id="si-signed-go" href="/dashboard">Open your console</a><button type="button" class="btn" id="si-signed-out">Sign out</button></div></div>
+    </section>
+
+    <div class="p-signin" id="si-forms">
+      <div class="c-stack">
+        <section class="c-ctr" aria-labelledby="si-h">
+          <div class="c-ctr-h"><div><h2 id="si-h">Sign in</h2><p>With a demo account you made, or one of the seeded ones.</p></div></div>
+          <form class="p-form" id="si-form" method="post" action="/sign-in" novalidate>
+            <div class="field"><label for="si-email">Email</label><input id="si-email" type="email" autocomplete="username" required maxlength="254" spellcheck="false"></div>
+            <div class="field"><label for="si-pass">Password</label><input id="si-pass" type="password" autocomplete="current-password" required minlength="8" maxlength="128"></div>
+            <p class="p-err" id="si-err" role="alert"></p>
+            <div class="c-acts"><button type="submit" class="btn btn-primary" id="si-submit"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-log-in"/></svg><span>Sign in</span></button></div>
+          </form>
+        </section>
+
+        <section class="c-ctr" aria-labelledby="si-demo-h">
+          <div class="c-ctr-h"><div><h2 id="si-demo-h">Demo accounts</h2><p>Seeded with orders, prints and emails. "Use" fills the sign-in form.</p></div></div>
+          <ul class="p-demo-list">
+            <li><div><b>Sample Labs · buyer</b><span>demo@dodona.markets · seven paid orders loaded</span></div><button type="button" class="btn btn-sm" data-fill="demo@dodona.markets">Use</button></li>
+            <li><div><b>Meridian Credit · lender</b><span>credit@meridian.example · GPU fleet facilities</span></div><button type="button" class="btn btn-sm" data-fill="credit@meridian.example">Use</button></li>
+            <li><div><b>Northwind Compute · provider</b><span>ops@northwind.example · the mock neocloud's portal</span></div><button type="button" class="btn btn-sm" data-fill="ops@northwind.example">Use</button></li>
+            <li><div><b>Dodona · admin</b><span>admin@dodona.markets · every demo account</span></div><button type="button" class="btn btn-sm" data-fill="admin@dodona.markets">Use</button></li>
+          </ul>
+          <p class="p-demo-pass">Password for all four: <code>demo-dodona-2026</code></p>
+        </section>
+      </div>
+
+      <section class="c-ctr" id="create" aria-labelledby="su-h">
+        <div class="c-ctr-h"><div><h2 id="su-h">Create a demo account</h2><p>Any email works, real or made up. It is never verified or written to; the platform's emails land in a mock outbox you can read in the console.</p></div></div>
+        <form class="p-form" id="su-form" method="post" action="/sign-in" novalidate>
+          <div class="field"><label for="su-email">Email</label><input id="su-email" type="email" autocomplete="email" required maxlength="254" spellcheck="false" placeholder="you@example.com"></div>
+          <div class="field"><label for="su-company">Company</label><input id="su-company" type="text" autocomplete="organization" required maxlength="120" placeholder="Your company"></div>
+          <div class="field"><label for="su-role">Account type</label>
+            <select id="su-role">
+              <option value="buyer">Buyer · buys compute, takes caps and fixed prices</option>
+              <option value="lender">Lender · finances GPU fleets</option>
+              <option value="provider">Provider · a neocloud selling capacity</option>
+            </select></div>
+          <div class="field"><label for="su-pass">Password</label><input id="su-pass" type="password" autocomplete="new-password" required minlength="8" maxlength="128" aria-describedby="su-pass-hint"><span class="p-hint" id="su-pass-hint">8 to 128 characters.</span></div>
+          <p class="p-err" id="su-err" role="alert"></p>
+          <div class="c-acts"><button type="submit" class="btn btn-primary" id="su-submit"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg><span>Create and sign in</span></button></div>
+          <p class="fine">A provider account gets its own mock neocloud, named after the company, with default capacity.</p>
+        </form>
+      </section>
+    </div>
+  </main>
+  <!-- P_FOOTER -->
+</body>
+</html>

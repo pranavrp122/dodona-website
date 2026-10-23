@@ -20,6 +20,9 @@ import { createPlatform, platformEnabled, isPlatformPage } from './lib/platform.
 import { platformRoutes, settleAccount } from './lib/platform-routes.mjs';
 import { createAdminPortal } from './lib/admin-portal.mjs';
 import { createMirrorService } from './lib/crm-mirror.mjs';
+// --- buyer pages (feature/platform-buyer) ---
+import { buyerPage, BUYER_ASSETS } from './lib/platform-pages.mjs';
+// --- end buyer pages ---
 
 const QUOTE_AUDIT_INTERVAL_MS = 15000;
 const dateOnly = iso => String(iso).slice(0, 10);
@@ -354,6 +357,17 @@ export function createApp({
       if ((url.pathname === '/api/waitlist' || url.pathname === '/api/waitlist/status') && !['GET', 'HEAD'].includes(request.method)) {
         return json(response, 405, { message: 'Method not allowed.' });
       }
+      // --- buyer pages (feature/platform-buyer): sign-in, offers, checkout, orders, their scripts; 404 when the platform is off ---
+      if (['GET', 'HEAD'].includes(request.method) && platform) {
+        const asset = BUYER_ASSETS.find(([path]) => path === url.pathname);
+        const page = asset ? null : await buyerPage(url.pathname, { settings: siteSettings, origin });
+        if (asset || page) {
+          const content = asset ? await readFile(resolve(root, asset[1])) : Buffer.from(page.body);
+          response.writeHead(200, { 'Content-Type': asset ? asset[2] : page.type, 'Content-Length': content.length, 'Cache-Control': 'no-cache' });
+          return response.end(request.method === 'HEAD' ? undefined : content);
+        }
+      }
+      // --- end buyer pages ---
       if (['GET', 'HEAD'].includes(request.method) && staticFiles.has(url.pathname)) {
         const [path, type] = staticFiles.get(url.pathname);
         let content = await readFile(resolve(root, path));

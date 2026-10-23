@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Offers · Console — Dodona</title>
+  <meta name="description" content="Demo board of price caps, price floors and fixed prices offered by neoclouds.">
+  <meta name="robots" content="noindex">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
+  <script type="module" src="/offers.js"></script>
+</head>
+<body class="d-body">
+  <!-- P_SPRITE -->
+  <a class="skip-link" href="#main">Skip to content</a>
+  <!-- P_TOP -->
+  <div class="d-app">
+    <!-- P_RAIL -->
+    <main id="main" class="d-main">
+      <section class="c-ctr p-gate" id="p-gate" aria-labelledby="p-gate-h" hidden>
+        <p class="eyebrow">Dodona · Demo</p>
+        <h1 id="p-gate-h">Sign in to see offers</h1>
+        <p>Offers come from the demo neoclouds and are priced on the Ornn index. Sign in with a demo account, or make one with any email.</p>
+        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create a demo account</a></div>
+      </section>
+
+      <div class="p-content" id="p-content">
+        <header class="c-page-head">
+          <nav class="c-crumbs" aria-label="Breadcrumb"><a href="/dashboard#overview">Console</a><span aria-hidden="true">/</span><span aria-current="page">Offers</span></nav>
+          <div class="c-page-row">
+            <div class="c-page-title">
+              <h1>Offers from neoclouds</h1>
+              <p>Price caps, price floors and fixed prices on reserved GPU blocks. Caps and floors settle on the average daily index over the window.</p>
+            </div>
+            <div class="c-acts"><a class="btn btn-primary" href="#custom" id="of-own"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg><span>Price your own</span></a></div>
+          </div>
+        </header>
+
+        <section class="c-ctr" aria-labelledby="of-h">
+          <div class="c-ctr-h"><div><h2 id="of-h">Board <span class="c-count" id="of-count"></span> <span class="tag d-tag-demo">demo data</span></h2><p>Premiums priced at seed time on the real index series. Any account can take any kind in the demo.</p></div></div>
+          <form class="p-filters" id="of-filters" method="get" action="/offers">
+            <div class="field"><label for="of-gpu">GPU</label><select id="of-gpu" name="gpu"><option value="">All GPUs</option><option>H100</option><option>H200</option><option>B200</option><option>A100</option></select></div>
+            <div class="field"><label for="of-region">Region</label><select id="of-region" name="region"><option value="">All regions</option><option>US East</option><option>US West</option><option>Europe</option></select></div>
+            <div class="field"><label for="of-kind">Kind</label><select id="of-kind" name="kind"><option value="">All kinds</option><option value="cap">Price cap</option><option value="floor">Price floor</option><option value="lock">Fixed price</option></select></div>
+          </form>
+          <div class="d-scroll">
+            <table class="d-table p-offers">
+              <caption class="visually-hidden">Offers on the board</caption>
+              <thead><tr><th scope="col">Neocloud</th><th scope="col">Compute</th><th scope="col">Kind</th><th scope="col">Window</th><th scope="col" class="r">Strike or price</th><th scope="col" class="r">Premium</th><th scope="col" class="r">Break-even</th><th scope="col" class="r">Available</th><th scope="col"><span class="visually-hidden">Action</span></th></tr></thead>
+              <tbody id="of-rows"><tr><td colspan="9" class="d-muted">Offers load with JavaScript.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="c-ctr" id="custom" aria-labelledby="cu-h" tabindex="-1">
+          <div class="c-ctr-h"><div><h2 id="cu-h">Price your own</h2><p>Pick the block and the window; the price comes from the same model as the board (black76-asian-v0).</p></div></div>
+          <form class="p-form" id="cu-form" method="post" action="/offers" novalidate>
+            <div class="p-row">
+              <div class="field"><label for="cu-kind">Kind</label><select id="cu-kind"><option value="cap">Price cap · pay at most the cap</option><option value="floor">Price floor · usually bought by providers</option><option value="lock">Fixed price · pay a set price</option></select></div>
+              <div class="field"><label for="cu-gpu">GPU</label><select id="cu-gpu"><option>H100</option><option>H200</option><option>B200</option><option>A100</option></select></div>
+              <div class="field"><label for="cu-count">GPUs</label><select id="cu-count"><option>8</option><option>16</option><option>32</option><option selected>64</option><option>128</option><option>256</option></select></div>
+            </div>
+            <div class="p-row">
+              <div class="field"><label for="cu-start">Window starts (UTC)</label><input id="cu-start" type="date" required></div>
+              <div class="field"><label for="cu-end">Window ends (UTC)</label><input id="cu-end" type="date" required></div>
+              <div class="field" id="cu-strike-field"><label for="cu-strike">Strike, $ per GPU-hour</label><input id="cu-strike" type="number" inputmode="decimal" min="0.01" max="100" step="0.01" aria-describedby="cu-strike-hint"><span class="p-hint" id="cu-strike-hint">Blank uses today's forward, rounded to $0.05.</span></div>
+            </div>
+            <p class="p-err" id="cu-err" role="alert"></p>
+            <div class="c-acts"><button type="submit" class="btn" id="cu-quote"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-receipt"/></svg><span>Get a price</span></button></div>
+          </form>
+          <div class="p-quote" id="cu-out" hidden></div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <!-- P_FOOTER -->
+</body>
+</html>

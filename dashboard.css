@@ -471,8 +471,7 @@ main[data-screen="overview"] .c-market .mk-lower{display:none}
   .c-tab{flex-direction:column;justify-content:center;gap:3px;min-height:52px;padding:6px 2px;border-left:0;border-top:3px solid transparent;border-radius:6px;font-size:11px}
   .c-tab[aria-current="page"]{border-top-color:var(--c-accent)}
   .d-rail .d-lbl{position:static;opacity:1;transform:none;background:none;color:inherit;padding:0;font:600 11px/1.15 var(--body);text-align:center;white-space:normal;pointer-events:auto}
-  .d-rail.is-more .c-extra{display:block;grid-row:1}
-  .d-rail.is-more>ul>li:not(.c-extra),.d-rail.is-more>.c-more-tab{grid-row:2}
+  .d-rail.is-more .c-extra{display:block;order:-1}
   .d-badge{position:absolute;top:2px;left:calc(50% + 4px);right:auto}
   .c-brand-sub,.c-acct-text,.c-th-lbl{display:none}
   .c-acct{padding-left:8px}

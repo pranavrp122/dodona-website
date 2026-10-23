@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/market.css">
   <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
   <script type="module" src="/dashboard.js"></script>
   <script src="/market.js" defer></script>
 </head>
@@ -59,6 +60,17 @@
     <symbol id="i-message-square" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
     <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
     <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+    <symbol id="i-credit-card" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></symbol>
+    <symbol id="i-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-fast-forward" viewBox="0 0 24 24"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></symbol>
+    <symbol id="i-skip-forward" viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" x2="19" y1="5" y2="19"/></symbol>
+    <symbol id="i-arrow-down-to-line" viewBox="0 0 24 24"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></symbol>
+    <symbol id="i-ban" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="i-log-in" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></symbol>
+    <symbol id="i-activity" viewBox="0 0 24 24"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></symbol>
   </svg>
 
   <a class="skip-link" href="#main">Skip to content</a>
@@ -67,16 +79,14 @@
     <span class="c-brand">Dodona <span class="c-brand-sub">Console</span></span>
     <span class="c-demo">Demo</span>
     <span class="c-spacer"></span>
+    <div class="p-clock" id="p-clock" hidden></div>
     <button type="button" class="c-top-btn" id="d-theme" data-choice="system" aria-label="Theme: system. Switch to light.">
       <svg class="ic c-th-light" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
       <svg class="ic c-th-dark" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>
       <svg class="ic c-th-system" aria-hidden="true" focusable="false"><use href="#i-sun-moon"/></svg>
       <span class="c-th-lbl" id="d-theme-lbl">System</span>
     </button>
-    <div class="c-acct" role="group" aria-label="Account">
-      <span class="c-acct-text"><span class="c-acct-org" data-bind="org">Sample Labs</span><span class="c-acct-role" data-bind="role">Buys compute</span></span>
-      <span class="d-kyb" data-bind="kyb">KYB verified</span>
-    </div>
+    <div class="p-acct" id="p-acct" hidden></div>
   </header>
   <div class="c-strip" role="note"><b>Demo</b><span><!-- D_BANNER --></span><span class="d-backing">Every contract is backed by reserved GPUs at a partner neocloud (simulated). Dodona never holds funds and never takes the other side.</span></div>
   <div class="d-stale" id="d-stale" role="alert" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-triangle-alert"/></svg><span>Index is 3 days old · quotes paused</span><button type="button" class="btn btn-sm" data-act="stale-dismiss"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-x"/></svg><span>Dismiss</span></button></div>
@@ -87,11 +97,13 @@
       <ul aria-labelledby="d-g-portfolio">
         <li><a class="c-tab" href="#overview" data-nav="overview"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-layout-dashboard"/></svg><span class="d-lbl">Overview</span></a></li>
         <li><a class="c-tab" href="#positions" data-nav="positions"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-layers"/></svg><span class="d-lbl">Positions</span></a></li>
-        <li><a class="c-tab" href="#alerts" data-nav="alerts"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg><span class="d-lbl">Alerts</span><span class="d-badge" id="d-badge" hidden></span></a></li>
+        <li><a class="c-tab" href="/orders" data-nav="orders"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-receipt"/></svg><span class="d-lbl">Orders</span></a></li>
+        <li class="c-extra"><a class="c-tab" href="#alerts" data-nav="alerts"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-bell"/></svg><span class="d-lbl">Alerts</span><span class="d-badge" id="d-badge" hidden></span></a></li>
       </ul>
       <p class="c-nav-group" id="d-g-market">Market</p>
       <ul aria-labelledby="d-g-market">
-        <li><a class="c-tab" href="#market" data-nav="market"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chart-line"/></svg><span class="d-lbl">Index and implied curve</span></a></li>
+        <li class="c-extra"><a class="c-tab" href="#market" data-nav="market"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-chart-line"/></svg><span class="d-lbl">Index and implied curve</span></a></li>
+        <li><a class="c-tab" href="/offers" data-nav="offers"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-tag"/></svg><span class="d-lbl">Offers</span></a></li>
       </ul>
       <p class="c-nav-group" id="d-g-parties">Counterparties</p>
       <ul aria-labelledby="d-g-parties">
@@ -100,6 +112,7 @@
       </ul>
       <p class="c-nav-group" id="d-g-account">Account</p>
       <ul aria-labelledby="d-g-account">
+        <li class="c-extra"><a class="c-tab" href="#emails" data-nav="emails"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg><span class="d-lbl">Emails</span></a></li>
         <li class="c-extra"><a class="c-tab" href="#settings" data-nav="settings"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-settings"/></svg><span class="d-lbl">Settings</span></a></li>
         <li class="c-extra"><a class="c-tab" href="/audit"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-file-text"/></svg><span class="d-lbl">Audit trail</span></a></li>
       </ul>
@@ -112,10 +125,10 @@
         <h1 id="d-signin-h">Sign in to see your positions</h1>
         <p>Your console shows every price cap, fixed price and offtake you hold, with a Dodona Value marked daily against the Ornn index.</p>
         <div class="d-signin-acts">
-          <a class="btn btn-primary" href="/signup">Sign up</a>
-          <button type="button" class="btn" id="d-demo-login">Continue with a demo account</button>
+          <a class="btn btn-primary" href="/sign-in">Sign in</a>
+          <a class="btn" href="/sign-in#create">Create a demo account</a>
         </div>
-        <p class="fine">The demo account is "Sample Labs". Nothing is stored on a server; the session lives in this browser tab.</p>
+        <p class="fine">Any email works for a demo account. The seeded buyer "Sample Labs" is listed on the sign-in page with its password.</p>
       </section>
 
       <div id="d-content">
@@ -128,7 +141,7 @@
             </div>
             <div class="c-acts">
               <button type="button" class="btn" data-act="export"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span>Export CSV</span></button>
-              <a class="btn btn-primary" href="/#paper-order"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg><span>New price cap</span></a>
+              <a class="btn btn-primary" href="/offers"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg><span>New order</span></a>
             </div>
           </div>
         </header>
@@ -140,6 +153,7 @@
               <p class="d-hero-fig"><span class="d-big" id="d-hero-value"><!-- D_HERO_VALUE --></span><span class="d-hero-cents" id="d-hero-cents"><!-- D_HERO_CENTS --></span></p>
               <p class="d-hero-say" id="d-hero-say">What your remaining GPU-hours are worth at today's index, compared with what you committed to pay for them.</p>
               <div class="d-chips" id="d-hero-chips"><!-- D_CHIPS --></div>
+              <p class="p-since" id="d-hero-since"></p>
               <p class="fine d-prices" id="d-prices"><!-- D_PRICES --></p>
             </div>
           </section>
@@ -148,7 +162,8 @@
             <dl class="d-kpis" id="d-kpis"><!-- D_KPIS --></dl>
           </section>
           <section class="c-ctr c-s12" aria-labelledby="d-chart-h">
-            <div class="c-ctr-h"><div><h2 id="d-chart-h">Market value against committed cost <span class="c-count">90 days</span></h2><p>Hover or use the arrow keys on the chart to read a day.</p></div>
+            <div class="c-ctr-h"><div><h2 id="d-chart-h">Market value against committed cost <span class="c-count" id="d-chart-span">90 days</span></h2><p>Hover or use the arrow keys on the chart to read a day.</p>
+              <div class="p-range-row"><div class="p-ranges" role="group" aria-label="Chart range" id="d-ranges"><button type="button" data-range="1d" data-scope="portfolio" aria-pressed="false">1D</button><button type="button" data-range="1w" data-scope="portfolio" aria-pressed="false">1W</button><button type="button" data-range="1m" data-scope="portfolio" aria-pressed="false">1M</button><button type="button" data-range="1y" data-scope="portfolio" aria-pressed="false">1Y</button><button type="button" data-range="ytd" data-scope="portfolio" aria-pressed="false">YTD</button><button type="button" data-range="all" data-scope="portfolio" aria-pressed="true">All</button></div><span class="p-since" id="d-range-since"></span></div></div>
               <ul class="d-legend">
                 <li><i class="is-market"></i>Market value of your remaining hours</li>
                 <li><i class="is-cost"></i>Committed cost (fixed prices and offtakes)</li>
@@ -220,6 +235,11 @@
             <p class="fine c-ctr-foot">Fleet value: discounted rental income over remaining useful life plus a 10% residual, 75% utilisation, 48-month life. Months to breach assume the loan amortises straight-line over 60 months and fleet value runs off with remaining life. Illustrative.</p>
           </section>
         </div>
+
+        <section class="c-ctr" data-screens="emails" aria-labelledby="d-mail-h" hidden>
+          <div class="c-ctr-h"><div><h2 id="d-mail-h">Emails <span class="c-count" id="d-mail-count"></span></h2><p>The mock outbox for this account: receipts, confirmations, window and settlement notices. Open one to read it. Nothing was sent.</p></div></div>
+          <ul class="p-mails" id="d-mails"></ul>
+        </section>
 
         <div class="c-grid" id="d-settings" data-screens="settings" hidden></div>
       </div>

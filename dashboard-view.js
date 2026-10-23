@@ -14,7 +14,7 @@ export const BANNER_LINE = 'Demo account · sample data · nothing here is a liv
 
 const DAY_MS = 86400000;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const KIND_LABEL = { lock: 'Fixed price', call: 'Price cap', offtake: 'Offtake' };
+const KIND_LABEL = { lock: 'Fixed price', call: 'Price cap', put: 'Price floor', offtake: 'Offtake' };
 const MINUS = '−';
 
 /* ---------- formatting ---------- */
@@ -125,7 +125,8 @@ const STATUS_LOOK = {
   upcoming: ['clock', 'info'], window: ['circle-play', 'success'], listed: ['tag', 'accent'], used: ['circle-check', 'neutral'], held: ['calendar', 'neutral'],
   ok: ['circle-check', 'success'], watch: ['triangle-alert', 'warning'], breach: ['circle-x', 'error'],
 };
-const TYPE_ICON = { call: 'arrow-up-to-line', lock: 'lock', offtake: 'package' };
+const TYPE_ICON = { call: 'arrow-up-to-line', put: 'arrow-down-to-line', lock: 'lock', offtake: 'package' };
+const CHOICE_OPEN = ['paid', 'reserving', 'reserved'];
 
 export const pill = (iconName, toneName, text) => `<span class="pill tone-${toneName}">${icon(iconName)}<span>${escapeHtml(text)}</span></span>`;
 export const statusPill = (cls, text) => pill(...(STATUS_LOOK[cls] || ['info', 'neutral']), text);
@@ -136,10 +137,13 @@ export function positionActions(position) {
   const view = { act: 'view', label: 'View', icon: 'eye' };
   if (position.phase === 'used') return [{ ...view, primary: true }];
   if (position.status === 'listed') {
+    if (position.bestBid) return [{ act: 'accept', label: 'Accept the bid', icon: 'check', primary: true }, { act: 'counter', label: 'Counter', icon: 'message-square' }, view];
     return position.bestOfferCents ? [{ act: 'counter', label: 'Counter offer', icon: 'message-square', primary: true }, view] : [{ ...view, primary: true }];
   }
+  // Demo platform orders: the delivery choice and listing stay open from payment until the window starts.
+  if (position.orderRef && !CHOICE_OPEN.includes(position.orderStatus)) return [{ ...view, primary: true }];
   const list = { act: 'list', label: 'List for sale', icon: 'tag' };
-  if (position.kind === 'call') {
+  if (position.kind === 'call' || position.kind === 'put') {
     return [{ act: 'ex', mode: 'deliver', label: 'Exercise', icon: 'zap', primary: true }, list, { act: 'ex', mode: 'resell', label: 'Resell the hours', icon: 'zap' }, { ...view, label: 'View details' }];
   }
   return [{ ...view, primary: true }, list];
@@ -158,22 +162,27 @@ export function actionBar(actions, { id = '', menuId, label = 'More actions' } =
   return `<div class="c-acts">${inline}${more}</div>`;
 }
 
+// How far the expected window average sits on the paying side of the strike: above a cap, below a floor.
+export const optionGap = p => (p.kind === 'put' ? p.pricePerGpuHour - p.valuation.forwardAvg : p.valuation.moneyness);
+export const isOption = p => p.kind === 'call' || p.kind === 'put';
+
 function moneyLine(position) {
-  const m = position.valuation.moneyness;
+  const m = optionGap(position);
+  const put = position.kind === 'put';
   return m > 0
-    ? `<span class="is-gain">window avg +${perHour(m)} over cap</span>`
-    : `<span class="d-oom">window avg ${MINUS}${perHour(-m)} · not needed yet</span>`;
+    ? `<span class="is-gain">window avg ${put ? MINUS : '+'}${perHour(m)} ${put ? 'under floor' : 'over cap'}</span>`
+    : `<span class="d-oom">window avg ${put ? '+' : MINUS}${perHour(-m)} · not needed yet</span>`;
 }
 
 export function ledgerRow(position, { selected = false, today } = {}) {
   const v = position.valuation;
-  const call = position.kind === 'call';
+  const call = isOption(position);
   const used = position.phase === 'used';
   const status = statusText(position, today);
   const id = escapeHtml(position.id);
   const valueCell = used
     ? '<td class="r d-num d-muted">n/a<span class="d-sub">window used</span></td>'
-    : `<td class="r d-num"><span class="${call ? (v.moneyness > 0 ? 'is-gain' : 'd-oom') : tone(v.value)}">${signedUsd(v.value)}</span><span class="d-sub">${signedUsd(v.low)} to ${signedUsd(v.high)}</span>${call ? '' : `<span class="d-sub ${tone(v.centsOnDollar - 100)}">${cents(v.centsOnDollar)} on the dollar</span>`}</td>`;
+    : `<td class="r d-num"><span class="${call ? (optionGap(position) > 0 ? 'is-gain' : 'd-oom') : tone(v.value)}">${signedUsd(v.value)}</span><span class="d-sub">${signedUsd(v.low)} to ${signedUsd(v.high)}</span>${call ? '' : `<span class="d-sub ${tone(v.centsOnDollar - 100)}">${cents(v.centsOnDollar)} on the dollar</span>`}</td>`;
   return `<tr data-row="${id}" tabindex="0" aria-selected="${selected}">
     <td><div class="d-pos"><span class="d-gpu d-gpu-${escapeHtml(position.gpu)}">${escapeHtml(position.gpu)}</span><div>
       <span class="d-pos-l">${escapeHtml(position.count.toLocaleString('en-US'))} ${escapeHtml(position.gpu)} · ${escapeHtml(windowLabel(position.start, position.end))}</span>
@@ -195,7 +204,7 @@ export function positionSummary(portfolio) {
   return portfolio.positions.map(p => {
     const status = statusText(p, portfolio.asOf);
     const used = p.phase === 'used';
-    const value = used ? `<span class="d-muted">${escapeHtml(signedUsd(p.used.saving))} saved</span>` : `<span class="${p.kind === 'call' ? (p.valuation.moneyness > 0 ? 'is-gain' : 'd-oom') : tone(p.valuation.value)}">${escapeHtml(signedUsd(p.valuation.value))}</span>`;
+    const value = used ? `<span class="d-muted">${escapeHtml(signedUsd(p.used.saving))} saved</span>` : `<span class="${isOption(p) ? (optionGap(p) > 0 ? 'is-gain' : 'd-oom') : tone(p.valuation.value)}">${escapeHtml(signedUsd(p.valuation.value))}</span>`;
     return `<li><a class="c-mini-row" href="#positions/${escapeHtml(p.id)}"><span class="d-gpu d-gpu-${escapeHtml(p.gpu)}">${escapeHtml(p.gpu)}</span>
       <span class="c-mini-main"><span class="d-pos-l">${escapeHtml(p.count.toLocaleString('en-US'))} ${escapeHtml(p.gpu)} · ${escapeHtml(kindLabel(p.kind))}</span>${statusPill(status.cls, status.text)}</span>
       <span class="c-mini-val d-num">${value}</span>${icon('arrow-right', 'c-mini-go')}</a></li>`;
@@ -233,8 +242,8 @@ export function savingsToDate(positions, asOf) {
   const rows = positions.filter(p => p.phase === 'used' || p.phase === 'window').map(p => {
     if (p.phase === 'used') return { id: p.id, gpu: p.gpu, count: p.count, kind: p.kind, saving: p.used.saving, basis: 'Window finished · daily index' };
     const hours = p.count * Math.max(0, noonOf(asOf) - Date.parse(p.start)) / HOUR_MS;
-    const gap = p.kind === 'call' ? p.valuation.moneyness : p.valuation.spot * p.valuation.basis - p.pricePerGpuHour;
-    return { id: p.id, gpu: p.gpu, count: p.count, kind: p.kind, saving: (p.kind === 'call' ? Math.max(gap, 0) : gap) * hours, basis: p.kind === 'call' ? 'In window · hours used so far at the expected window average' : "In window · hours used so far at today's index" };
+    const gap = isOption(p) ? optionGap(p) : p.valuation.spot * p.valuation.basis - p.pricePerGpuHour;
+    return { id: p.id, gpu: p.gpu, count: p.count, kind: p.kind, saving: (isOption(p) ? Math.max(gap, 0) : gap) * hours, basis: isOption(p) ? 'In window · hours used so far at the expected window average' : "In window · hours used so far at today's index" };
   });
   return { rows, total: sumOf(rows, r => r.saving) };
 }
@@ -361,6 +370,91 @@ export function pricesLine(prices, methodVersion) {
   return `Ornn daily index as of ${escapeHtml(shortDate(prices.asOf))} ${state} · method ${escapeHtml(methodVersion)}`;
 }
 
+/* ---------- chart ranges ---------- */
+const SHORT_RANGE_POINTS = 45;
+export const RANGES = [['1d', '1D'], ['1w', '1W'], ['1m', '1M'], ['1y', '1Y'], ['ytd', 'YTD'], ['all', 'All']];
+const RANGE_WORDS = { '1d': 'the last day', '1w': 'the last week', '1m': 'the last month', '1y': 'the last year', ytd: 'this year', all: 'all history' };
+const dayMs = date => Date.parse(date.slice(0, 10) + 'T00:00:00Z');
+
+// Start of a range, counted back from the last point's date (UTC days, calendar months and years).
+function rangeStart(range, lastDate) {
+  const d = new Date(dayMs(lastDate));
+  if (range === '1d') d.setUTCDate(d.getUTCDate() - 1);
+  else if (range === '1w') d.setUTCDate(d.getUTCDate() - 7);
+  else if (range === '1m') d.setUTCMonth(d.getUTCMonth() - 1);
+  else if (range === '1y') d.setUTCFullYear(d.getUTCFullYear() - 1);
+  else if (range === 'ytd') return Date.UTC(d.getUTCFullYear(), 0, 1);
+  else return -Infinity;
+  return d.getTime();
+}
+
+/**
+ * Points of a daily history inside a range ending at its last point, the change over them, and whether
+ * the history starts after the range would (then the caption says "since" the first point).
+ */
+export function historyRange(history, range, key = 'value') {
+  const words = RANGE_WORDS[range] || RANGE_WORDS.all;
+  if (!history?.length) return { points: [], change: 0, since: null, partial: false, words };
+  const from = rangeStart(range, history.at(-1).date);
+  let points = history.filter(p => dayMs(p.date) >= from);
+  if (points.length < 2) points = history.slice(-2);
+  const partial = range !== 'all' && dayMs(history[0].date) > from;
+  return { points, change: points.at(-1)[key] - points[0][key], since: points[0].date, partial, words };
+}
+
+export const rangeButtons = (selected, scope) => RANGES.map(([value, label]) => `<button type="button" data-range="${value}" data-scope="${escapeHtml(scope)}" aria-pressed="${value === selected}">${label}</button>`).join('');
+
+export function rangeCaption(r) {
+  if (!r.since) return 'No history yet.';
+  return r.partial ? `History starts ${shortDate(r.since)}, so this shows everything since then.` : `Change over ${r.words}, since ${shortDate(r.since)}.`;
+}
+
+export const rangeChip = (label, value) => `<span class="d-chip"><b>${escapeHtml(label)}</b><span class="${tone(value)}">${escapeHtml(signedUsd(value))}</span></span>`;
+
+/* ---------- what-if payoff on the window average ---------- */
+
+// Result at window average `avg`. Cap: payoff max(avg − K, 0) × hours, never below zero; net subtracts the premium paid
+// and goes down to −premium. Floor: the mirror, max(K − avg, 0). Fixed price: saving (avg − K) × hours, negative below K.
+export function payoffAt(kind, avg, { strike, hours, premiumPaid = 0 }) {
+  if (kind === 'lock' || kind === 'offtake') { const saving = (avg - strike) * hours; return { payoff: saving, net: saving }; }
+  const gap = kind === 'put' ? Math.max(strike - avg, 0) : Math.max(avg - strike, 0);
+  return { payoff: gap * hours, net: gap * hours - premiumPaid };
+}
+
+export const payoffBreakEven = (kind, strike, premiumPerHour = 0) => (kind === 'put' ? strike - premiumPerHour : kind === 'call' ? strike + premiumPerHour : strike);
+
+function payoffLabel(kind, { strike, premiumPaid, be, lo, hi, first, last }) {
+  if (kind === 'lock' || kind === 'offtake') return `Saving against the window average, from ${usd(first)} at ${perHour(lo)} to ${usd(last)} at ${perHour(hi)}; negative below the fixed price ${perHour(strike)}.`;
+  return `${kind === 'put' ? 'Floor' : 'Cap'} payoff, never below zero, and the net result after the ${usd(premiumPaid)} premium, down to ${usd(-premiumPaid)}. Break-even at a window average of ${perHour(be)}.`;
+}
+
+// Payoff and net lines against the window average, the break-even marked, the current slider value as a cross-hair.
+export function payoffChart({ kind, strike, hours, premiumPaid, premiumPerHour, current, lo, hi, width = 560, height = 210 }) {
+  const fixed = kind === 'lock' || kind === 'offtake';
+  const [left, right, top, bottom] = [64, 14, 14, 38];
+  const pts = Array.from({ length: 41 }, (_, i) => lo + (hi - lo) * i / 40).map(avg => ({ avg, ...payoffAt(kind, avg, { strike, hours, premiumPaid }) }));
+  const ticks = niceTicks(Math.min(0, ...pts.map(p => p.net)), Math.max(0, ...pts.map(p => p.payoff)));
+  const [yLo, yHi] = [ticks[0], ticks.at(-1) === ticks[0] ? ticks[0] + 1 : ticks.at(-1)];
+  const x = avg => left + (avg - lo) / (hi - lo) * (width - left - right);
+  const y = v => top + (yHi - v) / (yHi - yLo) * (height - top - bottom);
+  const path = key => pts.map((p, i) => `${i ? 'L' : 'M'}${x(p.avg).toFixed(1)} ${y(p[key]).toFixed(1)}`).join(' ');
+  const grid = ticks.map(t => `<line class="d-grid" x1="${left}" x2="${width - right}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}"/><text class="d-axis" x="${left - 8}" y="${(y(t) + 4).toFixed(1)}" text-anchor="end">${escapeHtml(usd(t))}</text>`).join('');
+  const xTicks = [lo, strike, hi].map(v => `<text class="d-axis" x="${x(v).toFixed(1)}" y="${height - 22}" text-anchor="middle">${escapeHtml(perHour(v))}</text>`).join('');
+  const be = payoffBreakEven(kind, strike, premiumPerHour);
+  const beLine = be >= lo && be <= hi ? `<line class="p-be" x1="${x(be).toFixed(1)}" x2="${x(be).toFixed(1)}" y1="${top}" y2="${height - bottom}"/><text class="p-be-lbl" x="${(x(be) + 4).toFixed(1)}" y="${top + 10}">break-even ${escapeHtml(perHour(be))}</text>` : '';
+  const now = payoffAt(kind, current, { strike, hours, premiumPaid });
+  const lines = fixed ? [['net', 'is-payoff']] : [['payoff', 'is-payoff'], ['net', 'is-net']];
+  const lossZone = yLo < 0 ? `<rect class="p-loss-zone" x="${left}" y="${y(0).toFixed(1)}" width="${width - left - right}" height="${(y(yLo) - y(0)).toFixed(1)}"/>` : '';
+  const label = payoffLabel(kind, { strike, premiumPaid, be, lo, hi, first: pts[0].net, last: pts.at(-1).net });
+  return `<svg class="p-payoff" viewBox="0 0 ${width} ${height}" role="img" aria-label="${escapeHtml(label)}">
+    ${lossZone}${grid}<line class="d-zero" x1="${left}" x2="${width - right}" y1="${y(0).toFixed(1)}" y2="${y(0).toFixed(1)}"/>${xTicks}
+    <text class="d-axis" x="${((left + width - right) / 2).toFixed(1)}" y="${height - 4}" text-anchor="middle">window average, $ per GPU-hour</text>
+    ${beLine}${lines.map(([key, cls]) => `<path class="d-line ${cls}" d="${path(key)}"/>`).join('')}
+    <line class="p-cur" x1="${x(current).toFixed(1)}" x2="${x(current).toFixed(1)}" y1="${top}" y2="${height - bottom}"/>
+    ${lines.map(([key, cls]) => `<circle class="p-cur-dot ${cls}" cx="${x(current).toFixed(1)}" cy="${y(now[key]).toFixed(1)}" r="4.5"/>`).join('')}
+  </svg>`;
+}
+
 /* ---------- charts ---------- */
 
 function niceTicks(min, max, count = 4) {
@@ -384,8 +478,11 @@ export function lineChart(points, { lines, band, zeroArea = false, label, width 
   const y = v => top + (hi - v) / (hi - lo) * (height - top - bottom);
   const path = key => points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p[key]).toFixed(1)}`).join(' ');
   const grid = ticks.map(t => `<line class="d-grid" x1="${left}" x2="${width - right}" y1="${y(t).toFixed(1)}" y2="${y(t).toFixed(1)}"/><text class="d-axis" x="${left - 8}" y="${(y(t) + 4).toFixed(1)}" text-anchor="end">${escapeHtml(usd(t))}</text>`).join('');
-  const months = points.map((p, i) => [p, i]).filter(([p]) => p.date.endsWith('-01'))
-    .map(([p, i]) => `<text class="d-axis" x="${x(i).toFixed(1)}" y="${height - 6}" text-anchor="middle">${MONTHS[Number(p.date.slice(5, 7)) - 1]}</text>`).join('');
+  // Month starts on long ranges; on short ones (a week or a month) the first, middle and last day.
+  const firsts = points.map((p, i) => [p, i]).filter(([p]) => p.date.endsWith('-01'));
+  const marks = points.length > SHORT_RANGE_POINTS && firsts.length ? firsts.map(([p, i]) => [MONTHS[Number(p.date.slice(5, 7)) - 1], i])
+    : [...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1])].map(i => [dayMonth(points[i].date), i]);
+  const months = marks.map(([text, i]) => `<text class="d-axis" x="${x(i).toFixed(1)}" y="${height - 6}" text-anchor="${i === 0 && points.length > 1 ? 'start' : i === points.length - 1 && i > 0 ? 'end' : 'middle'}">${escapeHtml(text)}</text>`).join('');
   let fill = '';
   if (band) {
     const upper = points.map((p, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p[band.upper]).toFixed(1)}`).join(' ');

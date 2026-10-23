@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Order · Console — Dodona</title>
+  <meta name="description" content="Demo order: timeline, term sheet, delivery choice, resale, settlement and payouts.">
+  <meta name="robots" content="noindex">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
+  <script type="module" src="/order.js"></script>
+</head>
+<body class="d-body">
+  <!-- P_SPRITE -->
+  <a class="skip-link" href="#main">Skip to content</a>
+  <!-- P_TOP -->
+  <div class="d-app">
+    <!-- P_RAIL -->
+    <main id="main" class="d-main">
+      <section class="c-ctr p-gate" id="p-gate" aria-labelledby="p-gate-h" hidden>
+        <p class="eyebrow">Dodona · Demo</p>
+        <h1 id="p-gate-h">Sign in to see this order</h1>
+        <p>Orders belong to the demo account that placed them.</p>
+        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create a demo account</a></div>
+      </section>
+
+      <div class="p-content" id="p-content">
+        <header class="c-page-head">
+          <nav class="c-crumbs" aria-label="Breadcrumb"><a href="/dashboard#overview">Console</a><span aria-hidden="true">/</span><a href="/orders">Orders</a><span aria-hidden="true">/</span><span aria-current="page" id="od-crumb">Order</span></nav>
+          <div class="c-page-row">
+            <div class="c-page-title">
+              <h1 id="od-title">Order</h1>
+              <p id="od-sub"></p>
+            </div>
+            <div class="c-acts" id="od-acts"></div>
+          </div>
+        </header>
+
+        <p class="p-err" id="od-err" role="alert"></p>
+
+        <div class="c-stack" id="od-body" hidden>
+          <section class="c-ctr" aria-labelledby="od-tl-h">
+            <div class="c-ctr-h"><div><h2 id="od-tl-h">Status</h2><p id="od-tl-note"></p></div><span id="od-status"></span></div>
+            <ol class="p-timeline" id="od-timeline"></ol>
+            <div id="od-exit"></div>
+          </section>
+
+          <div class="p-detail">
+            <div class="c-stack">
+              <section class="c-ctr" id="od-settle-box" aria-labelledby="od-settle-h" hidden>
+                <div class="c-ctr-h"><div><h2 id="od-settle-h">Settlement statement</h2><p>Settled on the average of the daily index over the window.</p></div></div>
+                <dl class="p-lines" id="od-settlement"></dl>
+              </section>
+              <section class="c-ctr" id="od-choice-box" aria-labelledby="od-choice-h">
+                <div class="c-ctr-h"><div><h2 id="od-choice-h">Delivery choice</h2><p id="od-choice-note">Use the hours yourself, or resell them before the window starts.</p></div></div>
+                <div class="p-choice" id="od-choice"></div>
+              </section>
+              <section class="c-ctr" id="od-list-box" aria-labelledby="od-list-h" hidden>
+                <div class="c-ctr-h"><div><h2 id="od-list-h">Resale listing</h2><p>Buyers on the board (simulated) bid on the hours; you can counter or accept.</p></div></div>
+                <div id="od-listing"></div>
+              </section>
+            </div>
+            <div class="c-stack">
+              <section class="c-ctr" aria-labelledby="od-terms-h">
+                <div class="c-ctr-h"><div><h2 id="od-terms-h">Term sheet</h2><p id="od-terms-note"></p></div><span id="od-kind"></span></div>
+                <dl class="p-lines" id="od-terms"></dl>
+              </section>
+              <section class="c-ctr" aria-labelledby="od-pay-h">
+                <div class="c-ctr-h"><div><h2 id="od-pay-h">Payouts <span class="c-count" id="od-pay-count"></span></h2><p>Everything moves through the escrow agent (simulated). Dodona never holds funds.</p></div></div>
+                <div class="d-scroll"><table class="d-table"><caption class="visually-hidden">Payouts for this order</caption>
+                  <thead><tr><th scope="col">Flow</th><th scope="col" class="r">Amount</th><th scope="col">Status</th><th scope="col">Due</th><th scope="col">Paid</th></tr></thead>
+                  <tbody id="od-payouts"></tbody></table></div>
+              </section>
+            </div>
+          </div>
+
+          <section class="c-ctr" aria-labelledby="od-mail-h">
+            <div class="c-ctr-h"><div><h2 id="od-mail-h">Emails about this order <span class="c-count" id="od-mail-count"></span></h2><p>From the mock outbox. Nothing was sent.</p></div></div>
+            <ul class="p-mails" id="od-emails"></ul>
+          </section>
+
+          <section class="c-ctr">
+            <details class="p-events" id="od-events-box">
+              <summary><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-activity"/></svg>What the neocloud saw <span class="c-count" id="od-ev-count"></span></summary>
+              <p class="fine c-ctr-b">Each message between Dodona and the mock neocloud, shaped like a webhook. Open one for its payload.</p>
+              <ul class="p-ev-list" id="od-events"></ul>
+            </details>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+  <!-- P_FOOTER -->
+</body>
+</html>
