@@ -75,3 +75,13 @@
   .a-signout .c-th-lbl{display:none}
 }
 @media(prefers-reduced-motion:reduce){.a-row{transition:none}}
+
+/* long lists (emails, events) scroll inside their container with the header row pinned */
+.a-tall{max-height:480px;overflow:auto;overscroll-behavior:contain}
+.a-tall .d-scroll{overflow:visible}
+.a-tall thead th{position:sticky;top:0;z-index:1}
+
+/* the top bar hides button icons by default (theme toggle); sign out keeps its icon, which is all a phone shows */
+.c-top-btn.a-signout .ic{display:block}
+/* focus moves to the main area after each route change for screen readers; it needs no visible ring */
+.d-main:focus{outline:0}

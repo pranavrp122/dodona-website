@@ -105,12 +105,16 @@ export function createForm() {
   </form>`;
 }
 
-export const orderHeads = withAccount => ['Order', ...(withAccount ? ['Account'] : []), 'Status', 'Contract', 'Window', ['Strike'], ['Paid'], ['Net result'], 'Neocloud messages'];
+export const orderHeads = withAccount => ['Order', ...(withAccount ? ['Account'] : []), 'Status', 'Contract', 'Neocloud', 'Window', ['Strike'], ['Paid'], ['Net result'], 'Neocloud messages'];
+const accountCell = o => {
+  const id = o.account?.id ?? o.accountId;
+  return `<td>${id ? `<a class="a-link" href="#account/${encodeURIComponent(id)}">${esc(o.account?.company || o.account?.email || id)}</a>` : '—'}</td>`;
+};
 export function orderRows(orders, { withAccount = false } = {}) {
   return orders.map(o => `<tr>
     <th scope="row"><span class="d-mono">${esc(o.ref)}</span></th>
-    ${withAccount ? `<td>${o.accountId ? `<a class="a-link" href="#account/${encodeURIComponent(o.accountId)}">${esc(o.company || o.email || o.accountId)}</a>` : '—'}</td>` : ''}
-    <td>${statusPill(o.status)}</td><td>${esc(kindText(o.kind))} · ${esc(o.gpu ?? '')} × ${esc(o.count ?? '')}</td>
+    ${withAccount ? accountCell(o) : ''}
+    <td>${statusPill(o.status)}</td><td>${esc(kindText(o.kind))} · ${esc(o.gpu ?? '')} × ${esc(o.count ?? '')}</td><td>${esc(o.neocloud?.name || '—')}</td>
     <td>${esc(windowText(o.start, o.end))}</td><td class="r d-num">${esc(perHour(o.strike))}</td>
     <td class="r d-num">${money(o.payNow ?? o.premiumTotal)}</td>
     <td class="r d-num ${toneOf(o.settlement?.netResult)}">${o.settlement ? money(o.settlement.netResult) : '—'}</td>
@@ -177,18 +181,21 @@ export function neocloudCard(n) {
   return `<dl class="d-kv"><div><dt>Neocloud</dt><dd>${esc(n.name)}</dd></div><div><dt>Auto-confirm</dt><dd>${n.autoConfirm === false ? 'Off' : 'On'}</dd></div></dl>${capacityTable(n)}`;
 }
 
-export function neocloudBlock(n) {
-  const contracts = (n.contracts || []).map(o => `<tr><th scope="row" class="d-mono">${esc(o.ref)}</th><td>${statusPill(o.status)}</td><td>${esc(kindText(o.kind))} · ${esc(o.gpu)} × ${esc(o.count)}</td><td>${esc(windowText(o.start, o.end))}</td><td class="r d-num">${esc(perHour(o.strike))}</td><td class="r d-num">${money(o.premiumTotal)}</td></tr>`);
+// One neocloud: who runs it, its capacity pools, and the contracts written on it (orders across every account).
+export function neocloudBlock(n, orders = []) {
+  const counts = n.contracts || {};
+  const tally = `<div class="a-pills">${pill('layers', 'neutral', `${counts.caps ?? 0} caps`)}${pill('layers', 'neutral', `${counts.floors ?? 0} floors`)}${pill('layers', 'neutral', `${counts.locks ?? 0} locks`)}</div>`;
+  const rows = orders.map(o => `<tr><th scope="row" class="d-mono">${esc(o.ref)}</th>${accountCell(o)}<td>${statusPill(o.status)}</td><td>${esc(kindText(o.kind))} · ${esc(o.gpu)} × ${esc(o.count)}</td><td>${esc(windowText(o.start, o.end))}</td><td class="r d-num">${esc(perHour(o.strike))}</td><td class="r d-num">${money(o.premiumTotal)}</td></tr>`);
   return container({
     id: `a-nc-${String(n.id).replace(/[^a-z0-9_-]/gi, '')}`, title: n.name, iconName: 'server', count: `${(n.capacity || []).length} pools`,
-    desc: `${n.accountId ? 'Has a provider login' : 'Supplies offers, no login'} · auto-confirm ${n.autoConfirm === false ? 'off' : 'on'}`,
-    body: `${capacityTable(n)}<h3 class="a-sub">Contracts</h3>${table(`${n.name} contracts`, ['Order', 'Status', 'Contract', 'Window', ['Strike'], ['Premium']], contracts, 'No contracts on this neocloud yet.')}`,
+    desc: `${n.ownerEmail ? `Provider login ${n.ownerEmail}` : 'Supplies offers, no login'} · ${(n.regions || []).join(', ') || 'no regions'} · auto-confirm ${n.autoConfirm === false ? 'off' : 'on'}`,
+    body: `${tally}<h3 class="a-sub">Capacity now</h3>${capacityTable(n)}<h3 class="a-sub">Contracts</h3>${table(`${n.name} contracts`, ['Order', 'Account', 'Status', 'Contract', 'Window', ['Strike'], ['Premium']], rows, 'No contracts on this neocloud yet.')}`,
   });
 }
 
 export const PAYMENT_HEADS = ['Time', 'Order', ['Amount'], 'Status', 'Card'];
 export function paymentRows(payments) {
-  return payments.map(p => `<tr><td>${esc(stamp(p.createdAt ?? p.at))}</td><td class="d-mono">${esc(p.orderRef)}</td><td class="r d-num">${money(p.amount)}</td><td>${statusPill(p.status)}</td><td>${esc(p.brand ? `${p.brand} ending ${p.last4}` : '—')}</td></tr>`);
+  return payments.map(p => `<tr><td>${esc(stamp(p.createdAt ?? p.at))}</td><td class="d-mono">${esc(p.orderRef)}</td><td class="r d-num">${money(p.amount)}</td><td>${statusPill(p.status)}${p.code ? ` <span class="d-muted">${esc(words(p.code))}</span>` : ''}</td><td>${esc(p.brand ? `${p.brand} ending ${p.last4}` : '—')}</td></tr>`);
 }
 
 export const PAYOUT_HEADS = ['Order', 'Flow', ['Amount'], 'Status', 'Due', 'Paid'];

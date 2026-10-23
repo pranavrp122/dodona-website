@@ -28,7 +28,8 @@ async function session(email, { width = 1440, scheme = 'light', video = false } 
   });
   const page = await context.newPage();
   page.on('pageerror', error => errors.push(error.message));
-  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
+  // The gate's 401 and the unconfigured Sync now's 409 are expected answers; anything else (CSP included) fails the run.
+  page.on('console', message => { if (message.type() === 'error' && !/status of (401|409)\b/.test(message.text())) errors.push(message.text()); });
   if (email) {
     const response = await context.request.post(origin + '/api/auth/sign-in', { headers: { Origin: origin }, data: { email, password: PASSWORD } });
     check(response.ok(), `sign in as ${email}`);

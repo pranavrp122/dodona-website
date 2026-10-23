@@ -128,7 +128,7 @@ function eventsFor(detail) {
   return v.container({
     id: 'a-d-events', title: state.eventRef ? `Neocloud messages for ${state.eventRef}` : 'Integration events', iconName: 'activity', count: events.length, acts,
     desc: 'The webhook-style messages Dodona and the neocloud exchanged for this account (simulated).',
-    body: v.table('Integration events', v.EVENT_HEADS, v.eventRows(events), 'No events yet.'),
+    body: `<div class="a-tall">${v.table('Integration events', v.EVENT_HEADS, v.eventRows(events), 'No events yet.')}</div>`,
   });
 }
 
@@ -141,9 +141,9 @@ function accountDetailHtml(d) {
     ${v.container({ id: 'a-d-clock', title: 'Demo clock', iconName: 'calendar-clock', span: provider ? 'c-s5' : 'c-s12', desc: 'Where this account\'s demo time and index scenario stand.', body: `<div id="a-clock-body">${v.clockCard(a, false)}</div>` })}
     ${provider ? v.container({ id: 'a-d-neocloud', title: 'Neocloud', iconName: 'server', span: 'c-s7', desc: 'The simulated neocloud this provider login runs.', body: v.neocloudCard(d.neocloud) }) : ''}
     ${v.container({ id: 'a-d-orders', title: 'Orders', iconName: 'layers', count: d.orders.length, span: 'c-s12', body: v.table('Orders', v.orderHeads(false), v.orderRows(d.orders), 'No orders yet.') })}
-    ${v.container({ id: 'a-d-payments', title: 'Payments', iconName: 'credit-card', count: d.payments.length, span: 'c-s6', desc: 'Mock card payments. Only the brand and last four digits are kept.', body: v.table('Payments', v.PAYMENT_HEADS, v.paymentRows(d.payments), 'No payments yet.') })}
-    ${v.container({ id: 'a-d-payouts', title: 'Payouts', iconName: 'receipt', count: d.payouts.length, span: 'c-s6', desc: 'Through the escrow agent (simulated).', body: v.table('Payouts', v.PAYOUT_HEADS, v.payoutRows(d.payouts), 'No payouts yet.') })}
-    ${v.container({ id: 'a-d-emails', title: 'Emails sent', iconName: 'mail', count: d.emails.length, span: 'c-s12', desc: 'The mock outbox. Nothing left the server.', body: v.table('Emails', v.EMAIL_HEADS, v.emailRows(d.emails), 'No emails yet.') })}
+    ${v.container({ id: 'a-d-payments', title: 'Payments', iconName: 'credit-card', count: d.payments.length, span: 'c-s12', desc: 'Mock card payments. Only the brand and last four digits are kept.', body: v.table('Payments', v.PAYMENT_HEADS, v.paymentRows(d.payments), 'No payments yet.') })}
+    ${v.container({ id: 'a-d-payouts', title: 'Payouts', iconName: 'receipt', count: d.payouts.length, span: 'c-s12', desc: 'Through the escrow agent (simulated).', body: v.table('Payouts', v.PAYOUT_HEADS, v.payoutRows(d.payouts), 'No payouts yet.') })}
+    ${v.container({ id: 'a-d-emails', title: 'Emails sent', iconName: 'mail', count: d.emails.length, span: 'c-s12', desc: 'The mock outbox. Nothing left the server.', body: `<div class="a-tall">${v.table('Emails', v.EMAIL_HEADS, v.emailRows(d.emails), 'No emails yet.')}</div>` })}
     <div class="c-s12" id="a-d-events-slot">${eventsFor(d)}</div>
   </div>`;
 }
@@ -233,8 +233,9 @@ async function showOrderEvents(ref) {
 async function showNeoclouds() {
   frame({ ...SCREENS.neoclouds, crumbs: [['Neoclouds']] });
   loading('Loading neoclouds…');
-  const { neoclouds } = await api('/api/admin/neoclouds');
-  screen(`<div class="c-stack">${neoclouds.length ? neoclouds.map(v.neocloudBlock).join('') : '<p class="d-empty">No neoclouds seeded.</p>'}</div>`);
+  const [{ neoclouds }, { orders }] = await Promise.all([api('/api/admin/neoclouds'), api('/api/admin/orders')]);
+  const onCloud = id => orders.filter(o => o.neocloud?.id === id);
+  screen(`<div class="c-stack">${neoclouds.length ? neoclouds.map(n => v.neocloudBlock(n, onCloud(n.id))).join('') : '<p class="d-empty">No neoclouds seeded.</p>'}</div>`);
 }
 
 async function showActivity() {
