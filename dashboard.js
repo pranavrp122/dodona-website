@@ -267,7 +267,7 @@ function detailHeadline(p, range) {
 }
 
 function chartBlock(range) {
-  return `<div><div class="c-ctr-h d-chart-head"><p class="eyebrow">Dodona Value ${v.tag('model')}</p>
+  return `<div><div class="p-chart-head"><p class="eyebrow">Dodona Value ${v.tag('model')}</p>
       <div class="p-range-row"><div class="p-ranges" role="group" aria-label="Position chart range">${v.rangeButtons(state.range, 'position')}</div><span class="p-since">${esc(v.rangeCaption(range))}</span></div></div>
     <div class="d-chart-wrap" id="d-detail-chart">${v.positionChart({ ...byId(state.selected), history: range.points })}</div></div>`;
 }

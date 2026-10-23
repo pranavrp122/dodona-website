@@ -55,7 +55,12 @@ export function toast(message) {
 export const fmtDate = iso => (iso ? shortDate(iso) : '—');
 export const money = v => (v == null || !Number.isFinite(Number(v)) ? '—' : `${v < 0 ? '−' : ''}$${Math.abs(Number(v)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
 export const signedMoney = v => (v == null ? '—' : v > 0 ? `+${money(v)}` : money(v));
-export const rate = v => (v == null || !Number.isFinite(Number(v)) ? '—' : `$${Number(v).toFixed(Number(v) < 1 ? 4 : 2)}`);
+// Per-hour prices carry up to four decimals; whole cents print as cents.
+export const rate = v => {
+  const n = Number(v);
+  if (v == null || !Number.isFinite(n)) return '—';
+  return `$${n.toFixed(Math.abs(n * 100 - Math.round(n * 100)) > 1e-6 ? 4 : 2)}`;
+};
 
 // Offers use cap/floor/lock; positions use call/put/lock. Both read the same way to a buyer.
 const KINDS = {
@@ -140,8 +145,8 @@ function mountAccount(account) {
   if (!box) return;
   box.hidden = false;
   const kyb = account.kyb === 'verified' ? 'KYB verified' : account.kyb === 'rejected' ? 'KYB rejected' : 'KYB pending';
-  box.innerHTML = `<button type="button" class="c-acct p-acct-btn" data-pop="p-acct-pop" aria-expanded="false" aria-controls="p-acct-pop">
-      <span class="c-acct-text"><span class="c-acct-org">${esc(account.company)}</span><span class="c-acct-role">${esc(ROLE_TEXT[account.role] || account.role)}</span></span>
+  box.innerHTML = `<button type="button" class="c-acct p-acct-btn" data-pop="p-acct-pop" aria-expanded="false" aria-controls="p-acct-pop" aria-label="Account: ${esc(account.company)}">
+      ${icon('user', 'p-acct-ic')}<span class="c-acct-text"><span class="c-acct-org">${esc(account.company)}</span><span class="c-acct-role">${esc(ROLE_TEXT[account.role] || account.role)}</span></span>
       <span class="d-kyb${account.kyb === 'verified' ? '' : ' is-pending'}">${esc(kyb)}</span>${icon('chevron-down', 'p-chev')}</button>
     <div class="p-pop p-pop-acct" id="p-acct-pop" hidden>
       <p class="p-pop-who">${icon('user')}<span>Signed in as<b>${esc(account.email)}</b></span></p>
