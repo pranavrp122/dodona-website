@@ -221,3 +221,5 @@ try {
   await browser.close();
   await close(app);
 }
+// The demo platform keeps background timers; the flow is done, so end the process here.
+process.exit(0);
