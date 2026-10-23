@@ -58,20 +58,20 @@
       <ol class="g-flow">
         <li><span class="g-dir">Dodona to you</span><span><code>reservation.requested</code>: a buyer has paid. Please hold this many GPUs of this type, in this region, for this window.</span></li>
         <li><span class="g-dir">You to Dodona</span><span><code>reservation.confirmed</code> or <code>reservation.declined</code>. Confirming keeps the hold; declining releases it and the buyer is refunded through the escrow agent.</span></li>
-        <li><span class="g-dir">Dodona to you</span><span><code>delivery.started</code>: the window has opened and the buyer (or whoever bought the hours from them) starts using the GPUs.</span></li>
+        <li><span class="g-dir">You to Dodona</span><span><code>delivery.started</code>: the window has opened and you have handed the GPUs to the buyer (or to whoever bought the hours from them).</span></li>
         <li><span class="g-dir">You to Dodona</span><span><code>usage.reported</code>, once a day: how many GPU-hours were delivered. In the demo that is GPUs × 24 hours.</span></li>
-        <li><span class="g-dir">Dodona to you</span><span><code>window.closed</code> then <code>settlement.computed</code>: the window has ended and the result is worked out on the window average of the daily index.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>settlement.computed</code>: the window has ended (Dodona notes <code>window.closed</code> internally) and the result is worked out on the window average of the daily index.</span></li>
         <li><span class="g-dir">Dodona to you</span><span><code>invoice.issued</code>: the compute bill for the hours, at the price the contract says.</span></li>
         <li><span class="g-dir">Dodona to you</span><span><code>payout.issued</code>: money released to you by the escrow agent (simulated), such as your premium share or the compute bill.</span></li>
       </ol>
-      <p class="fine">If the holder resells the hours before the window, you also see <code>listing.created</code>, <code>bid.received</code> and <code>resale.completed</code>. You deliver to the new buyer the same way; nothing else changes for you.</p>
+      <p class="fine">If the holder resells the hours before the window, Dodona handles the listing and bids itself (<code>listing.created</code>, <code>bid.received</code>) and sends you <code>resale.completed</code> with the new buyer. You deliver to them the same way; nothing else changes for you.</p>
     </section>
 
     <section class="c-ctr g-sec" id="messages" aria-labelledby="g-msgs">
       <h2 id="g-msgs">The messages, exactly as the mock sends them</h2>
       <p>Every message has the same envelope. <code>direction</code> says who sent it, <code>type</code> says what happened, and <code>payload</code> carries the details.</p>
       <pre><code>{
-  "id": "evt_8f3c1a2b",
+  "id": "evt_8f3c1a2b9d04e6f7",
   "orderRef": "DOD-7Q4K2M",
   "direction": "dodona_to_neocloud",
   "type": "reservation.requested",
@@ -84,11 +84,11 @@
       <pre><code>{
   "orderRef": "DOD-7Q4K2M",
   "gpu": "H100",
-  "count": 64,
+  "config": "SXM-IB",
   "region": "US East",
+  "count": 64,
   "start": "2026-11-16T00:00:00.000Z",
   "end": "2026-11-30T00:00:00.000Z",
-  "gpuHours": 21504,
   "kind": "cap",
   "strike": 2.4
 }</code></pre>
@@ -96,36 +96,52 @@
       <h3>reservation.confirmed (you to Dodona)</h3>
       <pre><code>{
   "orderRef": "DOD-7Q4K2M",
-  "held": { "gpu": "H100", "count": 64, "region": "US East" },
-  "confirmedBy": "auto"
+  "gpu": "H100",
+  "config": "SXM-IB",
+  "region": "US East",
+  "count": 64,
+  "start": "2026-11-16T00:00:00.000Z",
+  "end": "2026-11-30T00:00:00.000Z",
+  "kind": "cap",
+  "strike": 2.4,
+  "holdId": "hold_DOD-7Q4K2M"
 }</code></pre>
-      <p><code>confirmedBy</code> is <code>auto</code> when your system confirms on its own, or <code>operator</code> when someone presses Confirm in the portal. A decline looks the same with type <code>reservation.declined</code>.</p>
+      <p>You repeat what you are holding and add your own <code>holdId</code>. A decline is <code>reservation.declined</code> with a short <code>reason</code>.</p>
 
       <h3>usage.reported (you to Dodona, daily)</h3>
       <pre><code>{
   "orderRef": "DOD-7Q4K2M",
-  "date": "2026-11-17",
+  "periodStart": "2026-11-16T00:00:00.000Z",
+  "periodEnd": "2026-11-17T00:00:00.000Z",
   "gpuHours": 1536,
-  "hoursToDate": 3072
+  "deliveredGpuHours": 1536,
+  "windowGpuHours": 21504
 }</code></pre>
 
       <h3>settlement.computed (Dodona to you)</h3>
       <pre><code>{
   "orderRef": "DOD-7Q4K2M",
-  "kind": "cap",
-  "windowAvg": 2.62,
-  "strike": 2.4,
-  "hours": 21504,
-  "computeBill": 51609.6,
-  "saving": 4730.88,
-  "premiumPaid": 3870.72,
-  "netResult": 860.16
+  "settlement": {
+    "windowAvg": 2.62,
+    "strike": 2.4,
+    "hours": 21504,
+    "kind": "cap",
+    "premiumPaid": 3870.72,
+    "computedAt": "2026-11-30T00:00:00.000Z",
+    "computeBill": 51609.6,
+    "saving": 4730.88,
+    "payout": null,
+    "resaleProceeds": null,
+    "billedTo": "holder",
+    "netResult": 860.16
+  }
 }</code></pre>
+      <p>Here the average (2.62) ended above the cap (2.40), so the buyer is billed at the cap: 21,504 GPU-hours × $2.40 = $51,609.60, and saves $4,730.88 against the average.</p>
 
       <h3>invoice.issued and payout.issued (Dodona to you)</h3>
-      <pre><code>{ "orderRef": "DOD-7Q4K2M", "amount": 51609.6, "dueAt": "2026-12-01T00:00:00.000Z" }
+      <pre><code>{ "orderRef": "DOD-7Q4K2M", "amount": 51609.6, "billedTo": "holder", "dueAt": "2026-12-01T00:00:00.000Z", "through": "the escrow agent (simulated)" }
 
-{ "orderRef": "DOD-7Q4K2M", "direction": "buyer_to_neocloud", "amount": 51609.6, "paidAt": "2026-12-01T00:00:00.000Z" }</code></pre>
+{ "orderRef": "DOD-7Q4K2M", "payoutId": "po_5c1e0a9b7d23f4e8", "direction": "buyer_to_neocloud", "amount": 51609.6, "through": "the escrow agent (simulated)" }</code></pre>
       <p class="fine">Amounts are US dollars rounded to cents; prices per GPU-hour have up to four decimals; every time is ISO 8601 in UTC.</p>
     </section>
 

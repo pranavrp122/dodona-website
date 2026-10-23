@@ -56,9 +56,9 @@ export function normalizeOrder(o = {}) {
     start: o.start ?? '', end: o.end ?? '',
     hours: num(o.gpuHours, o.hours, o.breakdown?.gpuHours, Number(o.count) * 24 * days),
     premiumTotal: num(o.premiumTotal, o.breakdown?.premiumTotal, o.premium),
-    buyer: o.buyer?.company ?? o.buyerCompany ?? o.account?.company ?? o.company ?? 'A Dodona buyer',
-    usageHours: num(o.usage?.hoursReported, o.usageHours, o.hoursReported) ?? 0,
-    runningAvg: num(o.usage?.windowAvgSoFar, o.runningAverage, o.windowAvgSoFar),
+    buyer: (typeof o.buyer === 'string' ? o.buyer : o.buyer?.company) || 'A Dodona buyer',
+    usageHours: num(o.usageGpuHours, o.usage?.hoursReported) ?? 0,
+    runningAvg: num(o.runningWindowAverage, o.usage?.windowAvgSoFar),
     settlement: o.settlement ?? null,
     deliveryChoice: o.deliveryChoice ?? 'deliver',
   };
@@ -68,7 +68,7 @@ const ACTIVE = new Set(['reserved', 'delivering']);
 const INCOMING = new Set(['reserving', 'paid']);
 export function bucketOrders(data) {
   if (data && !Array.isArray(data) && (data.incoming || data.active || data.settled)) {
-    return { incoming: list(data.incoming).map(normalizeOrder), active: list(data.active).map(normalizeOrder), settled: list(data.settled).map(normalizeOrder) };
+    return { incoming: list(data.incoming).map(normalizeOrder), active: list(data.active).map(normalizeOrder), settled: [...list(data.settled), ...list(data.declined)].map(normalizeOrder) };
   }
   const all = list(data, 'orders').map(normalizeOrder);
   return {
@@ -179,13 +179,25 @@ export function settledRows(orders) {
 }
 
 /* ---------- contracts and what-if ---------- */
+export const NEOCLOUD_SHARE = 0.85;
+// A sold cap counts the neocloud's 85% of the premium; a bought floor counts the whole premium paid.
 export function normalizeContract(c = {}) {
+  const kind = kindKey(c.kind ?? c.type), count = num(c.count) ?? 0;
+  const days = Math.max(0, (Date.parse(c.end) - Date.parse(c.start)) / 86400000) || 0;
+  const total = num(c.premium, c.premiumTotal) ?? 0;
   return {
-    ref: String(c.orderRef ?? c.ref ?? ''), kind: kindKey(c.kind ?? c.type), gpu: c.gpu ?? '', count: num(c.count) ?? 0,
-    hours: num(c.hours, c.gpuHours) ?? 0, start: c.start ?? '', end: c.end ?? '',
-    strike: num(c.strike) ?? 0, premium: num(c.premium, c.premiumTotal, c.premiumReceived, c.premiumPaid) ?? 0,
-    expectedAvg: num(c.expectedAvg, c.expectedWindowAverage, c.forward), value: num(c.value, c.currentValue),
+    ref: String(c.orderRef ?? c.ref ?? ''), kind, gpu: c.gpu ?? '', count, status: c.status ?? '',
+    hours: num(c.hours, c.gpuHours) ?? count * 24 * days, start: c.start ?? '', end: c.end ?? '',
+    strike: num(c.strike) ?? 0, premium: kind === 'cap' && c.premium == null ? Math.round(total * NEOCLOUD_SHARE * 100) / 100 : total,
+    expectedAvg: num(c.expectedAvg, c.expectedWindowAverage), value: num(c.value), settled: c.status === 'settled',
   };
+}
+export const normalizeContracts = data => (Array.isArray(data?.contracts) ? data.contracts.map(normalizeContract)
+  : [...list(data?.capsSold).map(c => normalizeContract({ ...c, kind: 'cap' })), ...list(data?.floorsBought).map(c => normalizeContract({ ...c, kind: 'floor' }))]);
+
+export function normalizeSettings(data = {}) {
+  const n = data.neocloud ?? data.settings ?? data;
+  return { autoConfirm: n.autoConfirm, webhookUrl: n.webhookUrl ?? '', apiKeyLast4: n.apiKeyLast4 ?? n.apiKeyPreview ?? null, company: data.company ?? null, name: n.name ?? null };
 }
 
 // Provider side: a sold cap keeps its premium and gives up anything above the strike; a bought floor pays its premium and receives the shortfall below the strike.
@@ -204,12 +216,13 @@ export function contractRows(contracts) {
     <td><span class="d-pos">${gpuChip(c.gpu)}<span class="d-pos-l">${int(c.count)} GPUs</span></span></td>
     <td>${escapeHtml(windowText(c.start, c.end))}<span class="d-sub">${int(c.hours)} GPU-hours</span></td>
     <td class="r">${rate(c.strike)}</td>
-    <td class="r">${money(c.premium)}<span class="d-sub">${c.kind === 'floor' ? 'paid' : 'received'}</span></td>
-    <td class="r">${c.expectedAvg == null ? '—' : rate(c.expectedAvg)}</td>
-    <td class="r ${toneOf(c.value)}">${signedMoney(c.value)}</td></tr>`).join('');
+    <td class="r">${money(c.premium)}<span class="d-sub">${c.kind === 'floor' ? 'paid' : 'your 85% received'}</span></td>
+    <td class="r">${c.expectedAvg == null ? '—' : rate(c.expectedAvg)}${c.settled ? '<span class="d-sub">final window average</span>' : ''}</td>
+    <td class="r ${toneOf(c.value)}">${c.settled ? statusPill('settled') : signedMoney(c.value)}</td></tr>`).join('');
 }
 
-export function whatIfSummary(contracts, avg) {
+export function whatIfSummary(all, avg) {
+  const contracts = all.filter(c => !c.settled);
   const caps = contracts.filter(c => c.kind === 'cap'), floors = contracts.filter(c => c.kind === 'floor');
   const sum = (items, key) => items.reduce((total, c) => total + providerPayoff(c, avg)[key], 0);
   const capNet = sum(caps, 'net'), floorNet = sum(floors, 'net');

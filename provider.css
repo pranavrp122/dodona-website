@@ -125,3 +125,4 @@
 /* the sign-in gate hides the rail; the content column takes the full width */
 .p-body .d-rail[hidden],.p-body #d-content[hidden]{display:none}
 .p-body .d-app:has(>.d-rail[hidden]){grid-template-columns:minmax(0,1fr)}
+.p-events>li.p-more{padding:12px 16px;text-align:center}

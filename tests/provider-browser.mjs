@@ -33,6 +33,12 @@ const call = async (context, method, path, data) => {
   if (!response.ok()) throw new Error(`${method} ${path} → ${response.status()} ${JSON.stringify(body)}`);
   return body;
 };
+// A hash-only goto does not reload, so reload to fetch fresh portal data.
+async function open(page, screen) {
+  await page.goto(`${origin}/provider#${screen}`);
+  await page.reload();
+  await page.waitForSelector('body[data-portal="loaded"]');
+}
 const watch = page => {
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (m.type() === 'error') errors.push(m.text()); });
@@ -52,13 +58,13 @@ try {
   const provider = await signedIn('ops@northwind.example', { viewport: { width: 1440, height: 1000 }, recordVideo: { dir: OUT, size: { width: 1440, height: 1000 } } });
   const page = await provider.newPage();
   watch(page);
-  await page.goto(`${origin}/provider#settings`);
+  await open(page, "settings");
   await page.waitForSelector('body[data-portal="loaded"]');
   if (await page.locator('#p-auto').isChecked()) {
     await page.locator('#p-auto').uncheck();
     await page.waitForFunction(() => document.querySelector('#d-toasts').textContent.includes('Auto-confirm off'));
   }
-  check((await call(provider, 'GET', '/api/provider/settings')).settings.autoConfirm === false, 'auto-confirm saved off');
+  check((await call(provider, 'GET', '/api/provider/settings')).neocloud.autoConfirm === false, 'auto-confirm saved off');
 
   // The buyer takes a Northwind cap offer and pays with the test card.
   const { offers } = await call(buyer, 'GET', '/api/offers');
@@ -68,7 +74,7 @@ try {
   await call(buyer, 'POST', `/api/orders/${order.ref}/pay`, { card: { number: '4242424242424242', expMonth: 12, expYear: 2030, cvc: '123', name: 'Sample Labs' } });
 
   // The provider sees it incoming and confirms.
-  await page.goto(`${origin}/provider#orders`);
+  await open(page, "orders");
   await page.waitForSelector('body[data-portal="loaded"]');
   const row = page.locator(`#p-incoming tr[data-ref="${order.ref}"]`);
   await row.waitFor();
@@ -77,17 +83,22 @@ try {
   await row.getByRole('button', { name: 'Confirm' }).click();
   await page.locator(`#p-active tr[data-ref="${order.ref}"]`).waitFor();
   check(true, 'confirmed order moves to active');
-  await page.goto(`${origin}/provider#integration`);
+  await open(page, "integration");
   await page.waitForSelector('body[data-portal="loaded"]');
   check((await page.locator('#p-events').innerText()).includes('reservation.confirmed'), 'event log shows the confirmation');
 
   // The buyer's clock runs the window to settlement, then a few days more so payouts are paid.
-  await call(buyer, 'POST', '/api/demo/advance', { until: 'settlement' });
+  // "To settlement" stops at the next window end in scope, which may belong to a seeded order, so repeat until ours settles.
+  let detail = await call(buyer, 'GET', `/api/orders/${order.ref}`);
+  for (let step = 0; step < 12 && detail.order.status !== 'settled'; step++) {
+    await call(buyer, 'POST', '/api/demo/advance', { until: 'settlement' });
+    detail = await call(buyer, 'GET', `/api/orders/${order.ref}`);
+  }
   await call(buyer, 'POST', '/api/demo/advance', { days: 3 });
-  const detail = await call(buyer, 'GET', `/api/orders/${order.ref}`);
+  detail = await call(buyer, 'GET', `/api/orders/${order.ref}`);
   check(detail.order.status === 'settled', 'order settled');
 
-  await page.goto(`${origin}/provider#settlements`);
+  await open(page, "settlements");
   await page.waitForSelector('body[data-portal="loaded"]');
   check((await page.locator('#p-settlements').innerText()).includes(order.ref), 'settlement statement listed');
   const payouts = await page.locator('#p-payouts').innerText();

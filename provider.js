@@ -5,6 +5,7 @@ const $ = id => document.getElementById(id);
 const esc = v.escapeHtml;
 const ARM_MS = 4000;
 const URL_MAX = 300;
+const EVENTS_SHOWN = 30;
 
 const state = {
   account: null, screen: 'overview', overview: null, orders: { incoming: [], active: [], settled: [] },
@@ -78,11 +79,11 @@ async function loadAll() {
   ]);
   if (overview) state.overview = v.normalizeOverview(overview);
   if (orders) state.orders = v.bucketOrders(orders);
-  if (contracts) state.contracts = (contracts.contracts ?? []).map(v.normalizeContract);
+  if (contracts) state.contracts = v.normalizeContracts(contracts);
   if (settlementsData) state.settlements = settlementsData.settlements ?? [];
   if (payouts) state.payouts = payouts.payouts ?? [];
   if (events) state.events = events.events ?? [];
-  if (settings) state.settings = settings.settings ?? settings;
+  if (settings) state.settings = v.normalizeSettings(settings);
   if (!overview && !orders) toast('Portal data could not be loaded. Try Refresh in a moment.');
   renderAll();
 }
@@ -163,11 +164,13 @@ function renderMoney() {
 }
 
 function renderIntegration() {
-  fill('p-events', v.eventRows(state.events));
+  const shown = state.showAllEvents ? state.events : state.events.slice(0, EVENTS_SHOWN);
+  const more = state.events.length - shown.length;
+  fill('p-events', v.eventRows(shown) + (more > 0 ? `<li class="p-more"><button type="button" class="btn btn-sm" data-act="all-events">Show all ${state.events.length} messages</button></li>` : ''));
   count('p-ev-count', state.events.length);
   const url = $('p-hook-url');
   if (document.activeElement !== url) url.value = state.settings.webhookUrl || '';
-  const preview = state.settings.apiKeyPreview ?? state.settings.apiKeyLast4;
+  const preview = state.settings.apiKeyLast4;
   $('p-key-state').textContent = preview
     ? `A key ending ${String(preview).slice(-4)} is active. It is shown once, when it is created; regenerate to get a new one.`
     : 'No key has been created yet in this demo. Regenerate to create one; it is shown once.';
@@ -226,8 +229,11 @@ function firedText(data) {
   const fired = Array.isArray(data.fired) ? data.fired : [];
   const head = `Demo date now ${v.stamp(data.demoNow)}.`;
   if (!fired.length) return `${head} Nothing was due.`;
-  const types = fired.map(e => e.type || e.kind || e.summary).filter(Boolean);
-  return `${head} ${fired.length} event${fired.length === 1 ? '' : 's'}: ${types.slice(0, 4).join(', ')}${types.length > 4 ? ', …' : ''}.`;
+  const total = Number(data.firedCount) || fired.length;
+  const types = [...new Set(fired.map(e => e.type).filter(t => t && t !== 'email'))];
+  const emails = fired.filter(e => e.type === 'email').length;
+  const parts = [...types.slice(0, 4), ...(emails ? [`${emails} email${emails === 1 ? '' : 's'}`] : [])];
+  return `${head} ${total} event${total === 1 ? '' : 's'}: ${parts.join(', ')}${types.length > 4 ? ', …' : ''}.`;
 }
 
 async function refreshAll() {
@@ -271,7 +277,7 @@ async function onApiKey(button) {
     box.hidden = false;
     toast('New mock API key created. It is shown once.');
     const settings = await settled(api('/api/provider/settings'));
-    if (settings) { state.settings = settings.settings ?? settings; renderIntegration(); }
+    if (settings) { state.settings = v.normalizeSettings(settings); renderIntegration(); }
   });
 }
 
@@ -300,13 +306,14 @@ async function onClick(event) {
   if (act === 'confirm' || act === 'decline') return onDecision(target);
   if (act === 'api-key') return onApiKey(target);
   if (act === 'csv') return downloadCsv();
+  if (act === 'all-events') { state.showAllEvents = true; return renderIntegration(); }
   if (act === 'refresh') return busy(target, loadAll);
   if (target.id === 'p-signout' || target.id === 'p-gate-signout') return busy(target, signOut);
 }
 
 async function saveSettings(patch, message) {
   const data = await api('/api/provider/settings', { method: 'POST', body: patch });
-  state.settings = { ...state.settings, ...(data.settings ?? patch) };
+  state.settings = data.neocloud ? v.normalizeSettings(data) : { ...state.settings, ...patch };
   renderOverview(); renderIntegration(); renderSettings();
   toast(message);
 }
@@ -355,6 +362,8 @@ function wire() {
   document.addEventListener('change', onChange);
   $('p-wi-in').addEventListener('input', renderWhatIf);
   window.addEventListener('hashchange', route);
+  // Coming back from the buyer's tab shows what their clock did meanwhile.
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshAll().catch(() => {}); });
   $('d-nav-more').addEventListener('click', () => {
     const open = $('d-rail').classList.toggle('is-more');
     $('d-nav-more').setAttribute('aria-expanded', String(open));

@@ -126,3 +126,18 @@ test('real accounts: the Northwind login opens the portal, the seeded buyer and 
   assert.equal((await f.anonymous.get('/api/account')).status, 401);
   assert.equal((await f.anonymous.get('/provider')).status, 200, 'the page itself is public; the script shows the gate');
 });
+
+test('real provider API: orders, contracts and settings normalise for the portal', async t => {
+  const { platformFixture } = await import('./fixture.mjs');
+  const f = await platformFixture();
+  t.after(() => f.cleanup());
+  const nw = await f.as('ops@northwind.example');
+  const orders = view.bucketOrders((await nw.get('/api/provider/orders')).data);
+  const all = [...orders.incoming, ...orders.active, ...orders.settled];
+  assert.ok(all.length > 0 && all.every(o => o.ref && o.buyer === 'Sample Labs'), 'buyer company comes through');
+  const contracts = view.normalizeContracts((await nw.get('/api/provider/contracts')).data);
+  assert.ok(contracts.length > 0 && contracts.every(c => c.hours > 0 && ['cap', 'floor'].includes(c.kind)));
+  const settings = view.normalizeSettings((await nw.get('/api/provider/settings')).data);
+  assert.equal(typeof settings.autoConfirm, 'boolean');
+  assert.equal((await (await f.as('demo@dodona.markets')).get('/api/provider/orders')).status, 403);
+});
