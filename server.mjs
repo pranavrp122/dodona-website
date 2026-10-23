@@ -134,6 +134,7 @@ export function createApp({
   platform = platformEnabled({ production }),
   db = process.env.DEMO_DB_FILE || undefined,
   mirror = null,
+  seedPassword = process.env.DEMO_SEED_PASSWORD || undefined,
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -191,7 +192,7 @@ export function createApp({
     } catch { /* the audit trail never breaks the portfolio */ }
   };
   // Demo platform: accounts, offers, orders, mock payment, demo clock, provider and admin APIs (lib/platform.mjs).
-  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson, extraRoutes: platformRoutes, settle: settleAccount, mirror });
+  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson, extraRoutes: platformRoutes, settle: settleAccount, mirror, seedPassword });
   const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;
