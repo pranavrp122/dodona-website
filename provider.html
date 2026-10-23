@@ -11,6 +11,7 @@
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
   <link rel="stylesheet" href="/provider.css">
   <script type="module" src="/provider.js"></script>
 </head>
@@ -26,7 +27,7 @@
     <symbol id="i-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
     <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/></symbol>
     <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
-    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol><symbol id="i-fast-forward" viewBox="0 0 24 24"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
     <symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
     <symbol id="i-circle-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol>
     <symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
@@ -73,28 +74,14 @@
     <span class="c-brand">Dodona <span class="c-brand-sub">Provider</span></span>
     <span class="c-demo">Demo</span>
     <span class="c-spacer"></span>
-    <div class="p-clock" id="p-clock" role="group" aria-label="Demo clock" hidden>
-      <span class="p-clock-now"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-calendar-clock"/></svg><span><span class="p-clock-lbl">Demo date</span><time id="p-now">—</time></span></span>
-      <button type="button" class="c-top-btn" data-clock="day">+1 day</button>
-      <button type="button" class="c-top-btn" data-clock="week">+7 days</button>
-      <button type="button" class="c-top-btn" data-clock="next"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-skip-forward"/></svg><span>Next event</span></button>
-      <button type="button" class="c-top-btn" data-clock="settle"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-flag"/></svg><span>To settlement</span></button>
-      <label class="visually-hidden" for="p-scenario">Index scenario</label>
-      <select class="p-clock-select" id="p-scenario">
-        <option value="market">Market</option><option value="rise">Rise</option><option value="fall">Fall</option><option value="spike">Spike</option><option value="flat">Flat</option>
-      </select>
-      <button type="button" class="c-top-btn" data-clock="reset"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-rotate-ccw"/></svg><span>Reset</span></button>
-    </div>
+    <div class="p-clock" id="p-clock" hidden></div>
     <button type="button" class="c-top-btn" id="d-theme" data-choice="system" aria-label="Theme: system. Switch to light.">
       <svg class="ic c-th-light" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
       <svg class="ic c-th-dark" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>
       <svg class="ic c-th-system" aria-hidden="true" focusable="false"><use href="#i-sun-moon"/></svg>
       <span class="c-th-lbl" id="d-theme-lbl">System</span>
     </button>
-    <div class="c-acct" role="group" aria-label="Account" id="p-acct" hidden>
-      <span class="c-acct-text"><span class="c-acct-org" id="p-org">Neocloud</span><span class="c-acct-role">Provides compute</span></span>
-      <button type="button" class="c-top-btn" id="p-signout" aria-label="Sign out"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-log-out"/></svg></button>
-    </div>
+    <div class="p-acct" id="p-acct" hidden></div>
   </header>
   <div class="c-strip" role="note"><b>Demo</b><span>Demo provider portal · mock neocloud · nothing here is a live reservation, payment or payout</span><span class="d-backing">Money moves through the escrow agent (simulated). Dodona never holds funds.</span></div>
 

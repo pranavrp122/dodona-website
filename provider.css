@@ -1,20 +1,5 @@
 /* Provider portal and integration guide. Builds on dashboard.css: same tokens, containers, buttons and pills; only portal-specific pieces live here. */
 
-/* demo clock in the top bar */
-.p-clock{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
-.p-clock[hidden]{display:none}
-.p-clock-now{display:inline-flex;align-items:center;gap:8px;padding:0 10px 0 4px;margin-right:4px;border-right:1px solid #ffffff2e;color:var(--c-top-text)}
-.p-clock-now .ic{width:18px;height:18px;color:var(--c-lime)}
-.p-clock-now>span{display:grid;line-height:1.15}
-.p-clock-lbl{font:600 10.5px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--c-top-muted)}
-.p-clock-now time{font:600 13.5px/1.2 var(--body);font-variant-numeric:tabular-nums;white-space:nowrap}
-.p-clock .c-top-btn{min-height:32px;padding:0 8px;font-size:12.5px;border-color:#ffffff2e}
-.p-clock .c-top-btn .ic{display:block;width:15px;height:15px}
-.p-clock .c-top-btn[aria-busy="true"]{opacity:.6;cursor:progress}
-.p-clock-select{min-height:32px;padding:0 6px;border:1px solid #ffffff2e;border-radius:6px;background:var(--c-top-bg);color:var(--c-top-text);font:600 12.5px/1 var(--body)}
-.c-acct .c-top-btn .ic{display:block}
-.p-clock-select:focus-visible{outline:2px solid var(--c-lime);outline-offset:2px}
-
 /* overview: capacity bars, income, pending */
 .p-cap{list-style:none;margin:0;padding:0;display:grid;gap:16px}
 .p-cap-row{display:grid;gap:6px}
@@ -72,8 +57,8 @@
 .p-json{margin:0;padding:12px 16px 14px;background:var(--c-surface-2);border-top:1px solid var(--c-grid);overflow-x:auto;font:450 12.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--c-text);white-space:pre}
 
 /* integration: key and webhook */
-.p-key{display:grid;gap:8px;margin-top:12px;padding:12px;border:1px dashed var(--c-border-strong);border-radius:var(--radius);background:var(--c-surface-2)}
-.p-key code{font:600 13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere;user-select:all}
+.p-apikey{display:grid;gap:8px;margin-top:12px;padding:12px;border:1px dashed var(--c-border-strong);border-radius:var(--radius);background:var(--c-surface-2)}
+.p-apikey code{font:600 13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere;user-select:all}
 .p-hook{display:grid;gap:6px}
 .p-hook .field{margin:0}
 .p-hook .field-error:empty{display:none}
@@ -105,13 +90,10 @@
 .g-math dd{margin:0}
 
 @media(max-width:1100px){
-  .c-top{flex-wrap:wrap}
-  .p-clock{order:10;flex-basis:100%;padding:4px 0 2px;border-top:1px solid #ffffff1f}
   .p-event summary{grid-template-columns:130px minmax(0,1fr) auto}
   .p-ev-ref,.p-event time{grid-column:2/-1;text-align:left}
 }
 @media(max-width:720px){
-  .p-clock-now{border-right:0;flex-basis:100%;padding:0}
   .p-whatif-dl{grid-template-columns:minmax(0,1fr)}
   .p-event summary{grid-template-columns:minmax(0,1fr) auto;padding-inline:12px}
   .p-ev-type,.p-ev-ref,.p-event time{grid-column:1/-1}

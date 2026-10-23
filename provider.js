@@ -1,5 +1,6 @@
 /** Provider portal: account gate, hash routes, demo clock, reservation decisions, contracts what-if, statements and the integration log. All data comes from the same-origin platform API. */
 import * as v from '/provider-view.js';
+import { mountShell, fmtDate } from '/platform-shell.js';
 
 const $ = id => document.getElementById(id);
 const esc = v.escapeHtml;
@@ -97,12 +98,9 @@ async function loadAccount() {
 /* ---------- rendering ---------- */
 function renderTop() {
   const a = state.account;
-  $('p-org').textContent = a.neocloud?.name || a.company || 'Your neocloud';
-  $('p-acct').hidden = false;
-  $('p-clock').hidden = false;
-  $('p-now').textContent = v.stamp(a.demoNow);
-  $('p-now').dateTime = a.demoNow || '';
-  if (v.SCENARIOS.includes(a.scenario)) $('p-scenario').value = a.scenario;
+  // The demo clock and account chip are the shared console shell, mounted once; later loads only refresh the date.
+  if (!state.shell) { state.shell = true; mountShell(a, { onChange: () => refreshAll() }); }
+  else if ($('p-clock-date')) $('p-clock-date').textContent = fmtDate(a.demoNow);
   const pending = state.orders.incoming.length;
   $('p-badge').textContent = String(pending);
   $('p-badge').hidden = !pending;
@@ -225,37 +223,9 @@ async function busy(button, work) {
   finally { button.removeAttribute('aria-busy'); }
 }
 
-function firedText(data) {
-  const fired = Array.isArray(data.fired) ? data.fired : [];
-  const head = `Demo date now ${v.stamp(data.demoNow)}.`;
-  if (!fired.length) return `${head} Nothing was due.`;
-  const total = Number(data.firedCount) || fired.length;
-  const types = [...new Set(fired.map(e => e.type).filter(t => t && t !== 'email'))];
-  const emails = fired.filter(e => e.type === 'email').length;
-  const parts = [...types.slice(0, 4), ...(emails ? [`${emails} email${emails === 1 ? '' : 's'}`] : [])];
-  return `${head} ${total} event${total === 1 ? '' : 's'}: ${parts.join(', ')}${types.length > 4 ? ', …' : ''}.`;
-}
-
 async function refreshAll() {
   await loadAccount();
   await loadAll();
-}
-
-const CLOCK = { day: { days: 1 }, week: { days: 7 }, next: { until: 'next-event' }, settle: { until: 'settlement' } };
-async function onClock(button) {
-  if (button.dataset.clock === 'reset') {
-    if (!armed(button, 'Click again to reset')) return;
-    return busy(button, async () => {
-      await api('/api/demo/reset', { method: 'POST', body: {} });
-      toast('Demo reset: orders, prints, emails and the clock are back to the start.');
-      await refreshAll();
-    });
-  }
-  return busy(button, async () => {
-    const data = await api('/api/demo/advance', { method: 'POST', body: CLOCK[button.dataset.clock] });
-    toast(firedText(data));
-    await refreshAll();
-  });
 }
 
 async function onDecision(button) {
@@ -273,7 +243,7 @@ async function onApiKey(button) {
   await busy(button, async () => {
     const data = await api('/api/provider/api-key', { method: 'POST', body: {} });
     const box = $('p-key-once');
-    box.innerHTML = `<div class="p-key"><span class="eyebrow">New mock key, shown once</span><code>${esc(data.apiKey ?? data.key ?? '')}</code><span class="fine">Copy it now. The old key stopped working. This key is for the demo only and opens nothing.</span></div>`;
+    box.innerHTML = `<div class="p-apikey"><span class="eyebrow">New mock key, shown once</span><code>${esc(data.apiKey ?? data.key ?? '')}</code><span class="fine">Copy it now. The old key stopped working. This key is for the demo only and opens nothing.</span></div>`;
     box.hidden = false;
     toast('New mock API key created. It is shown once.');
     const settings = await settled(api('/api/provider/settings'));
@@ -301,14 +271,13 @@ async function signOut() {
 async function onClick(event) {
   const target = event.target.closest('button');
   if (!target) return;
-  if (target.dataset.clock) return onClock(target);
   const act = target.dataset.act;
   if (act === 'confirm' || act === 'decline') return onDecision(target);
   if (act === 'api-key') return onApiKey(target);
   if (act === 'csv') return downloadCsv();
   if (act === 'all-events') { state.showAllEvents = true; return renderIntegration(); }
   if (act === 'refresh') return busy(target, loadAll);
-  if (target.id === 'p-signout' || target.id === 'p-gate-signout') return busy(target, signOut);
+  if (target.id === 'p-gate-signout') return busy(target, signOut);
 }
 
 async function saveSettings(patch, message) {
@@ -340,16 +309,7 @@ async function onSubmit(event) {
   catch (error) { $('p-hook-err').textContent = error.message; }
 }
 
-async function onScenario(select) {
-  try {
-    await api('/api/demo/scenario', { method: 'POST', body: { scenario: select.value } });
-    toast(`Index scenario set to ${select.value}. Synthetic prints after the real as-of date were regenerated.`);
-    await refreshAll();
-  } catch (error) { toast(error.message); select.value = state.account.scenario || 'market'; }
-}
-
 async function onChange(event) {
-  if (event.target.id === 'p-scenario') return onScenario(event.target);
   if (event.target.id !== 'p-auto') return;
   const on = event.target.checked;
   try { await saveSettings({ autoConfirm: on }, on ? 'Auto-confirm on.' : 'Auto-confirm off: new requests wait in Orders.'); }

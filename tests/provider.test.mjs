@@ -37,7 +37,8 @@ test('the portal ships the gate, the console shell and every screen', async t =>
   assert.ok(html.includes('class="c-top"') && html.includes('class="d-rail"') && html.includes('/dashboard.css'));
   for (const screen of view.SCREENS) assert.ok(html.includes(`data-screens="${screen}"`), screen);
   for (const id of ['i-key', 'i-webhook', 'i-layout-dashboard']) assert.ok(html.includes(`id="${id}"`), id);
-  for (const clock of ['day', 'week', 'next', 'settle', 'reset']) assert.ok(html.includes(`data-clock="${clock}"`), clock);
+  // The demo clock and account chip come from the shared console shell, as on the buyer pages.
+  assert.ok(html.includes('id="p-clock"') && html.includes('id="p-acct"') && html.includes('href="/platform.css"'));
 });
 
 test('the guide names every message the mock neocloud exchanges', async t => {
