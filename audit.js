@@ -2,7 +2,7 @@
 const REFRESH_MS = 30000;
 const GENESIS = '0'.repeat(64);
 // Same labels as KIND_LABELS in lib/audit.mjs.
-const LABELS = { quote: 'Quote', booking_created: 'Booking', exercise_confirmed: 'Exercise', listing_created: 'Listing', offer_sent: 'Offer', signup: 'Signup', rfq: 'RFQ', mark: 'Mark', system: 'System' };
+const LABELS = { quote: 'Quote', booking_created: 'Booking', exercise_confirmed: 'Exercise', listing_created: 'Listing', offer_sent: 'Offer', signup: 'Signup', rfq: 'RFQ', mark: 'Mark', system: 'System', payment: 'Payment', settlement: 'Settlement' };
 const rows = document.getElementById('a-rows');
 const filters = document.getElementById('a-filters');
 const updated = document.getElementById('a-updated');

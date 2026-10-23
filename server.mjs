@@ -16,6 +16,7 @@ import { createFormRoutes } from './lib/forms.mjs';
 import { formStoreFromEnvironment } from './lib/signups.mjs';
 import { auditDocument, acceptEvent, AuditError, recordStartup, recordServerEvent } from './lib/audit.mjs';
 import { portfolioDocument } from './lib/portfolio.mjs';
+import { createPlatform, platformEnabled, isPlatformPage } from './lib/platform.mjs';
 
 const QUOTE_AUDIT_INTERVAL_MS = 15000;
 const dateOnly = iso => String(iso).slice(0, 10);
@@ -129,7 +130,8 @@ export function createApp({
   market = createMarketSource({ prices }),
   formStore = formStoreFromEnvironment(),
   contractValues = false,
-  platform = production ? process.env.DEMO_PLATFORM === '1' : process.env.DEMO_PLATFORM !== '0',
+  platform = platformEnabled({ production }),
+  db = process.env.DEMO_DB_FILE || undefined,
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -186,6 +188,8 @@ export function createApp({
       recordServerEvent('mark', markSummary(portfolio), { netValue: portfolio.kpis.netValue, asOf: portfolio.asOf, indexAsOf: portfolio.prices.asOf });
     } catch { /* the audit trail never breaks the portfolio */ }
   };
+  // Demo platform: accounts, offers, orders, mock payment, demo clock, provider and admin APIs (lib/platform.mjs).
+  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson });
   const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;
@@ -271,6 +275,13 @@ export function createApp({
         try { return json(response, 202, acceptEvent(body)); }
         catch (error) { throw error instanceof AuditError ? new RequestError(error.status, error.message) : error; }
       }
+      // Demo platform block: its APIs, a 404 for its pages when it is off, and the signed-in book behind the dashboard.
+      if (await demo.handle(request, response, url)) return;
+      if (!demo.enabled && ['GET', 'HEAD'].includes(request.method) && url.pathname === '/dashboard') {
+        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+        return response.end(request.method === 'HEAD' ? undefined : '<!doctype html><title>Dodona</title><p>The demo platform is off.</p>');
+      }
+      if (!demo.enabled && (url.pathname === '/api/portfolio' || isPlatformPage(url.pathname))) return json(response, 404, { ok: false, error: { code: 'not_found', message: 'Not found.' } });
       // ---- provider portal pages (feature/platform-provider): the portal, its assets and the neocloud guide; 404 when the platform is off ----
       const providerPage = {
         '/provider': ['provider.html', 'text/html; charset=utf-8', '/provider'],
@@ -280,7 +291,7 @@ export function createApp({
         '/docs/neocloud-api': ['neocloud-api.html', 'text/html; charset=utf-8', '/docs/neocloud-api'],
       }[url.pathname];
       if (providerPage && ['GET', 'HEAD'].includes(request.method)) {
-        if (!platform) return json(response, 404, { message: 'Not found.' });
+        if (!demo.enabled) return json(response, 404, { ok: false, error: { code: 'not_found', message: 'Not found.' } });
         const [path, type, pagePath] = providerPage;
         let content = await readFile(resolve(root, path));
         if (pagePath) content = Buffer.from(renderPage(content.toString('utf8'), { settings: siteSettings, origin, path: pagePath }));
@@ -289,7 +300,7 @@ export function createApp({
       }
       // ---- end provider portal pages ----
       if (['GET', 'HEAD'].includes(request.method) && (url.pathname === '/dashboard' || url.pathname === '/api/portfolio')) {
-        const page = await portfolioDocument(url, { prices, now, settings: siteSettings, origin });
+        const page = await portfolioDocument(url, { prices, now, settings: siteSettings, origin, source: await demo.portfolioSource(request) });
         if (url.pathname === '/api/portfolio') auditMark(page);
         const content = Buffer.from(page.body);
         response.writeHead(page.status, { 'Content-Type': page.type, 'Content-Length': content.length, 'Cache-Control': page.cacheControl });

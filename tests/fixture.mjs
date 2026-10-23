@@ -5,6 +5,8 @@ import { createApp } from '../server.mjs';
 
 // Route tests keep the shared audit log in memory so they never write data/audit.jsonl.
 process.env.AUDIT_LOG_FILE ??= 'off';
+// The demo platform uses a private in-memory database per app in tests, never data/demo.sqlite.
+process.env.DEMO_DB_FILE ??= ':memory:';
 
 export async function listen(server) {
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', resolve); });
@@ -45,7 +47,7 @@ export async function fixture(options = {}) {
     fetchImpl: (url, init) => fetch(url.replace('https://test-project.supabase.co', dbOrigin), init),
   });
   let time = Date.now();
-  const app = createApp({ store, siteSettings: { operatorName: 'Test fixture operator', contactEmail: 'fixture@example.invalid', retentionDays: 30 }, now: options.realClock ? Date.now : () => time, logger: { error() {} }, ...options });
+  const app = createApp({ store, siteSettings: { operatorName: 'Test fixture operator', contactEmail: 'fixture@example.invalid', retentionDays: 30 }, now: options.realClock ? Date.now : () => time, logger: { error() {} }, platform: true, db: ':memory:', ...options });
   const origin = await listen(app);
   return {
     origin, store, rows, state,
@@ -60,5 +62,45 @@ export async function fixture(options = {}) {
       return fetch(origin + '/api/waitlist', { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify(body) });
     },
     async cleanup() { await close(app); await close(database); },
+  };
+}
+
+/**
+ * Demo platform fixture: an app with the platform on, an in-memory database, the embedded index and a fixed clock.
+ * `as(email)` signs in a seeded account (password demo-dodona-2026) and returns a client that sends its cookie.
+ */
+export async function platformFixture(options = {}) {
+  const { fallbackHistory } = await import('../lib/prices.mjs');
+  const logs = [];
+  let time = Date.parse(options.start || '2026-10-23T12:00:00Z');
+  const app = createApp({
+    store: null, prices: async () => fallbackHistory(), now: () => time, platform: true, db: ':memory:',
+    siteSettings: { operatorName: 'Test fixture operator', contactEmail: 'fixture@example.invalid', retentionDays: 30 },
+    logger: { error: (...args) => logs.push(args.join(' ')), log: (...args) => logs.push(args.join(' ')) }, ...options,
+  });
+  const origin = await listen(app);
+  const client = cookie => {
+    const send = async (method, path, body, headers = {}) => {
+      const init = { method, headers: { Origin: origin, ...(cookie ? { Cookie: cookie } : {}), ...headers } };
+      if (body !== undefined) { init.body = typeof body === 'string' ? body : JSON.stringify(body); init.headers['Content-Type'] ??= 'application/json'; }
+      const response = await fetch(origin + path, init);
+      const text = await response.text();
+      let data = null;
+      try { data = JSON.parse(text); } catch { data = text; }
+      return { status: response.status, headers: response.headers, data };
+    };
+    return { cookie, get: path => send('GET', path), post: (path, body, headers) => send('POST', path, body, headers) };
+  };
+  const anonymous = client(null);
+  return {
+    origin, logs, anonymous,
+    advance(ms) { time += ms; },
+    async as(email, password = 'demo-dodona-2026') {
+      const response = await anonymous.post('/api/auth/sign-in', { email, password });
+      if (response.status !== 200) throw new Error(`sign-in failed for ${email}: ${response.status}`);
+      return client(response.headers.get('set-cookie').split(';')[0]);
+    },
+    client,
+    cleanup: () => close(app),
   };
 }
