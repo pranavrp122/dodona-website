@@ -1,6 +1,6 @@
 /** Provider portal: account gate, hash routes, demo clock, reservation decisions, contracts what-if, statements and the integration log. All data comes from the same-origin platform API. */
 import * as v from '/provider-view.js';
-import { mountShell, fmtDate } from '/platform-shell.js';
+import { mountShell, fmtDate, wireNavMore } from '/platform-shell.js';
 
 const $ = id => document.getElementById(id);
 const esc = v.escapeHtml;
@@ -324,10 +324,7 @@ function wire() {
   window.addEventListener('hashchange', route);
   // Coming back from the buyer's tab shows what their clock did meanwhile.
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') refreshAll().catch(() => {}); });
-  $('d-nav-more').addEventListener('click', () => {
-    const open = $('d-rail').classList.toggle('is-more');
-    $('d-nav-more').setAttribute('aria-expanded', String(open));
-  });
+  wireNavMore();
 }
 
 async function start() {

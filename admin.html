@@ -11,6 +11,7 @@
   <script src="/theme.js"></script>
   <link rel="stylesheet" href="/styles.css">
   <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
   <link rel="stylesheet" href="/admin.css">
   <script type="module" src="/admin.js"></script>
 </head>
@@ -45,7 +46,7 @@
     <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
     <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
     <symbol id="i-sun-moon" viewBox="0 0 24 24"><path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></symbol>
-    <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol>
+    <symbol id="i-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
   </svg>
 
   <a class="skip-link" href="#main">Skip to content</a>
@@ -60,10 +61,7 @@
       <svg class="ic c-th-system" aria-hidden="true" focusable="false"><use href="#i-sun-moon"/></svg>
       <span class="c-th-lbl" id="d-theme-lbl">System</span>
     </button>
-    <div class="c-acct" role="group" aria-label="Account" id="a-acct" hidden>
-      <span class="c-acct-text"><span class="c-acct-org" id="a-acct-email">Admin</span><span class="c-acct-role">Dodona admin</span></span>
-      <button type="button" class="c-top-btn a-signout" id="a-sign-out"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-log-out"/></svg><span class="c-th-lbl">Sign out</span></button>
-    </div>
+    <div class="p-acct" id="p-acct" hidden></div>
   </header>
   <div class="c-strip" role="note"><b>Demo</b><span>Admin view of the demo accounts on a separate demo database. Payments, neoclouds and emails are simulated.</span></div>
 

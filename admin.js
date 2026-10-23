@@ -1,5 +1,6 @@
 /** Demo admin portal: a hash-routed console over the admin API for accounts, orders, neoclouds, activity and the Supabase mirror. */
 import * as v from './admin-view.js';
+import { mountShell } from '/platform-shell.js';
 
 const $ = id => document.getElementById(id);
 const esc = v.esc;
@@ -330,18 +331,11 @@ function showGate(account) {
   $('a-gate').hidden = false;
   if (!account) return;
   $('a-gate-say').textContent = `You are signed in as ${account.email}, a ${v.roleText(account.role).toLowerCase()} account. The admin portal needs an admin login: sign out, then sign in as an admin.`;
-  $('a-acct').hidden = false;
-  $('a-acct-email').textContent = account.email;
-}
-
-async function signOut() {
-  try { await api('/api/auth/sign-out', { method: 'POST', body: {} }); } catch { /* an expired session still goes to sign-in */ }
-  location.assign('/sign-in');
+  mountShell(account);
 }
 
 async function start() {
   document.documentElement.classList.remove('no-js');
-  $('a-sign-out').addEventListener('click', signOut);
   let account = null;
   try {
     ({ account } = await api('/api/account'));
@@ -350,8 +344,8 @@ async function start() {
   }
   if (!account || account.role !== 'admin') return showGate(account);
   state.me = account;
-  $('a-acct').hidden = false;
-  $('a-acct-email').textContent = account.email;
+  // The account menu with sign-out is the shared console shell; the admin has no demo clock of its own.
+  mountShell(account);
   $('a-loading').hidden = true;
   $('a-content').hidden = false;
   $('d-rail').hidden = false;

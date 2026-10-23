@@ -3,7 +3,6 @@
 /* signed-out or wrong role: no rail, the gate sits centred */
 .d-app.is-gated{grid-template-columns:minmax(0,1fr)}
 .a-screen{margin-top:var(--gap)}
-.a-signout{margin-left:2px}
 
 /* form controls the console does not style yet */
 .d-body .field select,.d-body .field textarea{width:100%;background:var(--c-surface);color:var(--c-text);border:1px solid var(--c-border-strong);border-radius:6px;min-height:38px;padding:7px 10px;font:450 14px/1.3 var(--body)}
@@ -72,7 +71,6 @@
   .a-filters,.a-contact-fields{grid-template-columns:minmax(0,1fr)}
   .a-confirm{width:100%}
   .a-confirm .btn{flex:1}
-  .a-signout .c-th-lbl{display:none}
 }
 @media(prefers-reduced-motion:reduce){.a-row{transition:none}}
 
@@ -82,6 +80,5 @@
 .a-tall thead th{position:sticky;top:0;z-index:1}
 
 /* the top bar hides button icons by default (theme toggle); sign out keeps its icon, which is all a phone shows */
-.c-top-btn.a-signout .ic{display:block}
 /* focus moves to the main area after each route change for screen readers; it needs no visible ring */
 .d-main:focus{outline:0}
