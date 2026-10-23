@@ -2,11 +2,12 @@
 import { escapeHtml as esc, icon, windowLabel, utcStamp } from '/dashboard-view.js';
 import {
   api, startPage, toast, money, signedMoney, rate, fmtDate, kindPill, kindName, statusPill, statusName,
-  isFloor, isLock, breakEven, emailItems, eventItems, payoutRows,
+  isFloor, isLock, breakEven, emailItems, eventItems, payoutRows, eventText,
 } from '/platform-shell.js';
 
 const STEPS = [['paid', 'credit-card', 'Paid'], ['reserving', 'clock', 'Reserving'], ['reserved', 'server', 'Reserved'], ['delivering', 'circle-play', 'Delivering'], ['settled', 'flag', 'Settled']];
 const BEFORE_WINDOW = ['paid', 'reserving', 'reserved'];
+const RUNNING = [...BEFORE_WINDOW, 'delivering'];
 const $ = id => document.getElementById(id);
 const ref = decodeURIComponent(location.pathname.split('/').pop() || '');
 let detail = null;
@@ -64,7 +65,7 @@ function choice(order) {
 }
 
 function bidRow(bid, order, listingOpen) {
-  const live = listingOpen && bid.status !== 'accepted' && bid.status !== 'rejected';
+  const live = listingOpen && (bid.status || 'open') === 'open';
   const acts = live ? `<div class="p-inline"><label class="visually-hidden" for="ct-${esc(bid.id)}">Counter ask for ${esc(bid.bidder)}</label>
       <input id="ct-${esc(bid.id)}" type="number" inputmode="decimal" min="0.01" max="100" step="0.01" value="${esc(Number(order.listing.askPerHour).toFixed(2))}">
       <button type="button" class="btn btn-sm" data-act="counter" data-bid="${esc(bid.id)}">${icon('message-square')}<span>Counter</span></button>
@@ -82,7 +83,9 @@ function listing(order, bids) {
       <input id="od-ask" type="number" inputmode="decimal" min="0.01" max="100" step="0.01" required value="${esc((Number(order.strike) + 0.25).toFixed(2))}"></div></div>
       <div class="c-acts"><button type="submit" class="btn btn-primary">${icon('tag')}<span>List the hours</span></button></div>
       <p class="fine">The mock market bids one simulated day after you list, at the forward for the window minus $0.10, and raises by $0.05 on each counter up to the forward.</p></form>` : '';
-  const head = l ? `<div class="c-ctr-b"><p>${l.status === 'open' ? 'Listed' : l.status === 'accepted' ? 'Sold' : 'Withdrawn'} at <b>${esc(rate(l.askPerHour))}/GPU-h</b> · ${esc(fmtDate(l.createdAt))}${order.resoldTo ? ` · resold to ${esc(order.resoldTo.bidder || order.resoldTo)}` : ''}</p>
+  const sold = l?.status === 'accepted' && order.resoldTo;
+  const price = sold ? order.resoldTo.pricePerHour : l?.askPerHour;
+  const head = l ? `<div class="c-ctr-b"><p>${sold ? 'Sold' : l.status === 'open' ? 'Listed' : l.status === 'accepted' ? 'Sold' : 'Withdrawn'} at <b>${esc(rate(price))}/GPU-h</b> · ${esc(fmtDate(sold ? order.resoldTo.at : l.createdAt))}${sold ? ` · to ${esc(order.resoldTo.bidder)} · you asked ${esc(rate(l.askPerHour))}` : ''}</p>
       ${l.status === 'open' ? `<p class="c-acts c-note"><button type="button" class="btn btn-sm" data-act="withdraw">${icon('x')}<span>Withdraw the listing</span></button></p>` : ''}</div>` : '';
   const rows = (bids || []).map(b => bidRow(b, order, l?.status === 'open')).join('');
   const table = l ? `<div class="d-scroll"><table class="d-table p-bids"><caption class="visually-hidden">Bids on this listing</caption><thead><tr><th scope="col">Bidder</th><th scope="col" class="r">Bid</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
@@ -117,7 +120,8 @@ function render(data) {
   $('od-crumb').textContent = order.ref;
   $('od-title').textContent = `${kindName(order.kind)} · ${Number(order.count).toLocaleString('en-US')} ${order.gpu} · ${windowLabel(order.start, order.end)}`;
   $('od-sub').textContent = `${order.ref} · ${order.neocloud?.name || 'Partner neocloud (simulated)'} · ${order.region || ''}`;
-  $('od-acts').innerHTML = order.status === 'pending_payment' ? `<a class="btn btn-primary" href="/checkout?order=${encodeURIComponent(order.ref)}">${icon('credit-card')}<span>Pay now</span></a>` : '';
+  $('od-acts').innerHTML = order.status === 'pending_payment' ? `<a class="btn btn-primary" href="/checkout?order=${encodeURIComponent(order.ref)}">${icon('credit-card')}<span>Pay now</span></a>`
+    : RUNNING.includes(order.status) ? `<button type="button" class="btn" data-act="to-end">${icon('flag')}<span>Advance to this window's end</span></button>` : '';
   timeline(order);
   terms(order);
   choice(order);
@@ -156,6 +160,22 @@ async function act(path, body, message) {
   } finally { busy = false; }
 }
 
+// Runs this account's demo clock to the end of this order's window, so it settles; every step fired shows as a toast.
+async function advanceToEnd() {
+  if (busy) return;
+  busy = true;
+  try {
+    const result = await api('/api/demo/advance', { method: 'POST', body: { to: detail.order.end } });
+    if (result.demoNow && $('p-clock-date')) $('p-clock-date').textContent = fmtDate(result.demoNow);
+    const fired = result.fired || [];
+    toast(`Clock moved to ${fmtDate(result.demoNow)}. ${result.firedCount ?? fired.length} steps ran.`);
+    fired.filter(e => e.orderRef === detail.order.ref && e.type !== 'usage.reported').slice(-3).forEach(e => toast(eventText(e)));
+    await load();
+  } catch (error) {
+    toast(error.message);
+  } finally { busy = false; }
+}
+
 function counterAsk(bidId) {
   const value = Number($(`ct-${bidId}`)?.value);
   return value > 0 && value <= 100 ? value : null;
@@ -165,6 +185,7 @@ function onClick(event) {
   const button = event.target.closest('button[data-act]');
   if (!button || !detail) return;
   const { act: kind, value, bid } = button.dataset;
+  if (kind === 'to-end') { advanceToEnd(); return; }
   if (kind === 'choice' && value !== (detail.order.deliveryChoice || 'deliver')) act('choice', { choice: value }, value === 'resell' ? 'You will resell the hours. List them below.' : 'You will use the hours.');
   if (kind === 'withdraw') act('withdraw', {}, 'Listing withdrawn.');
   if (kind === 'accept') act('accept-bid', { bidId: bid }, 'Bid accepted. The resale buyer takes the hours and the compute bill.');

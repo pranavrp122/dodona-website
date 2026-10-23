@@ -130,24 +130,28 @@ async function clock(page, which) {
 
 async function orderFlow(page, ref) {
   await shot(page, '06-order-paid-1440-light');
-  await optional('choose resell', async () => {
-    await page.locator('#od-choice [data-value="resell"]').click();
-    await page.waitForSelector('#od-list-form', { timeout: 5000 });
-    await page.locator('#od-list-form button[type=submit]').click();
-    await page.waitForFunction(() => /Listed at/.test(document.getElementById('od-listing').textContent), null, { timeout: 5000 });
-  });
-  await optional('advance a day for a bid', async () => {
-    await clock(page, 'day');
-    await page.waitForSelector('[data-act="accept"]', { timeout: 5000 });
-    await shot(page, '07-order-bid-1440-light');
-    await page.locator('[data-act="counter"]').first().click();
-    await page.waitForTimeout(300);
-  });
-  await optional('advance to settlement', async () => {
-    await clock(page, 'settle');
-    await page.waitForSelector('#od-settle-box:not([hidden])', { timeout: 8000 });
-    check((await page.locator('#od-settlement').innerText()).includes('Window average'), 'settlement statement shows the window average');
-  });
+  await page.locator('#od-choice [data-value="resell"]').click();
+  await page.waitForSelector('#od-list-form', { timeout: 8000 });
+  await page.locator('#od-list-form button[type=submit]').click();
+  await page.waitForFunction(() => /Listed at/.test(document.getElementById('od-listing').textContent), null, { timeout: 8000 });
+  check(true, 'resell chosen and the hours listed');
+  await clock(page, 'day');
+  await page.reload();
+  await ready(page);
+  await page.waitForSelector('#od-listing [data-act="accept"]', { timeout: 8000 });
+  await shot(page, '07-order-bid-1440-light');
+  const before = await page.locator('#od-listing .p-bids tbody tr').first().innerText();
+  await page.locator('#od-listing [data-act="counter"]').first().click();
+  await page.waitForFunction(text => document.querySelector('#od-listing .p-bids tbody')?.innerText !== text, before, { timeout: 8000 });
+  check(true, 'a counter raises the simulated bid');
+  await page.locator('#od-listing [data-act="accept"]').first().click();
+  await page.waitForFunction(() => /Sold|resold/i.test(document.getElementById('od-listing').textContent), null, { timeout: 8000 });
+  check(true, 'accepting the bid resells the hours');
+  await page.locator('[data-act="to-end"]').click();
+  await page.waitForSelector('#od-settle-box:not([hidden])', { timeout: 15000 });
+  const statement = await page.locator('#od-settlement').innerText();
+  check(statement.includes('Window average') && statement.includes('Net result'), 'settlement statement after the window ends');
+  check(await page.locator('#od-timeline .p-step.is-done').count() === 5, 'timeline complete at settlement');
   await page.locator('#od-events-box > summary').click();
   check(await page.locator('#od-events .p-ev').count() >= 1, 'what the neocloud saw lists messages');
   await shot(page, `08-order-${ref}-1440-light`);
