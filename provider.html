@@ -242,7 +242,7 @@
           <section class="c-ctr c-s6" aria-labelledby="p-hook-h">
             <div class="c-ctr-h"><div><h2 id="p-hook-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-webhook"/></svg>Webhook endpoint</h2><p>Where Dodona would send reservation requests. Display only in the demo: nothing is called.</p></div></div>
             <form class="c-ctr-b p-hook" id="p-hook-form" novalidate>
-              <div class="field"><label for="p-hook-url">Webhook URL</label><input id="p-hook-url" name="webhookUrl" type="url" inputmode="url" maxlength="300" placeholder="https://ops.your-cloud.example/dodona" autocomplete="off"></div>
+              <div class="field"><label for="p-hook-url">Webhook URL</label><input id="p-hook-url" name="webhookUrl" type="url" inputmode="url" maxlength="300" placeholder="https://ops.your-cloud.example/dodona" autocomplete="off" aria-describedby="p-hook-help"><p class="fine" id="p-hook-help">Must start with https://. Leave it empty to clear it.</p></div>
               <p class="field-error" id="p-hook-err" role="alert"></p>
               <div class="c-acts"><button type="submit" class="btn btn-primary btn-sm"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><span>Save</span></button><a class="btn btn-sm" href="/docs/neocloud-api"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-book-open"/></svg><span>Read the guide</span></a></div>
             </form>
