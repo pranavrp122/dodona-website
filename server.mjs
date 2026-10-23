@@ -18,6 +18,8 @@ import { auditDocument, acceptEvent, AuditError, recordStartup, recordServerEven
 import { portfolioDocument } from './lib/portfolio.mjs';
 import { createPlatform, platformEnabled, isPlatformPage } from './lib/platform.mjs';
 import { platformRoutes, settleAccount } from './lib/platform-routes.mjs';
+import { createAdminPortal } from './lib/admin-portal.mjs';
+import { createMirrorService } from './lib/crm-mirror.mjs';
 
 const QUOTE_AUDIT_INTERVAL_MS = 15000;
 const dateOnly = iso => String(iso).slice(0, 10);
@@ -133,6 +135,7 @@ export function createApp({
   contractValues = false,
   platform = platformEnabled({ production }),
   db = process.env.DEMO_DB_FILE || undefined,
+  crmMirror = {},
   mirror = null,
   seedPassword = process.env.DEMO_SEED_PASSWORD || undefined,
 } = {}) {
@@ -192,7 +195,10 @@ export function createApp({
     } catch { /* the audit trail never breaks the portfolio */ }
   };
   // Demo platform: accounts, offers, orders, mock payment, demo clock, provider and admin APIs (lib/platform.mjs).
-  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson, extraRoutes: platformRoutes, settle: settleAccount, mirror, seedPassword });
+  // Admin portal block: the Supabase CRM mirror behind the admin sync routes, and the /admin page and its assets (lib/admin-portal.mjs).
+  const mirrorService = mirror || createMirrorService({ logger, now, ...crmMirror });
+  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson, extraRoutes: platformRoutes, settle: settleAccount, mirror: mirrorService, seedPassword });
+  const adminPortal = createAdminPortal({ demo, mirror: mirrorService, origin, settings: siteSettings, logger });
   const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;
@@ -279,6 +285,7 @@ export function createApp({
         catch (error) { throw error instanceof AuditError ? new RequestError(error.status, error.message) : error; }
       }
       // Demo platform block: its APIs, a 404 for its pages when it is off, and the signed-in book behind the dashboard.
+      if (await adminPortal.handle(request, response, url)) return;
       if (await demo.handle(request, response, url)) return;
       if (!demo.enabled && ['GET', 'HEAD'].includes(request.method) && url.pathname === '/dashboard') {
         response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });

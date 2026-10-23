@@ -325,7 +325,9 @@ test('admin portal: search, CSV, detail, notes, stage, account creation, orders,
   assert.equal((await admin.get('/api/admin/events?limit=5')).data.events.length, 5);
   const sync = (await admin.get('/api/admin/sync')).data;
   assert.deepEqual([sync.configured, sync.tables.accounts, sync.tables.orders], [false, 5, 7]);
-  assert.match((await admin.post('/api/admin/sync')).data.message, /not configured/);
+  const unconfigured = await admin.post('/api/admin/sync');
+  assert.equal(unconfigured.status, 409);
+  assert.match(unconfigured.data.error.message, /not configured/);
   const reset = await admin.post(`/api/admin/accounts/${sample.id}/reset`);
   assert.equal(reset.data.account.demoNow, '2026-10-23T12:00:00.000Z');
 });
