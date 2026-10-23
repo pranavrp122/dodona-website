@@ -112,3 +112,17 @@ test('portal source files avoid banned wording', async () => {
     assert.doesNotMatch(text.replace(/<symbol[^]*?<\/symbol>/g, ''), BANNED, file);
   }
 });
+
+test('real accounts: the Northwind login opens the portal, the seeded buyer and a signed-out visitor get the gate', async t => {
+  const { platformFixture } = await import('./fixture.mjs');
+  const f = await platformFixture();
+  t.after(() => f.cleanup());
+  const provider = (await (await f.as('ops@northwind.example')).get('/api/account')).data.account;
+  assert.equal(view.gateFor(provider), 'portal');
+  assert.match(provider.neocloud.name, /Northwind/);
+  assert.equal(provider.home, '/provider');
+  const buyer = (await (await f.as('demo@dodona.markets')).get('/api/account')).data.account;
+  assert.equal(view.gateFor(buyer), 'signin');
+  assert.equal((await f.anonymous.get('/api/account')).status, 401);
+  assert.equal((await f.anonymous.get('/provider')).status, 200, 'the page itself is public; the script shows the gate');
+});
