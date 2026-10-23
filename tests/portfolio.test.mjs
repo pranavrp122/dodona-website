@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createApp } from '../server.mjs';
 import { fallbackHistory } from '../lib/prices.mjs';
-import { getPortfolio, parseBookings, BookingError, valueCall } from '../lib/portfolio.mjs';
+import { getPortfolio, valueCall, valuePut } from '../lib/portfolio.mjs';
 import {
   exerciseQuote, intrinsicAt, providerScenarios, fleetUnderShock, FOOTER_LINE,
   coverage, savingsToDate, upcomingEvents, billingMonths, PLANNED_GPUS, BOOKING_FEE,
@@ -13,10 +13,11 @@ const settings = { operatorName: 'Test fixture operator', contactEmail: 'fixture
 const TODAY = '2026-10-22';
 const prices = fallbackHistory();
 const close6 = (actual, expected, label) => assert.ok(Math.abs(actual - expected) < 1e-6, `${label}: ${actual} vs ${expected}`);
-const booking = {
-  ref: 'DEMO-ABC123', gpu: 'H100', count: 8, start: '2026-12-07T14:00:00Z', end: '2026-12-14T14:00:00Z',
-  type: 'call', strike: 2.9, premiumPerGpuHour: 0.11, premiumTotal: 147.84, region: 'US East (Virginia)', config: 'SXM-IB', createdAt: '2026-10-22T10:00:00Z',
-};
+async function signIn(origin) {
+  const response = await fetch(`${origin}/api/auth/sign-in`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify({ email: 'demo@dodona.markets', password: 'demo-dodona-2026' }) });
+  assert.equal(response.status, 200);
+  return response.headers.get('set-cookie').split(';')[0];
+}
 
 async function app(t) {
   const server = createApp({ store: null, prices: async () => prices, siteSettings: settings, now: () => Date.parse(TODAY + 'T12:00:00Z') });
@@ -80,6 +81,17 @@ test('a cap in its window values on the days-weighted blend of the realised aver
   close6(intrinsicAt({ ...cap, valuation: val }, val.spot), val.intrinsic, 'browser what-if matches the server');
 });
 
+test('a floor (put) values on the shortfall of the expected window average below the strike', () => {
+  const series = Array.from({ length: 40 }, (_, i) => [new Date(Date.UTC(2026, 9, 1 + i)).toISOString().slice(0, 10), 2.4]);
+  const floor = { kind: 'put', gpu: 'H100', count: 10, pricePerGpuHour: 2.6, premiumPerGpuHour: 0.08, region: 'US East', config: 'SXM-IB', start: '2026-11-20T00:00:00Z', end: '2026-11-27T00:00:00Z' };
+  const put = valuePut(floor, series, { today: series.at(-1)[0], quoteCap: null });
+  close6(put.intrinsic, Math.max(2.6 - put.windowAverage.expected * put.basis, 0) * put.remainingHours * put.discountFactor, 'put intrinsic');
+  assert.ok(put.intrinsic > 0, 'in the money when the index sits below the floor');
+  close6(put.breakEven, 2.52, 'floor break-even is strike minus premium');
+  const cap = valueCall({ ...floor, kind: 'call' }, series, { today: series.at(-1)[0], quoteCap: null });
+  assert.equal(cap.intrinsic, 0, 'the same terms as a cap are out of the money');
+});
+
 test('exercise arithmetic for H7 at an index of $3.00', async () => {
   const h7 = (await getPortfolio({ prices, today: TODAY, quoteCap: null })).positions.find(x => x.id === 'H7');
   const x = exerciseQuote(h7, 3);
@@ -107,34 +119,20 @@ test('provider scenarios and fleet shock arithmetic', () => {
   assert.ok(fleetUnderShock(fleet, 0).monthsToBreach > 0);
 });
 
-test('bookings are validated and merged as upcoming positions', async () => {
-  const { bookings, rejected } = parseBookings(JSON.stringify([booking, { ...booking, gpu: 'Z9' }]), Object.keys(prices.data));
-  assert.equal(rejected, 1);
-  assert.equal(bookings[0].region, 'US East');
-  const p = await getPortfolio({ prices, today: TODAY, quoteCap: null, bookings });
-  const merged = p.positions.find(x => x.source === 'booking');
-  assert.equal(p.positions.length, 8);
-  assert.equal(merged.phase, 'upcoming');
-  assert.equal(merged.kind, 'call');
-  assert.equal(p.kpis.callCount, 3);
-  for (const bad of ['{', '{"a":1}', JSON.stringify(Array(21).fill(booking)), 'x'.repeat(9000)]) {
-    assert.throws(() => parseBookings(bad, ['H100']), BookingError);
-  }
-});
-
-test('GET /api/portfolio returns the portfolio shape and rejects bad bookings', async t => {
+test('GET /api/portfolio needs a session and returns the portfolio shape for the signed-in account', async t => {
   const origin = await app(t);
-  const response = await fetch(`${origin}/api/portfolio?bookings=${encodeURIComponent(JSON.stringify([booking]))}`);
+  const signedOut = await fetch(`${origin}/api/portfolio`);
+  assert.equal(signedOut.status, 401);
+  assert.equal((await signedOut.json()).error.code, 'signed_out');
+  const cookie = await signIn(origin);
+  const response = await fetch(`${origin}/api/portfolio?bookings=ignored`, { headers: { Cookie: cookie } });
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('cache-control'), 'no-store');
   const body = await response.json();
   for (const key of ['asOf', 'prices', 'account', 'kpis', 'positions', 'history', 'alerts', 'fleets', 'provider']) assert.ok(key in body, key);
   assert.deepEqual(Object.keys(body.prices).sort(), ['asOf', 'live', 'source']);
-  assert.equal(body.positions.length, 8);
-  assert.equal(body.rejectedBookings, 0);
-  const bad = await fetch(`${origin}/api/portfolio?bookings=notjson`);
-  assert.equal(bad.status, 400);
-  assert.match((await bad.json()).error, /JSON array/);
+  assert.equal(body.positions.length, 7);
+  assert.ok(!('rejectedBookings' in body), 'the old sessionStorage bookings path is gone');
 });
 
 test('GET /dashboard renders the ledger, the attribution line and no inline script or style', async t => {

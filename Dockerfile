@@ -9,6 +9,8 @@ COPY --chown=node:node index.html privacy.html agents.html styles.css waitlist.j
 COPY --chown=node:node checkout.css ./
 COPY --chown=node:node lib ./lib
 COPY --chown=node:node data ./data
+# The demo platform keeps its SQLite database here (DEMO_DB_FILE defaults to /app/data/demo.sqlite).
+VOLUME /app/data
 COPY --chown=node:node assets ./assets
 USER node
 EXPOSE 3000
