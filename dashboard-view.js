@@ -141,7 +141,7 @@ export function positionActions(position) {
     return position.bestOfferCents ? [{ act: 'counter', label: 'Counter offer', icon: 'message-square', primary: true }, view] : [{ ...view, primary: true }];
   }
   // Demo platform orders: the delivery choice and listing stay open from payment until the window starts.
-  if (position.orderRef && !CHOICE_OPEN.includes(position.status)) return [{ ...view, primary: true }];
+  if (position.orderRef && !CHOICE_OPEN.includes(position.orderStatus)) return [{ ...view, primary: true }];
   const list = { act: 'list', label: 'List for sale', icon: 'tag' };
   if (position.kind === 'call' || position.kind === 'put') {
     return [{ act: 'ex', mode: 'deliver', label: 'Exercise', icon: 'zap', primary: true }, list, { act: 'ex', mode: 'resell', label: 'Resell the hours', icon: 'zap' }, { ...view, label: 'View details' }];

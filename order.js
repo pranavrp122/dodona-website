@@ -46,7 +46,7 @@ function terms(order) {
     ...(lock ? [] : [['Premium', `${rate(b.premiumPerGpuHour)}/GPU-h · ${money(b.premiumTotal)}`], ['of which Dodona platform fee (15%)', money(b.platformFee), '', 'is-sub']]),
     ['Booking fee', money(b.bookingFee)],
     ['Break-even', be.text],
-    ...(order.card ? [['Paid with', `${order.card.brand} ending ${order.card.last4}`]] : []),
+    ...(order.payment ? [['Paid with', `${order.payment.brand} ending ${order.payment.last4}`]] : []),
     ['Paid', ['pending_payment', 'cancelled'].includes(order.status) ? 'Not yet' : money(lock ? b.bookingFee : b.payNow), '', 'is-total'],
   ]);
 }

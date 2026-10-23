@@ -138,7 +138,7 @@ function optionRows(p, val) {
 function orderRows(p) {
   if (!p.orderRef) return [];
   const choice = p.deliveryChoice === 'resell' ? 'Resell the hours' : 'Use the hours';
-  return [termRow('Order', `${p.orderRef} · ${String(p.status || '').replace('_', ' ')}`, 'Open it from the Orders page for the full timeline'), termRow('Delivery choice', choice)];
+  return [termRow('Order', `${p.orderRef} · ${String(p.orderStatus || '').replace('_', ' ')}`, 'Open it from the Orders page for the full timeline'), termRow('Delivery choice', choice)];
 }
 
 function termSheet(p) {

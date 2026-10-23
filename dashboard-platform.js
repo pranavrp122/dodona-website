@@ -14,7 +14,7 @@ export async function loadPortfolio() {
 }
 
 /** Choice and listing actions are open from payment until the delivery window starts. */
-export const choiceOpen = p => Boolean(p.orderRef) && CHOICE_OPEN.includes(p.status) && p.phase === 'upcoming';
+export const choiceOpen = p => Boolean(p.orderRef) && CHOICE_OPEN.includes(p.orderStatus) && p.phase === 'upcoming';
 
 // Order details (listing and bids) for positions being resold; the rest do not need the extra request.
 export async function orderDetails(positions) {
