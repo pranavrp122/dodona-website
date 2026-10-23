@@ -12,6 +12,7 @@
 .p-clock .c-top-btn .ic{display:block;width:15px;height:15px}
 .p-clock .c-top-btn[aria-busy="true"]{opacity:.6;cursor:progress}
 .p-clock-select{min-height:32px;padding:0 6px;border:1px solid #ffffff2e;border-radius:6px;background:var(--c-top-bg);color:var(--c-top-text);font:600 12.5px/1 var(--body)}
+.c-acct .c-top-btn .ic{display:block}
 .p-clock-select:focus-visible{outline:2px solid var(--c-lime);outline-offset:2px}
 
 /* overview: capacity bars, income, pending */
@@ -87,7 +88,8 @@
 .g-sec h2{font-size:20px;line-height:1.3;margin-bottom:10px}
 .g-sec h3{font-size:15px;margin:18px 0 6px}
 .g-sec p,.g-sec li{font-size:14.5px;max-width:72ch}
-.g-sec p+p{margin-top:10px}
+.g-sec p+p,.g-sec ol+p,.g-sec ul+p,.g-sec pre+p{margin-top:10px}
+.g-sec .c-acts{margin-top:16px}
 .g-sec ol,.g-sec ul{margin:8px 0 0;padding-left:22px;display:grid;gap:6px}
 .g-sec code{font:600 13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--c-surface-2);border:1px solid var(--c-grid);border-radius:4px;padding:0 4px}
 .g-sec pre{margin:10px 0 0;padding:12px 14px;border:1px solid var(--c-grid);border-radius:var(--radius);background:var(--c-surface-2);overflow-x:auto;font:450 12.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
@@ -112,7 +114,8 @@
   .p-clock-now{border-right:0;flex-basis:100%;padding:0}
   .p-whatif-dl{grid-template-columns:minmax(0,1fr)}
   .p-event summary{grid-template-columns:minmax(0,1fr) auto;padding-inline:12px}
-  .p-ev-dir,.p-ev-type,.p-ev-ref,.p-event time{grid-column:1/-1}
+  .p-ev-type,.p-ev-ref,.p-event time{grid-column:1/-1}
+  .p-ev-dir{grid-column:1;grid-row:1}
   .p-event .pill{grid-column:2;grid-row:1}
   .g-flow li{grid-template-columns:28px minmax(0,1fr)}
   .g-flow li>:last-child{grid-column:2}
