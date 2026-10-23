@@ -17,7 +17,9 @@ import { formStoreFromEnvironment } from './lib/signups.mjs';
 import { auditDocument, acceptEvent, AuditError, recordStartup, recordServerEvent } from './lib/audit.mjs';
 import { portfolioDocument } from './lib/portfolio.mjs';
 import { createPlatform, platformEnabled, isPlatformPage } from './lib/platform.mjs';
+import { platformRoutes, settleAccount } from './lib/platform-routes.mjs';
 import { createAdminPortal } from './lib/admin-portal.mjs';
+import { createMirrorService } from './lib/crm-mirror.mjs';
 
 const QUOTE_AUDIT_INTERVAL_MS = 15000;
 const dateOnly = iso => String(iso).slice(0, 10);
@@ -191,9 +193,10 @@ export function createApp({
     } catch { /* the audit trail never breaks the portfolio */ }
   };
   // Demo platform: accounts, offers, orders, mock payment, demo clock, provider and admin APIs (lib/platform.mjs).
-  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson });
-  // Admin portal block: the /admin page and its assets, and the Supabase CRM mirror behind /api/admin/sync (lib/admin-portal.mjs).
-  const adminPortal = createAdminPortal({ demo, now, origin, settings: siteSettings, logger, json, mirror: crmMirror });
+  // Admin portal block: the Supabase CRM mirror behind the admin sync routes, and the /admin page and its assets (lib/admin-portal.mjs).
+  const mirror = createMirrorService({ logger, now, ...crmMirror });
+  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson, extraRoutes: platformRoutes, settle: settleAccount, mirror });
+  const adminPortal = createAdminPortal({ demo, mirror, origin, settings: siteSettings, logger });
   const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;

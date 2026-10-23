@@ -81,8 +81,26 @@ A cap is priced with Black-76 on the Ornn index forward, with an average-price a
 
 `/dashboard` is a server-rendered demo account. It has an overview with the portfolio value, positions with exercise, a what-if slider and resale listing, provider tools to quote caps and floors, a lender view with loan-to-value, a rent shock and CSV export, alerts and settings with demo scenarios. Sign-in is a demo session held in `sessionStorage`; nothing is stored on the server.
 
-- `GET /api/portfolio?bookings=<json>` returns the sample book plus the visitor's demo bookings, valued with the Dodona Value method. Calls get their time value from `quoteCap`.
+- `GET /api/portfolio` returns the signed-in account's paid demo orders, valued with the Dodona Value method at the account's demo clock. Caps get their time value from `quoteCap` and floors from `quotePut`. It answers 401 when signed out.
 - The Kalshi-implied view from the market strip appears only here.
+
+## Demo platform
+
+An end-to-end demo that founders can walk an investor through. A visitor signs in with a demo email, browses offers from mock neoclouds, pays with a mock card, and watches the order reserve, deliver and settle as a demo clock moves forward. Everything runs on a separate SQLite database with mock payment, a mock neocloud and a mock email outbox. No money moves; payments run through "the escrow agent (simulated)".
+
+- **Consoles by role.** Buyer and lender accounts land on `/dashboard`, provider accounts on `/provider` and the admin on `/admin`.
+- **Demo logins.** All four use the password `demo-dodona-2026`: `demo@dodona.markets` (Sample Labs, with the seven sample positions as paid orders), `credit@meridian.example` (Meridian Credit, lender), `ops@northwind.example` (Northwind Compute, provider) and `admin@dodona.markets`. Helix Cloud is a second neocloud that supplies offers but has no login.
+- **Test cards.** `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` is declined and `4000 0000 0000 9995` has insufficient funds. Any other number that passes the Luhn check succeeds. Only the brand and the last four digits are stored.
+- **Settlement.** Every contract settles on the average of the daily index over its window. A cap holder pays the lower of the average and the cap. A floor holder receives the shortfall below the floor. A lock pays its fixed price.
+- **Demo clock.** `POST /api/demo/advance` takes `{ days }`, `{ to }` or `{ until: 'next-event' | 'settlement' }` and runs every due step in time order: confirmations, window starts, daily usage, settlements, payouts, resale bids and emails. After the real Ornn as-of date, prices are synthetic, seeded per account and scenario (`market`, `rise`, `fall`, `spike`, `flat`).
+- **Code.** The routes live in `lib/platform.mjs` and `lib/platform-routes.mjs`, the provider API in `lib/provider.mjs` and the admin API in `lib/admin.mjs`. The rest is split by domain: accounts, orders, payments, clock, settlement, listing, neocloud, outbox and seed.
+
+Settings:
+
+- `DEMO_PLATFORM` switches the platform. It is on by default outside production and off in production unless set to `1`; `0` turns it off anywhere. When it is off, every platform API and page answers 404 and `/dashboard` shows a one-line notice. The public site and its Supabase forms are unaffected.
+- `DEMO_DB_FILE` sets the database path. The default is `data/demo.sqlite`, which is gitignored with its `-wal` and `-shm` files. The Docker image declares `/app/data` as a volume. Delete the file to start again from the seed.
+
+The database is separate from Supabase on purpose. The public signup keeps using Supabase.
 
 ## Signups, contact and quote requests
 
