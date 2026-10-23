@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Orders · Console — Dodona</title>
+  <meta name="description" content="Demo orders: paid, reserving, reserved, delivering and settled.">
+  <meta name="robots" content="noindex">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
+  <script type="module" src="/orders.js"></script>
+</head>
+<body class="d-body">
+  <!-- P_SPRITE -->
+  <a class="skip-link" href="#main">Skip to content</a>
+  <!-- P_TOP -->
+  <div class="d-app">
+    <!-- P_RAIL -->
+    <main id="main" class="d-main">
+      <section class="c-ctr p-gate" id="p-gate" aria-labelledby="p-gate-h" hidden>
+        <p class="eyebrow">Dodona · Demo</p>
+        <h1 id="p-gate-h">Sign in to see your orders</h1>
+        <p>Every order you place on the demo platform shows here, from payment to settlement.</p>
+        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create a demo account</a></div>
+      </section>
+
+      <div class="p-content" id="p-content">
+        <header class="c-page-head">
+          <nav class="c-crumbs" aria-label="Breadcrumb"><a href="/dashboard#overview">Console</a><span aria-hidden="true">/</span><span aria-current="page">Orders</span></nav>
+          <div class="c-page-row">
+            <div class="c-page-title">
+              <h1>Orders</h1>
+              <p>Newest first. Open one for its timeline, term sheet, delivery choice, settlement and what the neocloud saw.</p>
+            </div>
+            <div class="c-acts"><a class="btn btn-primary" href="/offers"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-plus"/></svg><span>New order from an offer</span></a></div>
+          </div>
+        </header>
+
+        <section class="c-ctr" aria-labelledby="or-h">
+          <div class="c-ctr-h"><div><h2 id="or-h">All orders <span class="c-count" id="or-count"></span></h2><p>Statuses move as the demo clock runs.</p></div>
+            <div class="p-tabs d-seg" role="group" aria-label="Filter by status" id="or-tabs">
+              <button type="button" data-filter="all" aria-pressed="true">All</button>
+              <button type="button" data-filter="open" aria-pressed="false">Open</button>
+              <button type="button" data-filter="settled" aria-pressed="false">Settled</button>
+              <button type="button" data-filter="pending" aria-pressed="false">Awaiting payment</button>
+            </div></div>
+          <div class="d-scroll">
+            <table class="d-table p-orders">
+              <caption class="visually-hidden">Orders, newest first</caption>
+              <thead><tr><th scope="col">Order</th><th scope="col">Compute</th><th scope="col">Kind</th><th scope="col">Window</th><th scope="col" class="r">Strike or price</th><th scope="col" class="r">Paid</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Open</span></th></tr></thead>
+              <tbody id="or-rows"><tr><td colspan="8" class="d-muted">Orders load with JavaScript.</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <!-- P_FOOTER -->
+</body>
+</html>
