@@ -171,7 +171,10 @@ test('quotes are audited at most once per client every 15 seconds and marks once
   assert.equal(await count('quote'), quotesBefore + 2);
 
   const marksBefore = await count('mark');
-  for (let i = 0; i < 2; i++) assert.equal((await fetch(`${origin}/api/portfolio`)).status, 200);
+  const signIn = await fetch(`${origin}/api/auth/sign-in`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: origin }, body: JSON.stringify({ email: 'demo@dodona.markets', password: 'demo-dodona-2026' }) });
+  const cookie = signIn.headers.get('set-cookie').split(';')[0];
+  assert.equal((await fetch(`${origin}/api/portfolio`)).status, 401, 'signed out is not marked');
+  for (let i = 0; i < 2; i++) assert.equal((await fetch(`${origin}/api/portfolio`, { headers: { Cookie: cookie } })).status, 200);
   assert.equal(await count('mark'), marksBefore + 1);
   const [mark] = (await (await fetch(`${origin}/api/audit?kind=mark&limit=1`)).json()).entries;
   assert.match(mark.summary, /^Mark · \d+ positions · net [+−]\$[\d,]+k · Ornn \d{4}-\d{2}-\d{2}$/);
