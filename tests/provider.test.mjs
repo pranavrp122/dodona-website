@@ -139,5 +139,7 @@ test('real provider API: orders, contracts and settings normalise for the portal
   assert.ok(contracts.length > 0 && contracts.every(c => c.hours > 0 && ['cap', 'floor'].includes(c.kind)));
   const settings = view.normalizeSettings((await nw.get('/api/provider/settings')).data);
   assert.equal(typeof settings.autoConfirm, 'boolean');
+  assert.equal((await nw.post('/api/provider/settings', { webhookUrl: 'http://ops.example/hook' })).status, 400, 'http webhook refused');
+  assert.equal((await nw.post('/api/provider/settings', { webhookUrl: 'https://ops.example/hook' })).status, 200);
   assert.equal((await (await f.as('demo@dodona.markets')).get('/api/provider/orders')).status, 403);
 });
