@@ -1,0 +1,128 @@
+/* Provider portal and integration guide. Builds on dashboard.css: same tokens, containers, buttons and pills; only portal-specific pieces live here. */
+
+/* demo clock in the top bar */
+.p-clock{display:flex;align-items:center;gap:4px;flex-wrap:wrap;min-width:0}
+.p-clock[hidden]{display:none}
+.p-clock-now{display:inline-flex;align-items:center;gap:8px;padding:0 10px 0 4px;margin-right:4px;border-right:1px solid #ffffff2e;color:var(--c-top-text)}
+.p-clock-now .ic{width:18px;height:18px;color:var(--c-lime)}
+.p-clock-now>span{display:grid;line-height:1.15}
+.p-clock-lbl{font:600 10.5px/1.2 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--c-top-muted)}
+.p-clock-now time{font:600 13.5px/1.2 var(--body);font-variant-numeric:tabular-nums;white-space:nowrap}
+.p-clock .c-top-btn{min-height:32px;padding:0 8px;font-size:12.5px;border-color:#ffffff2e}
+.p-clock .c-top-btn .ic{display:block;width:15px;height:15px}
+.p-clock .c-top-btn[aria-busy="true"]{opacity:.6;cursor:progress}
+.p-clock-select{min-height:32px;padding:0 6px;border:1px solid #ffffff2e;border-radius:6px;background:var(--c-top-bg);color:var(--c-top-text);font:600 12.5px/1 var(--body)}
+.c-acct .c-top-btn .ic{display:block}
+.p-clock-select:focus-visible{outline:2px solid var(--c-lime);outline-offset:2px}
+
+/* overview: capacity bars, income, pending */
+.p-cap{list-style:none;margin:0;padding:0;display:grid;gap:16px}
+.p-cap-row{display:grid;gap:6px}
+.p-cap-top{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;flex-wrap:wrap;font-size:13px}
+.p-cap-name{display:inline-flex;align-items:center;gap:10px;font-weight:600}
+.p-cap-nums{color:var(--c-muted);font-variant-numeric:tabular-nums}
+.p-cap-nums b{color:var(--c-text);font-size:15px}
+.p-cap-sub{font-size:12px;color:var(--c-muted);font-variant-numeric:tabular-nums}
+.p-income{margin:0;padding:4px 16px 12px}
+.p-income>div{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 0;border-bottom:1px solid var(--c-grid)}
+.p-income dt{font-size:13.5px;font-weight:600}
+.p-income dt span{display:block;font-size:12px;font-weight:450;color:var(--c-muted)}
+.p-income dd{margin:0;text-align:right;font:600 16px/1.2 var(--body);font-variant-numeric:tabular-nums}
+.p-income dd small{display:block;font:450 12px/1.4 var(--body);color:var(--c-muted)}
+.p-income>div.is-total{border-bottom:0;border-top:2px solid var(--c-text);margin-top:2px}
+.p-income>div.is-total dd{font-size:19px}
+.p-pending{display:grid;gap:8px;justify-items:start}
+
+/* orders and tables */
+.p-table{min-width:760px}
+.p-table td .d-sub,.p-table th .d-pos-s{white-space:normal}
+.p-hold{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--c-muted)}
+.p-hold .ic{width:14px;height:14px}
+.p-mini-bar{display:flex;width:110px;height:6px;margin:6px 0 0 auto}
+.p-mini-bar i{background:var(--c-success)}
+.p-wrap{white-space:normal;margin-top:2px}
+
+/* contracts what-if */
+.p-whatif{display:grid;gap:4px}
+.p-whatif label{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-weight:600;font-size:13.5px}
+.p-whatif output{font:600 22px/1 var(--display);font-variant-numeric:tabular-nums}
+.p-whatif input[type=range]{width:100%;accent-color:var(--c-accent);margin:8px 0 6px}
+.p-whatif-dl{margin:6px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.p-whatif-dl>div{background:var(--c-surface-2);border:1px solid var(--c-grid);border-radius:6px;padding:10px 12px}
+.p-whatif-dl dt{font-size:12px;color:var(--c-muted)}
+.p-whatif-dl dd{margin:4px 0 0;font:600 18px/1.2 var(--body);font-variant-numeric:tabular-nums}
+.p-note{margin-top:4px;font-size:12px;color:var(--c-muted)}
+
+/* integration: event log */
+.p-events{list-style:none;margin:0;padding:0}
+.p-events>li{border-bottom:1px solid var(--c-grid)}
+.p-events>li:last-child{border-bottom:0}
+.p-events>li.d-muted{padding:16px}
+.p-event summary{display:grid;grid-template-columns:150px minmax(0,1.4fr) minmax(0,.8fr) auto 170px;gap:6px 14px;align-items:center;padding:10px 16px;cursor:pointer;list-style:none;font-size:13px}
+.p-event summary::-webkit-details-marker{display:none}
+.p-event summary:hover{background:var(--c-surface-2)}
+.d-body .p-event summary:focus-visible{outline-offset:-2px}
+.p-event details[open] summary{background:var(--c-accent-tint)}
+.p-ev-dir{display:inline-flex;align-items:center;gap:6px;color:var(--c-muted);font-weight:600}
+.p-ev-dir .ic{width:15px;height:15px}
+.p-event.is-out .p-ev-dir .ic{transform:scaleX(-1);color:var(--c-accent)}
+.p-ev-type{font:600 13px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--c-text);overflow-wrap:anywhere}
+.p-ev-ref{color:var(--c-muted);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.p-event time{color:var(--c-muted);font-size:12px;text-align:right;font-variant-numeric:tabular-nums}
+.p-json{margin:0;padding:12px 16px 14px;background:var(--c-surface-2);border-top:1px solid var(--c-grid);overflow-x:auto;font:450 12.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--c-text);white-space:pre}
+
+/* integration: key and webhook */
+.p-key{display:grid;gap:8px;margin-top:12px;padding:12px;border:1px dashed var(--c-border-strong);border-radius:var(--radius);background:var(--c-surface-2)}
+.p-key code{font:600 13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;overflow-wrap:anywhere;user-select:all}
+.p-hook{display:grid;gap:6px}
+.p-hook .field{margin:0}
+.p-hook .field-error:empty{display:none}
+.d-body .p-hook .field-error{color:var(--c-error)}
+.d-toggle>span{display:grid;gap:2px}
+
+/* integration guide page */
+.g-main{max-width:920px;margin-inline:auto;padding:var(--gap) max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px));display:grid;gap:var(--gap)}
+.g-main h1{font-size:clamp(28px,4vw,40px);line-height:1.12}
+.g-lede{font-size:16px;color:var(--c-text);max-width:68ch;margin-top:10px}
+.g-sec{padding:20px}
+.g-sec h2{font-size:20px;line-height:1.3;margin-bottom:10px}
+.g-sec h3{font-size:15px;margin:18px 0 6px}
+.g-sec p,.g-sec li{font-size:14.5px;max-width:72ch}
+.g-sec p+p,.g-sec ol+p,.g-sec ul+p,.g-sec pre+p{margin-top:10px}
+.g-sec .c-acts{margin-top:16px}
+.g-sec ol,.g-sec ul{margin:8px 0 0;padding-left:22px;display:grid;gap:6px}
+.g-sec code{font:600 13px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;background:var(--c-surface-2);border:1px solid var(--c-grid);border-radius:4px;padding:0 4px}
+.g-sec pre{margin:10px 0 0;padding:12px 14px;border:1px solid var(--c-grid);border-radius:var(--radius);background:var(--c-surface-2);overflow-x:auto;font:450 12.5px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace}
+.g-sec pre code{background:none;border:0;padding:0;font-weight:450}
+.g-flow{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:0;counter-reset:g}
+.g-flow li{display:grid;grid-template-columns:28px 120px minmax(0,1fr);gap:4px 12px;align-items:baseline;padding:10px 0;border-top:1px solid var(--c-grid);counter-increment:g;max-width:none}
+.g-flow li::before{content:counter(g);display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--c-accent-tint);color:var(--c-accent-ink);font:700 12px/1 var(--body)}
+.g-dir{font-size:12px;font-weight:600;color:var(--c-muted)}
+.g-toc{display:flex;flex-wrap:wrap;gap:8px}
+.g-math{margin:10px 0 0;display:grid;gap:6px}
+.g-math>div{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;padding:8px 12px;background:var(--c-surface-2);border-radius:6px;font-size:14px}
+.g-math dt{font-weight:600}
+.g-math dd{margin:0}
+
+@media(max-width:1100px){
+  .c-top{flex-wrap:wrap}
+  .p-clock{order:10;flex-basis:100%;padding:4px 0 2px;border-top:1px solid #ffffff1f}
+  .p-event summary{grid-template-columns:130px minmax(0,1fr) auto}
+  .p-ev-ref,.p-event time{grid-column:2/-1;text-align:left}
+}
+@media(max-width:720px){
+  .p-clock-now{border-right:0;flex-basis:100%;padding:0}
+  .p-whatif-dl{grid-template-columns:minmax(0,1fr)}
+  .p-event summary{grid-template-columns:minmax(0,1fr) auto;padding-inline:12px}
+  .p-ev-type,.p-ev-ref,.p-event time{grid-column:1/-1}
+  .p-ev-dir{grid-column:1;grid-row:1}
+  .p-event .pill{grid-column:2;grid-row:1}
+  .g-flow li{grid-template-columns:28px minmax(0,1fr)}
+  .g-flow li>:last-child{grid-column:2}
+  .g-math>div{grid-template-columns:minmax(0,1fr)}
+}
+
+/* the sign-in gate hides the rail; the content column takes the full width */
+.p-body .d-rail[hidden],.p-body #d-content[hidden]{display:none}
+.p-body .d-app:has(>.d-rail[hidden]){grid-template-columns:minmax(0,1fr)}
+.p-events>li.p-more{padding:12px 16px;text-align:center}
