@@ -31,7 +31,7 @@ function demoDb() {
 function fakePostgrest({ status = 201 } = {}) {
   const calls = [];
   const fetchImpl = async (url, init) => {
-    calls.push({ url, headers: init.headers, body: JSON.parse(init.body) });
+    calls.push({ url, method: init.method, headers: init.headers, body: init.body ? JSON.parse(init.body) : null });
     return new Response(null, { status });
   };
   return { calls, fetchImpl };
@@ -88,6 +88,27 @@ test('later runs send only rows changed since the last successful run', async ()
   assert.equal(third.pushed.accounts, 1);
   assert.equal(fake.calls.length, 1);
   assert.equal(fake.calls[0].body[0].stage, 'active');
+});
+
+test('rows stamped with an earlier demo clock are still sent, and rows a reset deleted are removed', async () => {
+  const db = demoDb();
+  const fake = fakePostgrest();
+  const mirror = createCrmMirror({ db, environment: ENV, fetchImpl: fake.fetchImpl, logger: quiet });
+  await mirror.run();
+  fake.calls.length = 0;
+  // Another account's demo clock is behind the last sync's newest timestamp.
+  db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?)').run('note_2', 'acc_1', 'admin@dodona.markets', 'Older clock.', '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
+  db.prepare('DELETE FROM orders WHERE ref = ?').run('DOD-2');
+  const result = await mirror.run();
+  assert.equal(result.pushed.notes, 1);
+  assert.equal(result.removed.orders, 1);
+  assert.match(result.message, /removed 1/);
+  const upsert = fake.calls.find(c => c.method === 'POST');
+  assert.equal(upsert.body[0].id, 'note_2');
+  const deletion = fake.calls.find(c => c.method === 'DELETE');
+  assert.equal(new URL(deletion.url).pathname, '/rest/v1/demo_orders');
+  assert.equal(new URL(deletion.url).searchParams.get('ref'), 'in.("DOD-2")');
+  assert.equal(deletion.headers.apikey, KEY);
 });
 
 test('a Supabase failure is recorded, logged in one line and retried next run, never thrown', async () => {

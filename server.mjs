@@ -17,6 +17,7 @@ import { formStoreFromEnvironment } from './lib/signups.mjs';
 import { auditDocument, acceptEvent, AuditError, recordStartup, recordServerEvent } from './lib/audit.mjs';
 import { portfolioDocument } from './lib/portfolio.mjs';
 import { createPlatform, platformEnabled, isPlatformPage } from './lib/platform.mjs';
+import { createAdminPortal } from './lib/admin-portal.mjs';
 
 const QUOTE_AUDIT_INTERVAL_MS = 15000;
 const dateOnly = iso => String(iso).slice(0, 10);
@@ -132,6 +133,7 @@ export function createApp({
   contractValues = false,
   platform = platformEnabled({ production }),
   db = process.env.DEMO_DB_FILE || undefined,
+  crmMirror = {},
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -190,6 +192,8 @@ export function createApp({
   };
   // Demo platform: accounts, offers, orders, mock payment, demo clock, provider and admin APIs (lib/platform.mjs).
   const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson });
+  // Admin portal block: the /admin page and its assets, and the Supabase CRM mirror behind /api/admin/sync (lib/admin-portal.mjs).
+  const adminPortal = createAdminPortal({ demo, now, origin, settings: siteSettings, logger, json, mirror: crmMirror });
   const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;
@@ -276,6 +280,7 @@ export function createApp({
         catch (error) { throw error instanceof AuditError ? new RequestError(error.status, error.message) : error; }
       }
       // Demo platform block: its APIs, a 404 for its pages when it is off, and the signed-in book behind the dashboard.
+      if (await adminPortal.handle(request, response, url)) return;
       if (await demo.handle(request, response, url)) return;
       if (!demo.enabled && ['GET', 'HEAD'].includes(request.method) && url.pathname === '/dashboard') {
         response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });

@@ -1,6 +1,6 @@
 -- Demo platform CRM mirror. Run once in the Supabase SQL editor, signed in as the project owner.
 -- The demo server's SQLite database stays the source of truth; lib/crm-mirror.mjs upserts these tables
--- through PostgREST when DEMO_SUPABASE_MIRROR=1. Primary keys are the SQLite ids, so re-running a sync
+-- through PostgREST when DEMO_SUPABASE_MIRROR=1 and deletes rows a demo reset removed. Primary keys are the SQLite ids, so re-running a sync
 -- updates rows in place. No password hashes, session tokens or card details are ever sent here.
 begin;
 
@@ -93,6 +93,6 @@ alter table public.demo_payments enable row level security;
 alter table public.demo_settlements enable row level security;
 
 revoke all on public.demo_accounts, public.demo_notes, public.demo_orders, public.demo_payments, public.demo_settlements from public, anon, authenticated;
-grant select, insert, update on public.demo_accounts, public.demo_notes, public.demo_orders, public.demo_payments, public.demo_settlements to service_role;
+grant select, insert, update, delete on public.demo_accounts, public.demo_notes, public.demo_orders, public.demo_payments, public.demo_settlements to service_role;
 
 commit;
