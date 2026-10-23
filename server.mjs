@@ -135,8 +135,8 @@ export function createApp({
   contractValues = false,
   platform = platformEnabled({ production }),
   db = process.env.DEMO_DB_FILE || undefined,
-  crmMirror = {},
   mirror = null,
+  crmMirror = {},
   seedPassword = process.env.DEMO_SEED_PASSWORD || undefined,
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
@@ -195,10 +195,11 @@ export function createApp({
     } catch { /* the audit trail never breaks the portfolio */ }
   };
   // Demo platform: accounts, offers, orders, mock payment, demo clock, provider and admin APIs (lib/platform.mjs).
-  // Admin portal block: the Supabase CRM mirror behind the admin sync routes, and the /admin page and its assets (lib/admin-portal.mjs).
-  const mirrorService = mirror || createMirrorService({ logger, now, ...crmMirror });
-  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson, extraRoutes: platformRoutes, settle: settleAccount, mirror: mirrorService, seedPassword });
-  const adminPortal = createAdminPortal({ demo, mirror: mirrorService, origin, settings: siteSettings, logger });
+  // Admin portal block: the Supabase CRM mirror behind the admin sync routes (an injected `mirror` wins, else one built from
+  // SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY and DEMO_SUPABASE_MIRROR=1), and the /admin page and its assets (lib/admin-portal.mjs).
+  const crm = mirror ?? createMirrorService({ logger, now, ...crmMirror });
+  const demo = createPlatform({ db, enabled: platform, prices, now, limit, clientAddress, origin, production, logger, json, readJson, extraRoutes: platformRoutes, settle: settleAccount, mirror: crm, seedPassword });
+  const adminPortal = createAdminPortal({ demo, mirror: crm, origin, settings: siteSettings, logger });
   const forms = createFormRoutes({ store: formStore, settings: siteSettings, origin, now, logger, issueToken, verifyToken, limit, clientAddress });
   async function isAvailable() {
     if (!store || !collectionDetailsReady(siteSettings)) return false;
