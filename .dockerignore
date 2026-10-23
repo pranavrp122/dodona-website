@@ -10,3 +10,6 @@ supabase
 *.csv
 *.log
 data/audit.jsonl
+data/demo.sqlite
+data/demo.sqlite-wal
+data/demo.sqlite-shm

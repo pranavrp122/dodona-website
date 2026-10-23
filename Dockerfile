@@ -7,6 +7,7 @@ RUN --mount=type=secret,id=npm_ca \
     npm ci --omit=dev --ignore-scripts --no-audit --no-fund --cache /tmp/npm-cache && rm -rf /tmp/npm-cache
 COPY --chown=node:node index.html privacy.html agents.html styles.css waitlist.js checkout.js paper-order.js demo-model.js contracts.html contract.html contracts.css contracts.js contract.js contracts-view.js market.js market.css methodology.html signup.html contact.html rfq.html signup.js forms.js forms.css audit.html audit.js audit.css dashboard.html dashboard.css dashboard.js dashboard-view.js theme.js server.mjs package.json site.json ./
 COPY --chown=node:node checkout.css ./
+COPY --chown=node:node platform.css platform-shell.js sign-in.html sign-in.js offers.html offers.js checkout.html platform-checkout.js orders.html orders.js order.html order.js dashboard-platform.js dashboard-charts.js provider.html provider.js provider-view.js provider.css neocloud-api.html admin.html admin.js admin-view.js admin.css ./
 COPY --chown=node:node lib ./lib
 COPY --chown=node:node data ./data
 # The demo platform keeps its SQLite database here (DEMO_DB_FILE defaults to /app/data/demo.sqlite).
