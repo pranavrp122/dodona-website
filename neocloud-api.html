@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Neocloud integration guide · Demo — Dodona</title>
+  <meta name="description" content="How a neocloud connects to Dodona: one webhook endpoint, one API key, and the messages for reservations, usage, settlement and payouts.">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/provider.css">
+</head>
+<body class="d-body p-body">
+  <svg class="c-sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-sun-moon" viewBox="0 0 24 24"><path d="M12 8a2.83 2.83 0 0 0 4 4 4 4 0 1 1-4-4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.9 4.9 1.4 1.4"/><path d="m17.7 17.7 1.4 1.4"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.3 17.7-1.4 1.4"/><path d="m19.1 4.9-1.4 1.4"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="c-top">
+    <a class="c-mark" href="/" aria-label="Dodona home">D</a>
+    <span class="c-brand">Dodona <span class="c-brand-sub">Neocloud guide</span></span>
+    <span class="c-demo">Demo</span>
+    <span class="c-spacer"></span>
+    <button type="button" class="c-top-btn" id="d-theme" data-choice="system" aria-label="Theme: system. Switch to light.">
+      <svg class="ic c-th-light" aria-hidden="true" focusable="false"><use href="#i-sun"/></svg>
+      <svg class="ic c-th-dark" aria-hidden="true" focusable="false"><use href="#i-moon"/></svg>
+      <svg class="ic c-th-system" aria-hidden="true" focusable="false"><use href="#i-sun-moon"/></svg>
+      <span class="c-th-lbl" id="d-theme-lbl">System</span>
+    </button>
+  </header>
+  <div class="c-strip" role="note"><b>Demo</b><span>This guide describes the mock neocloud in the demo platform · the same messages a real integration would use</span><span class="d-backing">Money moves through the escrow agent (simulated). Dodona never holds funds.</span></div>
+
+  <main id="main" class="g-main">
+    <header class="c-page-head">
+      <nav class="c-crumbs" aria-label="Breadcrumb"><a href="/provider">Provider portal</a><span aria-hidden="true">/</span><span aria-current="page">Integration guide</span></nav>
+      <h1>Connecting a neocloud to Dodona</h1>
+      <p class="g-lede">Buyers pay Dodona for a cap, a floor or a fixed price on GPU-hours. The compute itself comes from you. This page explains, in plain words, what Dodona sends you, what you send back, and how the money is worked out. In the demo, a mock neocloud plays your part so you can watch every message in the provider portal.</p>
+      <div class="g-toc c-acts">
+        <a class="btn btn-sm" href="#needs">What you need</a><a class="btn btn-sm" href="#flow">The flow</a><a class="btn btn-sm" href="#messages">Messages</a><a class="btn btn-sm" href="#holds">Capacity holds</a><a class="btn btn-sm" href="#settlement">Settlement</a><a class="btn btn-sm" href="/provider#integration">See the live log</a>
+      </div>
+    </header>
+
+    <section class="c-ctr g-sec" id="needs" aria-labelledby="g-needs">
+      <h2 id="g-needs">What a neocloud needs</h2>
+      <ol>
+        <li><b>One webhook endpoint.</b> An HTTPS address on your side. Dodona posts a JSON message to it whenever something about an order changes, such as a new reservation request.</li>
+        <li><b>One API key.</b> Dodona issues it to you once. You send it in the <code>Authorization: Bearer</code> header when you call Dodona back to confirm a reservation or report usage. You can replace it at any time from the portal; the old key stops working at once.</li>
+      </ol>
+      <p>That is all. There is no SDK to install and no change to how you run your clusters. Each message carries an <code>id</code>, so you can safely ignore one you have already handled, and your endpoint answers with HTTP 200 to say it received it.</p>
+    </section>
+
+    <section class="c-ctr g-sec" id="flow" aria-labelledby="g-flow">
+      <h2 id="g-flow">The life of one order</h2>
+      <ol class="g-flow">
+        <li><span class="g-dir">Dodona to you</span><span><code>reservation.requested</code>: a buyer has paid. Please hold this many GPUs of this type, in this region, for this window.</span></li>
+        <li><span class="g-dir">You to Dodona</span><span><code>reservation.confirmed</code> or <code>reservation.declined</code>. Confirming keeps the hold; declining releases it and the buyer is refunded through the escrow agent.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>delivery.started</code>: the window has opened and the buyer (or whoever bought the hours from them) starts using the GPUs.</span></li>
+        <li><span class="g-dir">You to Dodona</span><span><code>usage.reported</code>, once a day: how many GPU-hours were delivered. In the demo that is GPUs × 24 hours.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>window.closed</code> then <code>settlement.computed</code>: the window has ended and the result is worked out on the window average of the daily index.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>invoice.issued</code>: the compute bill for the hours, at the price the contract says.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>payout.issued</code>: money released to you by the escrow agent (simulated), such as your premium share or the compute bill.</span></li>
+      </ol>
+      <p class="fine">If the holder resells the hours before the window, you also see <code>listing.created</code>, <code>bid.received</code> and <code>resale.completed</code>. You deliver to the new buyer the same way; nothing else changes for you.</p>
+    </section>
+
+    <section class="c-ctr g-sec" id="messages" aria-labelledby="g-msgs">
+      <h2 id="g-msgs">The messages, exactly as the mock sends them</h2>
+      <p>Every message has the same envelope. <code>direction</code> says who sent it, <code>type</code> says what happened, and <code>payload</code> carries the details.</p>
+      <pre><code>{
+  "id": "evt_8f3c1a2b",
+  "orderRef": "DOD-7Q4K2M",
+  "direction": "dodona_to_neocloud",
+  "type": "reservation.requested",
+  "httpStatus": 200,
+  "at": "2026-11-02T14:00:00.000Z",
+  "payload": { … }
+}</code></pre>
+
+      <h3>reservation.requested (Dodona to you)</h3>
+      <pre><code>{
+  "orderRef": "DOD-7Q4K2M",
+  "gpu": "H100",
+  "count": 64,
+  "region": "US East",
+  "start": "2026-11-16T00:00:00.000Z",
+  "end": "2026-11-30T00:00:00.000Z",
+  "gpuHours": 21504,
+  "kind": "cap",
+  "strike": 2.4
+}</code></pre>
+
+      <h3>reservation.confirmed (you to Dodona)</h3>
+      <pre><code>{
+  "orderRef": "DOD-7Q4K2M",
+  "held": { "gpu": "H100", "count": 64, "region": "US East" },
+  "confirmedBy": "auto"
+}</code></pre>
+      <p><code>confirmedBy</code> is <code>auto</code> when your system confirms on its own, or <code>operator</code> when someone presses Confirm in the portal. A decline looks the same with type <code>reservation.declined</code>.</p>
+
+      <h3>usage.reported (you to Dodona, daily)</h3>
+      <pre><code>{
+  "orderRef": "DOD-7Q4K2M",
+  "date": "2026-11-17",
+  "gpuHours": 1536,
+  "hoursToDate": 3072
+}</code></pre>
+
+      <h3>settlement.computed (Dodona to you)</h3>
+      <pre><code>{
+  "orderRef": "DOD-7Q4K2M",
+  "kind": "cap",
+  "windowAvg": 2.62,
+  "strike": 2.4,
+  "hours": 21504,
+  "computeBill": 51609.6,
+  "saving": 4730.88,
+  "premiumPaid": 3870.72,
+  "netResult": 860.16
+}</code></pre>
+
+      <h3>invoice.issued and payout.issued (Dodona to you)</h3>
+      <pre><code>{ "orderRef": "DOD-7Q4K2M", "amount": 51609.6, "dueAt": "2026-12-01T00:00:00.000Z" }
+
+{ "orderRef": "DOD-7Q4K2M", "direction": "buyer_to_neocloud", "amount": 51609.6, "paidAt": "2026-12-01T00:00:00.000Z" }</code></pre>
+      <p class="fine">Amounts are US dollars rounded to cents; prices per GPU-hour have up to four decimals; every time is ISO 8601 in UTC.</p>
+    </section>
+
+    <section class="c-ctr g-sec" id="holds" aria-labelledby="g-holds">
+      <h2 id="g-holds">How capacity holds work</h2>
+      <ul>
+        <li>You tell Dodona how many GPUs of each type you can offer in each region. The portal shows them as total, reserved and free.</li>
+        <li>When a request arrives, the GPUs it names are held at once, so the same capacity cannot be sold twice while you decide.</li>
+        <li>With <b>auto-confirm</b> on (the default), the mock confirms each request the next time the demo clock moves by an hour or more. With it off, the request waits in the portal until you confirm or decline.</li>
+        <li>Declining releases the hold straight away. The buyer's payment goes back through the escrow agent (simulated).</li>
+        <li>The hold ends when the window closes and the order settles.</li>
+      </ul>
+    </section>
+
+    <section class="c-ctr g-sec" id="settlement" aria-labelledby="g-settle">
+      <h2 id="g-settle">How settlement on the window average works</h2>
+      <p>Every contract settles on one number: the <b>average of the daily index over the delivery window</b>. A single expensive day cannot swing the result; the whole window counts. Index data is demonstration only.</p>
+      <dl class="g-math">
+        <div><dt>Cap</dt><dd>The buyer pays the lower of the window average and the cap, per GPU-hour. That is your compute bill. If the average ends above the cap, the buyer saves the difference; as the seller of the cap you were paid a premium up front for giving that up.</dd></div>
+        <div><dt>Floor</dt><dd>If the window average ends below the floor, the holder receives the difference per GPU-hour from the matched buyer pool (simulated). Neoclouds usually buy floors to protect income on idle capacity.</dd></div>
+        <div><dt>Fixed price</dt><dd>The buyer pays the fixed price per GPU-hour whatever the average does. There is no premium, only a booking fee.</dd></div>
+      </dl>
+      <h3>Who gets paid what</h3>
+      <ul>
+        <li>Premiums split at payment: 85% to the neocloud, 15% to Dodona as the platform fee.</li>
+        <li>Compute bills are invoiced at settlement and paid one day later.</li>
+        <li>Everything moves through the escrow agent (simulated). Dodona never holds funds.</li>
+      </ul>
+      <div class="c-acts"><a class="btn btn-primary" href="/provider#integration">Open the message log</a><a class="btn" href="/provider">Back to the provider portal</a></div>
+    </section>
+  </main>
+
+  <footer class="d-footer"><div class="d-footer-inner"><p>Ornn index data is demonstration only; not licensed for commercial valuation. The mock neocloud, its messages and every payout are simulated.</p><div class="footer-links"><a href="/">Back to Dodona</a><a href="/provider">Provider portal</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

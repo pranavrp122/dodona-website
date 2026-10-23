@@ -129,6 +129,7 @@ export function createApp({
   market = createMarketSource({ prices }),
   formStore = formStoreFromEnvironment(),
   contractValues = false,
+  platform = production ? process.env.DEMO_PLATFORM === '1' : process.env.DEMO_PLATFORM !== '0',
 } = {}) {
   if (origin && new URL(origin).origin !== origin) throw new Error('APP_ORIGIN must be an exact origin without a path or trailing slash.');
   if (production && (!origin.startsWith('https://') || tokenSecret.length < 32)) throw new Error('Production requires an HTTPS APP_ORIGIN and a private WAITLIST_FORM_SECRET of at least 32 characters.');
@@ -270,6 +271,23 @@ export function createApp({
         try { return json(response, 202, acceptEvent(body)); }
         catch (error) { throw error instanceof AuditError ? new RequestError(error.status, error.message) : error; }
       }
+      // ---- provider portal pages (feature/platform-provider): the portal, its assets and the neocloud guide; 404 when the platform is off ----
+      const providerPage = {
+        '/provider': ['provider.html', 'text/html; charset=utf-8', '/provider'],
+        '/provider.js': ['provider.js', 'text/javascript; charset=utf-8'],
+        '/provider-view.js': ['provider-view.js', 'text/javascript; charset=utf-8'],
+        '/provider.css': ['provider.css', 'text/css; charset=utf-8'],
+        '/docs/neocloud-api': ['neocloud-api.html', 'text/html; charset=utf-8', '/docs/neocloud-api'],
+      }[url.pathname];
+      if (providerPage && ['GET', 'HEAD'].includes(request.method)) {
+        if (!platform) return json(response, 404, { message: 'Not found.' });
+        const [path, type, pagePath] = providerPage;
+        let content = await readFile(resolve(root, path));
+        if (pagePath) content = Buffer.from(renderPage(content.toString('utf8'), { settings: siteSettings, origin, path: pagePath }));
+        response.writeHead(200, { 'Content-Type': type, 'Content-Length': content.length, 'Cache-Control': 'no-cache' });
+        return response.end(request.method === 'HEAD' ? undefined : content);
+      }
+      // ---- end provider portal pages ----
       if (['GET', 'HEAD'].includes(request.method) && (url.pathname === '/dashboard' || url.pathname === '/api/portfolio')) {
         const page = await portfolioDocument(url, { prices, now, settings: siteSettings, origin });
         if (url.pathname === '/api/portfolio') auditMark(page);
