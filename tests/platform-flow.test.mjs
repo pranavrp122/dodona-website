@@ -345,3 +345,40 @@ test('integration events: an account sees its own orders, an admin sees everythi
   assert.equal((await lender.get('/api/integration/events')).data.events.length, 0);
   assert.ok((await admin.get('/api/integration/events')).data.events.length > 10);
 });
+
+test('review fixes: production needs DEMO_SEED_PASSWORD, failed sign-ins lock an email, providers see no buyer ids', async t => {
+  const { createApp } = await import('../server.mjs');
+  const productionApp = extra => createApp({ store: null, production: true, origin: 'https://demo.example', tokenSecret: 'x'.repeat(32), platform: true, db: ':memory:', ...extra });
+  assert.throws(() => productionApp({}), /DEMO_SEED_PASSWORD/);
+  assert.throws(() => productionApp({ seedPassword: 'too-short' }), /DEMO_SEED_PASSWORD/);
+  productionApp({ seedPassword: 'a-long-private-password' }).close();
+  const f = await setup(t, { seedPassword: 'another-private-pass', trustedProxyCidrs: '127.0.0.1/32' });
+  const from = i => ({ 'X-Forwarded-For': `203.0.113.${i}` });
+  assert.equal((await f.anonymous.post('/api/auth/sign-in', { email: BUYER, password: 'demo-dodona-2026' }, from(1))).status, 401, 'the published password no longer works');
+  assert.equal((await f.anonymous.post('/api/auth/sign-in', { email: BUYER, password: 'another-private-pass' }, from(2))).status, 200);
+  for (let i = 0; i < 10; i++) await f.anonymous.post('/api/auth/sign-in', { email: PROVIDER, password: 'wrong-password' }, from(10 + i));
+  const locked = await f.anonymous.post('/api/auth/sign-in', { email: PROVIDER, password: 'another-private-pass' }, from(50));
+  assert.equal(locked.status, 429, 'ten failures for one email lock it, whatever the address');
+  const g = await setup(t);
+  const nw = await g.as(PROVIDER);
+  const b = await g.as(BUYER);
+  const { order } = await buy(b, { kind: 'cap', region: 'US East', gpu: 'H100' });
+  assert.ok(!('accountId' in (await nw.get(`/api/orders/${order.ref}`)).data.order), 'no buyer account id on the provider view');
+  assert.ok((await nw.get('/api/provider/orders')).data.incoming.every(o => !('accountId' in o)));
+  assert.equal((await nw.post('/api/provider/settings', { webhookUrl: 'http://hooks.northwind.example' })).status, 400, 'https only');
+  assert.equal((await b.get('/api/statementsXcsv')).status, 404, 'a dot in a route is literal');
+});
+
+test('portfolio history runs from the first index print to the demo clock, synthetic prints included', async t => {
+  const f = await setup(t);
+  const buyer = await f.as(BUYER);
+  const put = await buy(buyer, { kind: 'floor', gpu: 'H100', region: 'US East' });
+  await buyer.post('/api/demo/advance', { days: 60 });
+  const p = (await buyer.get('/api/portfolio')).data;
+  assert.equal(p.history.at(-1).date, '2026-12-22');
+  assert.ok(p.history[0].date <= '2026-07-20', `starts at the first print, got ${p.history[0].date}`);
+  const h7 = p.positions.find(x => x.id === 'H7');
+  assert.ok(h7.history.length > 150 && h7.history[0].date === '2026-07-18');
+  const floor = p.positions.find(x => x.orderRef === put.order.ref);
+  assert.ok(floor.valuation.premiumPaid > 0 && floor.valuation.totalHours === put.order.gpuHours, 'puts carry premiumPaid and totalHours like calls');
+});

@@ -236,6 +236,7 @@ function syncSteps(s) {
         <li>Open the SQL editor, paste the file <code>supabase/demo-crm.sql</code> from this repository and run it. It creates five tables with row level security on and no public access.</li>
         <li>In the project's API settings, copy the project URL and the service role key. The key is a server secret: never share it or put it in a browser.</li>
         <li>Add three lines to the server's environment: <code>SUPABASE_URL</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> and <code>DEMO_SUPABASE_MIRROR=1</code>.</li>
+        <li>On the live site the demo platform also needs <code>DEMO_PLATFORM=1</code> and <code>DEMO_SEED_PASSWORD</code> (12 characters or more), which becomes the password of the seeded demo logins.</li>
         <li>Restart the server. This panel then shows "Mirroring", and Supabase's Table editor shows the demo accounts within a minute.</li>
       </ol>
       ${s.missing?.length ? `<p class="fine c-ctr-foot">Missing now: ${s.missing.map(m => `<code>${esc(m)}</code>`).join(', ')}.</p>` : ''}
