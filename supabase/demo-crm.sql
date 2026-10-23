@@ -59,7 +59,7 @@ create table if not exists public.demo_payments (
   account_id text,
   amount numeric(14, 2),
   status text not null,
-  outcome text,
+  outcome text,                       -- empty when approved, else card_declined, insufficient_funds or invalid_card
   created_at timestamptz not null,
   updated_at timestamptz not null
 );
@@ -73,6 +73,7 @@ create table if not exists public.demo_settlements (
   hours numeric(14, 2),
   compute_bill numeric(14, 2),
   saving numeric(14, 2),
+  payout numeric(14, 2),
   resale_proceeds numeric(14, 2),
   premium_paid numeric(14, 2),
   net_result numeric(14, 2),

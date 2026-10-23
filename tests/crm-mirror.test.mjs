@@ -14,16 +14,17 @@ function demoDb() {
     CREATE TABLE accounts (id TEXT PRIMARY KEY, email TEXT, company TEXT, role TEXT, kyb TEXT, stage TEXT, phone TEXT, neocloud_id TEXT, demo_now TEXT, scenario TEXT, last_active_at TEXT, password_hash TEXT, salt TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE sessions (token TEXT PRIMARY KEY, account_id TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE notes (id TEXT PRIMARY KEY, account_id TEXT, author TEXT, text TEXT, created_at TEXT, updated_at TEXT);
-    CREATE TABLE orders (ref TEXT PRIMARY KEY, account_id TEXT, offer_id TEXT, neocloud_id TEXT, gpu TEXT, count INTEGER, region TEXT, kind TEXT, strike REAL, start TEXT, "end" TEXT, status TEXT, delivery_choice TEXT, premium_per_gpu_hour REAL, premium_total REAL, platform_fee REAL, booking_fee REAL, pay_now REAL, created_at TEXT, updated_at TEXT);
-    CREATE TABLE payments (id TEXT PRIMARY KEY, order_ref TEXT, account_id TEXT, amount REAL, status TEXT, outcome TEXT, brand TEXT, last4 TEXT, created_at TEXT, updated_at TEXT);
-    CREATE TABLE settlements (order_ref TEXT PRIMARY KEY, account_id TEXT, kind TEXT, window_avg REAL, strike REAL, hours REAL, compute_bill REAL, saving REAL, resale_proceeds REAL, premium_paid REAL, net_result REAL, computed_at TEXT, updated_at TEXT);
+    CREATE TABLE orders (ref TEXT PRIMARY KEY, account_id TEXT, offer_id TEXT, neocloud_id TEXT, gpu TEXT, count INTEGER, region TEXT, kind TEXT, strike REAL, start TEXT, "end" TEXT, status TEXT, delivery_choice TEXT, premium_per_gpu_hour REAL, premium_total REAL, platform_fee REAL, booking_fee REAL, pay_now REAL, settlement_json TEXT, created_at TEXT, updated_at TEXT);
+    CREATE TABLE payments (id TEXT PRIMARY KEY, order_ref TEXT, account_id TEXT, amount REAL, brand TEXT, last4 TEXT, status TEXT, code TEXT, created_at TEXT, updated_at TEXT);
   `);
   db.prepare('INSERT INTO accounts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run('acc_1', 'demo@dodona.markets', 'Sample Labs', 'buyer', 'verified', 'demo', null, null, T1, 'market', T1, 'scrypt$secret-hash', 'secret-salt', T1, T1);
   db.prepare('INSERT INTO sessions VALUES (?,?,?,?)').run('a'.repeat(64), 'acc_1', T1, T1);
   db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?)').run('note_1', 'acc_1', 'admin@dodona.markets', 'Walked through caps.', T1, T1);
-  db.prepare('INSERT INTO orders VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run('DOD-1', 'acc_1', 'off_1', 'nc_1', 'H100', 8, 'US East', 'cap', 2.5, T1, T2, 'paid', 'deliver', 0.1234, 1000, 150, 2, 1002, T1, T1);
-  db.prepare('INSERT INTO payments VALUES (?,?,?,?,?,?,?,?,?,?)').run('pay_1', 'DOD-1', 'acc_1', 1002, 'succeeded', 'approved', 'Visa', '4242', T1, T1);
-  db.prepare('INSERT INTO settlements VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)').run('DOD-1', 'acc_1', 'cap', 2.7, 2.5, 1344, 3360, 268.8, 0, 1000, -731.2, T2, T2);
+  const settlement = { windowAvg: 2.7, strike: 2.5, hours: 1344, kind: 'cap', computeBill: 3360, saving: 268.8, resaleProceeds: 0, premiumPaid: 1000, netResult: -731.2, computedAt: T2 };
+  const order = db.prepare('INSERT INTO orders VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+  order.run('DOD-1', 'acc_1', 'off_1', 'nc_1', 'H100', 8, 'US East', 'cap', 2.5, T1, T2, 'settled', 'deliver', 0.1234, 1000, 150, 2, 1002, JSON.stringify(settlement), T1, T1);
+  order.run('DOD-2', 'acc_1', 'off_2', 'nc_1', 'H200', 4, 'US West', 'lock', 3.1, T1, T2, 'paid', 'deliver', 0, 0, 0, 2, 2, null, T1, T1);
+  db.prepare('INSERT INTO payments VALUES (?,?,?,?,?,?,?,?,?,?)').run('pay_1', 'DOD-1', 'acc_1', 1002, 'Visa', '4242', 'succeeded', null, T1, T1);
   return db;
 }
 
@@ -51,7 +52,7 @@ test('the mirror stays off and says so honestly until all three settings are pre
   const status = mirror.status();
   assert.equal(status.configured, false);
   assert.equal(status.lastRunAt, null);
-  assert.deepEqual(status.tables, { accounts: 1, notes: 1, orders: 1, payments: 1, settlements: 1 });
+  assert.deepEqual(status.tables, { accounts: 1, notes: 1, orders: 2, payments: 1, settlements: 1 });
 });
 
 test('a sync upserts every table with merge-duplicates and never sends secrets or card data', async () => {
@@ -59,7 +60,7 @@ test('a sync upserts every table with merge-duplicates and never sends secrets o
   const mirror = createCrmMirror({ db: demoDb(), environment: ENV, fetchImpl: fake.fetchImpl, logger: quiet });
   const result = await mirror.run();
   assert.equal(result.ok, true);
-  assert.deepEqual(result.pushed, { accounts: 1, notes: 1, orders: 1, payments: 1, settlements: 1 });
+  assert.deepEqual(result.pushed, { accounts: 1, notes: 1, orders: 2, payments: 1, settlements: 1 });
   assert.deepEqual(fake.calls.map(c => new URL(c.url).pathname + new URL(c.url).search), MIRROR_TABLES.map(t => `/rest/v1/${t.remote}?on_conflict=${t.key}`));
   for (const call of fake.calls) {
     assert.equal(new URL(call.url).origin, 'https://test-project.supabase.co');
@@ -69,7 +70,8 @@ test('a sync upserts every table with merge-duplicates and never sends secrets o
   const sent = JSON.stringify(fake.calls.map(c => c.body));
   for (const secret of ['secret-hash', 'secret-salt', 'scrypt', 'a'.repeat(64), '4242', 'Visa', 'password', 'last4', 'brand', 'token', 'cvc']) assert.equal(sent.includes(secret), false, secret);
   assert.deepEqual(fake.calls[0].body[0], { id: 'acc_1', email: 'demo@dodona.markets', company: 'Sample Labs', role: 'buyer', kyb: 'verified', stage: 'demo', phone: null, neocloud_id: null, demo_now: T1, scenario: 'market', last_active_at: T1, created_at: T1, updated_at: T1 });
-  assert.deepEqual(fake.calls[3].body[0], { id: 'pay_1', order_ref: 'DOD-1', account_id: 'acc_1', amount: 1002, status: 'succeeded', outcome: 'approved', created_at: T1, updated_at: T1 });
+  assert.deepEqual(fake.calls[3].body[0], { id: 'pay_1', order_ref: 'DOD-1', account_id: 'acc_1', amount: 1002, status: 'succeeded', outcome: null, created_at: T1, updated_at: T1 });
+  assert.deepEqual(fake.calls[4].body, [{ order_ref: 'DOD-1', account_id: 'acc_1', kind: 'cap', window_avg: 2.7, strike: 2.5, hours: 1344, compute_bill: 3360, saving: 268.8, payout: null, resale_proceeds: 0, premium_paid: 1000, net_result: -731.2, computed_at: T2, updated_at: T1 }]);
   assert.equal(fake.calls[2].body[0].window_end, T2);
 });
 

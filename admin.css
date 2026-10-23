@@ -1,0 +1,77 @@
+/* Demo admin portal. Only what dashboard.css does not already provide; every colour is a dashboard token, so light and dark follow it. */
+
+/* signed-out or wrong role: no rail, the gate sits centred */
+.d-app.is-gated{grid-template-columns:minmax(0,1fr)}
+.a-screen{margin-top:var(--gap)}
+.a-signout{margin-left:2px}
+
+/* form controls the console does not style yet */
+.d-body .field select,.d-body .field textarea{width:100%;background:var(--c-surface);color:var(--c-text);border:1px solid var(--c-border-strong);border-radius:6px;min-height:38px;padding:7px 10px;font:450 14px/1.3 var(--body)}
+.d-body .field textarea{min-height:84px;resize:vertical}
+.d-body .field input::placeholder,.d-body .field textarea::placeholder{color:var(--c-muted)}
+.d-body .field select:focus-visible,.d-body .field input:focus-visible,.d-body .field textarea:focus-visible{outline:2px solid var(--c-accent);outline-offset:1px;border-color:var(--c-accent)}
+.a-form-acts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.a-form-msg:empty{display:none}
+.a-form-msg.is-loss{color:var(--c-error);font-weight:600}
+
+/* accounts: a filter bar over a scannable table */
+.a-filter-bar{border-bottom:1px solid var(--c-border);background:var(--c-surface-2)}
+.a-filters{display:grid;grid-template-columns:minmax(220px,2fr) repeat(3,minmax(140px,1fr));gap:12px;align-items:end}
+.a-filters .field{margin:0}
+.a-table .r{text-align:right}
+.a-table td{white-space:nowrap}
+.a-table td.a-email{white-space:normal;overflow-wrap:anywhere;min-width:180px}
+.a-row{cursor:pointer;transition:background .1s}
+.a-row:hover{background:var(--c-surface-2)}
+.a-row:focus-within{background:var(--c-accent-tint)}
+.a-link{color:var(--c-accent-ink);font-weight:600;text-decoration:none}
+.a-link:hover{text-decoration:underline}
+.a-create{border-style:solid}
+.a-create .a-form-acts{grid-column:1/-1}
+
+/* account detail */
+.a-pills{display:flex;flex-wrap:wrap;gap:6px;padding:14px 16px 0}
+.a-contact-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:4px 16px 12px}
+.a-contact-fields .field{margin:0}
+.a-contact .a-form-acts{padding:0 16px 16px}
+.a-sub{margin:0;padding:14px 16px 8px;font:600 13px/1.3 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--c-muted);border-top:1px solid var(--c-grid)}
+
+/* notes: a dated timeline with a rule down the left */
+.a-notes{list-style:none;margin:0 0 16px;padding:0 0 0 18px;border-left:2px solid var(--c-border);display:grid;gap:14px;max-height:340px;overflow-y:auto}
+.a-notes li{position:relative}
+.a-notes li::before{content:"";position:absolute;left:-24px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--c-accent);box-shadow:0 0 0 3px var(--c-surface)}
+.a-note-meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;color:var(--c-muted)}
+.a-note-meta b{color:var(--c-text);font-weight:600}
+.a-notes p{margin-top:3px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere;max-width:none}
+.a-notes-empty{margin:0 0 14px;font-size:14px}
+.a-note-form .field{margin-bottom:10px}
+
+/* demo clock reset: a two-step confirm in place */
+.a-clock-acts{display:grid;gap:12px;justify-items:start;border-top:1px solid var(--c-grid)}
+.a-confirm{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;padding:10px 12px;border:1px solid var(--c-warning);border-radius:6px;background:color-mix(in srgb,var(--c-warning) var(--c-tint),var(--c-surface))}
+.a-confirm span{font-weight:600}
+
+/* event payloads and email bodies open in place */
+.a-payload summary{cursor:pointer;color:var(--c-accent-ink);font-weight:600;white-space:normal}
+.a-payload pre{margin:8px 0 0;padding:10px 12px;max-width:min(560px,70vw);max-height:280px;overflow:auto;background:var(--c-surface-2);border:1px solid var(--c-grid);border-radius:6px;font:12px/1.5 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--c-text);white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* orders: status filter chips scroll sideways on a phone */
+.a-seg{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}
+.a-seg button{white-space:nowrap}
+
+/* Supabase sync */
+.a-steps{margin:0;padding:16px 16px 16px 36px;display:grid;gap:10px;font-size:14px;line-height:1.5}
+.a-steps code,.c-ctr-foot code{font:12.5px/1.4 ui-monospace,SFMono-Regular,Consolas,monospace;padding:1px 5px;border-radius:4px;background:var(--c-surface-3);color:var(--c-text);overflow-wrap:anywhere}
+.a-sync-msg{margin:0 16px 12px;padding:10px 12px;border-radius:6px;border-left:4px solid var(--c-accent);background:var(--c-accent-tint);font-size:14px;font-weight:600}
+.a-sync-msg.is-loss{border-left-color:var(--c-error);background:color-mix(in srgb,var(--c-error) var(--c-tint),var(--c-surface));color:var(--c-text)}
+.a-sync-msg.is-gain{border-left-color:var(--c-success);color:var(--c-text)}
+.d-body .btn[aria-busy="true"]{opacity:.7;cursor:progress}
+
+@media(max-width:1100px){.a-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.a-search{grid-column:1/-1}}
+@media(max-width:720px){
+  .a-filters,.a-contact-fields{grid-template-columns:minmax(0,1fr)}
+  .a-confirm{width:100%}
+  .a-confirm .btn{flex:1}
+  .a-signout .c-th-lbl{display:none}
+}
+@media(prefers-reduced-motion:reduce){.a-row{transition:none}}
