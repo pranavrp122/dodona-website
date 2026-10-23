@@ -166,6 +166,9 @@
 .p-cur-dot{stroke:var(--c-surface);stroke-width:2}
 .p-cur-dot.is-payoff{fill:var(--c-accent)}.p-cur-dot.is-net{fill:var(--c-text)}
 .p-loss-zone{fill:var(--c-error);opacity:.07}
+.d-whatif dl small{display:block;margin-top:2px;font-size:11.5px;color:var(--c-muted);line-height:1.3}
+.d-whatif dd{overflow-wrap:anywhere}
+.p-pad{padding:16px}
 .p-key{display:flex;flex-wrap:wrap;gap:4px 16px;list-style:none;margin:6px 0 0;padding:0;font-size:12px;color:var(--c-muted)}
 .p-key i{display:inline-block;width:16px;height:0;vertical-align:middle;margin-right:6px;border-top:2px solid var(--c-accent)}
 .p-key i.is-net{border-top:2px dashed var(--c-text)}
