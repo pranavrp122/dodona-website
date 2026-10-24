@@ -31,7 +31,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="nav"><div class="wrap nav-inner">
     <a class="logo" href="#top" aria-label="Dodona home">DODONA<span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
-    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#flexibility">Selling</a><a href="#faq">FAQ</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
+    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#who-its-for">Who it’s for</a><a href="#flexibility">Selling</a><a href="#faq">FAQ</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
     <a class="btn btn-ink btn-sm nav-cta" href="#early-access">Join early access <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
   </div></header>
   <main id="main">
@@ -70,7 +70,7 @@
         <p class="visual-caption"><span aria-hidden="true">◆</span> You choose whether to use the compute.</p>
       </div>
     </div></section>
-    <nav class="section-nav wrap" aria-label="On this page"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#flexibility">Selling</a><a href="#faq">Questions</a><a href="#early-access">Sign up</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
+    <nav class="section-nav wrap" aria-label="On this page"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#who-its-for">Who it’s for</a><a href="#flexibility">Selling</a><a href="#faq">Questions</a><a href="#early-access">Sign up</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
 
     <section class="mk-sec" id="market-strip" aria-labelledby="mk-title"><div class="wrap">
       <div class="mk-head"><div><p class="eyebrow">Market today</p><h2 id="mk-title" class="mk-title">GPU rental prices</h2></div><p class="mk-asof" data-mk="asof">Ornn daily index · demonstration only; not licensed for commercial valuation</p></div>
@@ -218,6 +218,32 @@
       </div>
       <p class="scenario-note">A cheaper rental may not be available. Selling your protection would change these totals.</p>
       <p class="scenario-note"><a class="text-link" href="#flexibility">Read about selling your protection <span aria-hidden="true">↓</span></a></p>
+    </div></section>
+
+    <section class="sec who-section" id="who-its-for" aria-labelledby="who-title"><div class="wrap">
+      <div class="sec-head"><div><p class="eyebrow">Who it’s for</p><h2 id="who-title">Why both sides<br>of a GPU sign up</h2></div><p>Teams that rent GPUs get a ceiling on what they pay. Neoclouds get paid now for hours that might otherwise go unused.</p></div>
+      <div class="exit-grid who-grid">
+        <article class="exit-card" data-tour="renters"><p class="eyebrow">AI labs, startups, anyone with a GPU bill</p><h3>For teams that rent GPUs</h3>
+          <ul class="benefit-list">
+            <li><strong>A ceiling without a lock-in.</strong> Pay a fee now, pay at most the cap later, and rent cheaper elsewhere if prices fall.</li>
+            <li><strong>The GPUs come with it.</strong> A cap is tied to a reserved block, so the capacity is there when your run starts.</li>
+            <li><strong>One number to budget.</strong> You pay a fee up front, with no margin calls and no futures broker.</li>
+            <li><strong>Resell what you won’t use.</strong> List the hours on the board before the window starts.</li>
+            <li><strong>Priced on the average.</strong> It settles on the window’s average price against a public index, so one spiky day can’t trigger it or dodge it.</li>
+          </ul>
+          <p class="exit-note">Say you need 64 H100s for one week, which is 10,752 GPU-hours. A $2.50 cap for a $0.25 fee costs $2,688 up front. If the week averages $3.80, you pay $2.75 an hour all in and save about $11,290 against the market.</p>
+          <a class="text-link" href="/offers">Take an offer <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a></article>
+        <article class="exit-card" data-tour="providers"><p class="eyebrow">GPU providers</p><h3>For neoclouds</h3>
+          <ul class="benefit-list">
+            <li><strong>Earn on hours that would sit idle.</strong> Nights and weekends are quiet on most clusters, and a cap sold on those hours pays a fee today.</li>
+            <li><strong>Book capacity months out.</strong> Every cap holds a block, so forward demand is visible and funded.</li>
+            <li><strong>Keep the fee when prices fall.</strong> The buyer rents elsewhere and your GPUs stay in your own pool.</li>
+            <li><strong>Put a floor under revenue.</strong> Floors make a GPU-backed loan easier to carry, and those loans run around 6 to 12% today.</li>
+            <li><strong>Plug in once.</strong> One webhook and one API key, and Dodona never takes the other side or holds funds.</li>
+          </ul>
+          <a class="text-link" href="/sign-in">Open a provider account <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a></article>
+      </div>
+      <div class="fee-note who-earns"><p class="eyebrow">How Dodona earns</p><p>Dodona keeps 15% of each cap fee and a $2 booking fee per order, and earns nothing on the compute itself. Money moves through the escrow agent, and Dodona never holds funds or takes the other side.</p></div>
     </div></section>
 
     <section class="sec flexibility-section" id="flexibility" aria-labelledby="flexibility-title"><div class="wrap">
