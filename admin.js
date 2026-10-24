@@ -11,11 +11,15 @@ const SCREENS = {
   account: { title: 'Account', desc: '' },
   orders: { title: 'Orders', desc: 'Every order across the demo accounts, newest first.' },
   neoclouds: { title: 'Neoclouds', desc: 'The simulated neoclouds: capacity per GPU and region, and the contracts written on it.' },
-  activity: { title: 'Activity', desc: 'The latest messages between Dodona and the neoclouds, across every account.' },
+  activity: { title: 'Activity', desc: 'Recent failures across every account, and the latest messages between Dodona and the neoclouds.' },
   sync: { title: 'Supabase sync', desc: 'Save the demo CRM to your Supabase project.' },
 };
 
 const state = { me: null, route: { screen: 'accounts', id: '' }, filters: {}, orderStatus: '', creating: false, detail: null, eventRef: '', searchTimer: 0, resetTimer: 0 };
+// --- activity log (feature/activity): the account's log filters, the rows loaded so far and the next-page cursor ---
+const freshActivity = accountId => ({ accountId, kind: '', failed: false, q: '', since: '', until: '', rows: [], next: null, seq: 0, timer: 0 });
+state.act = freshActivity('');
+// --- end activity log ---
 
 class ApiError extends Error {
   constructor(status, message, code) { super(message); this.status = status; this.code = code; }
@@ -141,6 +145,7 @@ function accountDetailHtml(d) {
     ${v.container({ id: 'a-d-notes', title: 'Notes', iconName: 'message-square', count: d.notes.length, span: 'c-s7', desc: 'Newest first. Only admins see these.', body: `<div class="c-ctr-b">${v.notesList(d.notes)}${v.noteForm()}</div>` })}
     ${v.container({ id: 'a-d-clock', title: 'Demo clock', iconName: 'calendar-clock', span: provider ? 'c-s5' : 'c-s12', desc: 'Where this account\'s demo time and index scenario stand.', body: `<div id="a-clock-body">${v.clockCard(a, false)}</div>` })}
     ${provider ? v.container({ id: 'a-d-neocloud', title: 'Neocloud', iconName: 'server', span: 'c-s7', desc: 'The simulated neocloud this provider login runs.', body: v.neocloudCard(d.neocloud) }) : ''}
+    <div class="c-s12" id="a-d-activity-slot">${v.activityPanel(state.act)}</div>
     ${v.container({ id: 'a-d-orders', title: 'Orders', iconName: 'layers', count: d.orders.length, span: 'c-s12', body: v.table('Orders', v.orderHeads(false), v.orderRows(d.orders), 'No orders yet.') })}
     ${v.container({ id: 'a-d-payments', title: 'Payments', iconName: 'credit-card', count: d.payments.length, span: 'c-s12', desc: 'Mock card payments. Only the brand and last four digits are kept.', body: v.table('Payments', v.PAYMENT_HEADS, v.paymentRows(d.payments), 'No payments yet.') })}
     ${v.container({ id: 'a-d-payouts', title: 'Payouts', iconName: 'receipt', count: d.payouts.length, span: 'c-s12', desc: 'Through the escrow agent (simulated).', body: v.table('Payouts', v.PAYOUT_HEADS, v.payoutRows(d.payouts), 'No payouts yet.') })}
@@ -156,12 +161,60 @@ async function showAccount(id, { keepScroll = false } = {}) {
   }
   const detail = await api(`/api/admin/accounts/${encodeURIComponent(id)}`);
   state.detail = { notes: [], orders: [], payments: [], payouts: [], emails: [], events: [], neocloud: null, ...detail };
+  if (state.act.accountId !== id) state.act = freshActivity(id);
   const a = state.detail.account;
   frame({ title: a.company || a.email, desc: `${a.email} · ${v.roleText(a.role)} · created ${v.day(a.createdAt)}`, crumbs: [['Accounts', '#accounts'], [a.company || a.email]] });
   const y = window.scrollY;
   screen(accountDetailHtml(state.detail));
   if (keepScroll) window.scrollTo(0, y);
+  await loadActivity();
 }
+
+// --- activity log (feature/activity) ---
+function activityQuery(before) {
+  const f = state.act;
+  const params = new URLSearchParams();
+  if (f.kind) params.set('kind', f.kind);
+  if (f.failed) params.set('failed', '1');
+  if (f.q.trim()) params.set('q', f.q.trim());
+  if (f.since) params.set('since', f.since);
+  if (f.until) params.set('until', f.until);
+  if (before) params.set('before', before);
+  return params.toString();
+}
+
+// Loads the first page for the current filters, or the next page with { more: true }; a newer load wins over a slower older one.
+async function loadActivity({ more = false } = {}) {
+  const f = state.act;
+  if (!$('a-act-rows')) return;
+  const seq = ++f.seq;
+  const base = `/api/admin/accounts/${encodeURIComponent(f.accountId)}/activity`;
+  const query = activityQuery(more ? f.next : null);
+  let data;
+  try {
+    data = await api(`${base}${query ? '?' + query : ''}`);
+  } catch (error) {
+    if (seq === f.seq && $('a-act-count')) $('a-act-count').textContent = error.message;
+    return;
+  }
+  if (seq !== f.seq || !$('a-act-rows')) return;
+  f.rows = more ? [...f.rows, ...data.rows] : data.rows;
+  f.next = data.nextBefore;
+  $('a-act-rows').innerHTML = f.rows.length ? v.activityRows(f.rows).join('') : `<tr><td colspan="${v.ACTIVITY_HEADS.length}" class="d-empty">Nothing matches these filters yet.</td></tr>`;
+  $('a-act-more').hidden = !f.next;
+  $('a-act-count').textContent = `${f.rows.length} ${f.rows.length === 1 ? 'row' : 'rows'} shown${f.next ? '. Older rows below.' : '.'}`;
+  const csv = activityQuery(null);
+  $('a-act-csv').href = `${base}.csv${csv ? '?' + csv : ''}`;
+}
+
+function setActivityFilter(changes, delay = 0) {
+  Object.assign(state.act, changes);
+  document.querySelectorAll('[data-act="act-kind"]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.kind === state.act.kind)));
+  document.querySelector('[data-act="act-failed"]')?.setAttribute('aria-pressed', String(state.act.failed));
+  clearTimeout(state.act.timer);
+  state.act.timer = setTimeout(() => loadActivity().catch(fail), delay);
+}
+// --- end activity log ---
 
 async function saveContact(form) {
   const body = Object.fromEntries(new FormData(form));
@@ -242,8 +295,15 @@ async function showNeoclouds() {
 async function showActivity() {
   frame({ ...SCREENS.activity, crumbs: [['Activity']] });
   loading('Loading activity…');
-  const { events } = await api('/api/admin/events?limit=200');
-  screen(v.container({ id: 'a-activity', title: 'Latest events', iconName: 'activity', count: events.length, body: v.table('Latest events', v.EVENT_HEADS, v.eventRows(events), 'Nothing has happened yet. Place an order from a buyer account to see messages here.') }));
+  const [{ events }, { rows: failures }] = await Promise.all([api('/api/admin/events?limit=200'), api('/api/admin/activity/failures?limit=50')]);
+  // --- activity log (feature/activity): the latest failed calls, script errors and sign-ins across accounts ---
+  const failed = v.container({
+    id: 'a-failures', title: 'Recent failures', iconName: 'triangle-alert', count: failures.length,
+    desc: 'Failed API calls, script errors and failed sign-ins from every account, newest first. Open the account for its full log.',
+    body: `<div class="a-tall a-act-list">${v.table('Recent failures', v.FAILURE_HEADS, v.failureRows(failures), 'No failures yet.')}</div>`,
+  });
+  // --- end activity log ---
+  screen(`<div class="c-stack">${failed}${v.container({ id: 'a-activity', title: 'Latest events', iconName: 'activity', count: events.length, body: v.table('Latest events', v.EVENT_HEADS, v.eventRows(events), 'Nothing has happened yet. Place an order from a buyer account to see messages here.') })}</div>`);
 }
 
 // Supabase sync
@@ -299,6 +359,9 @@ const ACTIONS = {
   'reset-cancel': () => askReset(false),
   'reset-confirm': () => resetAccount(),
   'sync-now': button => syncNow(button),
+  'act-kind': button => setActivityFilter({ kind: button.dataset.kind }),
+  'act-failed': () => setActivityFilter({ failed: !state.act.failed }),
+  'act-more': () => loadActivity({ more: true }).catch(fail),
 };
 
 function onClick(event) {
@@ -309,13 +372,18 @@ function onClick(event) {
 }
 
 function onSubmit(event) {
-  const handler = { 'a-create': createAccount, 'a-contact': saveContact, 'a-note-form': addNote, 'a-filters': () => {} }[event.target.id];
+  const handler = { 'a-create': createAccount, 'a-contact': saveContact, 'a-note-form': addNote, 'a-filters': () => {}, 'a-act-filters': () => {} }[event.target.id];
   if (!handler) return;
   event.preventDefault();
   handler(event.target);
 }
 
 function onFilter(event) {
+  const log = event.target.closest('#a-act-filters');
+  if (log) {
+    const data = new FormData(log);
+    return setActivityFilter({ q: String(data.get('q') || ''), since: String(data.get('since') || ''), until: String(data.get('until') || '') }, event.type === 'input' ? SEARCH_DELAY_MS : 0);
+  }
   const form = event.target.closest('#a-filters');
   if (!form) return;
   state.filters = Object.fromEntries(new FormData(form));

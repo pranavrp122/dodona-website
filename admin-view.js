@@ -233,7 +233,7 @@ function syncSteps(s) {
     id: 'a-sync-steps', title: 'Set it up', iconName: 'info', span: 'c-s5', desc: 'About ten minutes, once.',
     body: `<ol class="a-steps">
         <li>Create a Supabase project at supabase.com, or open the one the signup form already uses.</li>
-        <li>Open the SQL editor, paste the file <code>supabase/demo-crm.sql</code> from this repository and run it. It creates five tables with row level security on and no public access.</li>
+        <li>Open the SQL editor, paste the file <code>supabase/demo-crm.sql</code> from this repository and run it. It creates six tables with row level security on and no public access.</li>
         <li>In the project's API settings, copy the project URL and the service role key. The key is a server secret: never share it or put it in a browser.</li>
         <li>Add three lines to the server's environment: <code>SUPABASE_URL</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> and <code>DEMO_SUPABASE_MIRROR=1</code>.</li>
         <li>On the live site the demo platform also needs <code>DEMO_PLATFORM=1</code> and <code>DEMO_SEED_PASSWORD</code> (12 characters or more), which becomes the password of the seeded demo logins.</li>
@@ -245,3 +245,71 @@ function syncSteps(s) {
 }
 
 export const syncPanel = s => `<div class="c-grid">${syncStatus(s)}${syncSteps(s)}</div>`;
+
+// --- activity log (feature/activity) ---
+// Kind chips map to the API's kind filter; "Pages" covers server page loads and in-page views.
+export const ACTIVITY_CHIPS = [['', 'All'], ['page,nav', 'Pages'], ['click', 'Clicks'], ['api', 'API calls'], ['error', 'Errors'], ['auth', 'Sign-ins']];
+const KIND_LOOK = {
+  page: ['file-text', 'neutral', 'Page'], nav: ['compass', 'neutral', 'View'], click: ['mouse-pointer-click', 'info', 'Click'],
+  api: ['plug', 'neutral', 'API'], error: ['triangle-alert', 'error', 'Error'], auth: ['log-in', 'info', 'Sign-in'],
+};
+export const ACTIVITY_HEADS = ['Time', 'Kind', 'What happened', 'Result', 'Detail'];
+export const FAILURE_HEADS = ['Time', 'Account', 'Kind', 'What happened', 'Result', 'Detail'];
+const AUTH_WORDS = { '/api/auth/sign-in': 'Signed in', '/api/auth/sign-out': 'Signed out', '/api/auth/sign-up': 'Signed up' };
+
+// One plain sentence per row, e.g. "Clicked Pay now on /checkout" or "POST /api/orders/DOD-ABC/pay 402 card_declined".
+export function activityText(row) {
+  const d = row.detail || {};
+  const at = row.page ? ` on ${row.page}` : '';
+  if (row.kind === 'click') return `Clicked ${row.target || d.act || d.nav || 'an element'}${at}`;
+  if (row.kind === 'nav') return `Viewed ${row.page || 'a page'}`;
+  if (row.kind === 'page') return `Opened ${row.page || 'a page'}${d.status && d.status !== 200 ? ` (${d.status})` : ''}`;
+  if (row.kind === 'error') return `Script error: ${d.message || 'unknown'}${d.source ? ` in ${d.source}${d.line ? `:${d.line}` : ''}` : ''}${at}`;
+  if (row.kind === 'auth') {
+    const base = AUTH_WORDS[(d.path || '').split('?')[0]] || 'Account';
+    return row.ok ? base : `${base === 'Signed in' ? 'Sign-in' : base} failed: ${d.message || d.code || d.status}`;
+  }
+  const call = `${d.method || ''} ${d.path || row.page || ''} ${d.status ?? ''}`.trim();
+  return row.ok ? `${call} in ${d.ms ?? 0} ms` : `${call} ${d.code || ''}`.trim();
+}
+
+export const kindPill = kind => pill(...(KIND_LOOK[kind] || ['info', 'neutral', label(kind)]));
+export const resultPill = row => (row.ok ? pill('circle-check', 'success', 'OK') : pill('circle-x', 'error', row.detail?.code ? `Failed · ${words(row.detail.code)}` : 'Failed'));
+const rawDetail = row => `<details class="a-payload"><summary>Raw</summary><pre>${esc(JSON.stringify({ at: row.at, kind: row.kind, page: row.page, target: row.target, session: row.sessionId, detail: row.detail }, null, 2))}</pre></details>`;
+const timeCell = iso => { const d = new Date(iso); return Number.isNaN(d.getTime()) ? '—' : `${day(iso)}, ${d.toISOString().slice(11, 19)} UTC`; };
+
+export function activityRows(rows) {
+  return rows.map(r => `<tr class="${r.ok ? '' : 'a-act-fail'}"><td class="d-num">${esc(timeCell(r.at))}</td><td>${kindPill(r.kind)}</td>
+    <td class="a-act-what">${esc(activityText(r))}</td><td>${resultPill(r)}</td><td>${rawDetail(r)}</td></tr>`);
+}
+
+export function failureRows(rows) {
+  return rows.map(r => `<tr><td class="d-num">${esc(timeCell(r.at))}</td>
+    <td>${r.account ? `<a class="a-link" href="#account/${encodeURIComponent(r.account.id)}">${esc(r.account.company || r.account.email)}</a>` : '—'}</td>
+    <td>${kindPill(r.kind)}</td><td class="a-act-what">${esc(activityText(r))}</td><td>${resultPill(r)}</td><td>${rawDetail(r)}</td></tr>`);
+}
+
+export function activityFilters(f) {
+  const chips = ACTIVITY_CHIPS.map(([kind, text]) => `<button type="button" data-act="act-kind" data-kind="${esc(kind)}" aria-pressed="${kind === f.kind}">${esc(text)}</button>`).join('');
+  return `<form class="a-act-filters" id="a-act-filters" role="search" aria-label="Filter the activity log">
+    <div class="a-act-chips"><div class="d-seg a-seg" role="group" aria-label="Kind">${chips}</div>
+      <div class="d-seg" role="group" aria-label="Result"><button type="button" data-act="act-failed" aria-pressed="${Boolean(f.failed)}">${icon('triangle-alert')}<span>Only failures</span></button></div></div>
+    <div class="a-act-fields">
+      <div class="field a-search"><label for="a-act-q">Search</label><input id="a-act-q" name="q" type="search" value="${esc(f.q || '')}" placeholder="Button, page, path or error code" autocomplete="off"></div>
+      <div class="field"><label for="a-act-since">Since (UTC)</label><input id="a-act-since" name="since" type="datetime-local" value="${esc(f.since || '')}"></div>
+      <div class="field"><label for="a-act-until">Until (UTC)</label><input id="a-act-until" name="until" type="datetime-local" value="${esc(f.until || '')}"></div>
+    </div>
+  </form>`;
+}
+
+export function activityPanel(f) {
+  return container({
+    id: 'a-d-activity', title: 'Activity log', iconName: 'activity',
+    desc: 'What this account opened, clicked and called, and what failed. Newest first. Input values and card details are never recorded.',
+    acts: `<a class="btn btn-sm" id="a-act-csv" href="#" download>${icon('download')}<span>Export CSV</span></a>`,
+    body: `<div class="c-ctr-b a-filter-bar">${activityFilters(f)}</div>
+      <div class="a-tall a-act-list">${table('Activity log', ACTIVITY_HEADS, [`<tr><td colspan="${ACTIVITY_HEADS.length}" class="d-empty">Loading the activity log…</td></tr>`], '').replace('<tbody>', '<tbody id="a-act-rows">')}</div>
+      <div class="c-ctr-b a-act-more"><span class="fine" id="a-act-count" role="status"></span><button type="button" class="btn btn-sm" data-act="act-more" id="a-act-more" hidden>${icon('chevron-down')}<span>Load more</span></button></div>`,
+  });
+}
+// --- end activity log ---

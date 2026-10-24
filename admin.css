@@ -80,5 +80,34 @@
 .a-tall thead th{position:sticky;top:0;z-index:1}
 
 /* the top bar hides button icons by default (theme toggle); sign out keeps its icon, which is all a phone shows */
+/* --- activity log (feature/activity): filter row, sentence column, failed rows and the load-more bar --- */
+.a-act-filters{display:grid;gap:12px}
+.a-act-chips{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px}
+.a-act-chips .d-seg button{display:inline-flex;align-items:center;gap:6px}
+.a-act-chips .d-seg .ic{width:14px;height:14px}
+.a-act-chips [data-act="act-failed"][aria-pressed="true"]{background:color-mix(in srgb,var(--c-error) var(--c-tint),var(--c-surface));border-color:var(--c-error);color:var(--c-text)}
+.a-act-fields{display:grid;grid-template-columns:minmax(220px,2fr) repeat(2,minmax(170px,1fr));gap:12px;align-items:end}
+.a-act-fields .field{margin:0}
+.a-table td.a-act-what{white-space:normal;overflow-wrap:anywhere;min-width:260px;max-width:560px}
+.a-table tr.a-act-fail>td:first-child{box-shadow:inset 3px 0 0 var(--c-error)}
+.a-act-more{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;border-top:1px solid var(--c-grid)}
+.a-act-more .fine:empty{display:none}
+.a-act-list .a-payload pre{min-width:min(420px,70vw)}
+/* on a phone each log row becomes a small card: time and kind, the sentence, then the result and the raw detail */
+@media(max-width:720px){
+  .a-act-chips .a-seg{flex-wrap:wrap}
+  .a-act-fields{grid-template-columns:minmax(0,1fr)}
+  .a-act-more .btn{width:100%}
+  .a-act-list thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .a-act-list table,.a-act-list tbody{display:block;width:100%}
+  .a-act-list tr{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px 10px;padding:12px 16px;border-bottom:1px solid var(--c-grid)}
+  .a-act-list td{display:block;padding:0;border:0;white-space:normal;min-width:0}
+  .a-act-list .a-table td.a-act-what,.a-act-list td:last-child{grid-column:1/-1;min-width:0;max-width:none}
+  .a-act-list .a-table tr.a-act-fail{box-shadow:inset 3px 0 0 var(--c-error)}
+  .a-act-list .a-table tr.a-act-fail>td:first-child{box-shadow:none}
+  .a-act-list .a-payload pre{min-width:0;max-width:100%}
+}
+/* --- end activity log --- */
+
 /* focus moves to the main area after each route change for screen readers; it needs no visible ring */
 .d-main:focus{outline:0}

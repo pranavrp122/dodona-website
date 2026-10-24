@@ -81,7 +81,22 @@ create table if not exists public.demo_settlements (
   updated_at timestamptz not null
 );
 
+-- Failures from the per-account activity log: failed API calls (status 400 or more), browser errors and failed sign-ins.
+-- detail holds the method, path, status, time taken and the error code and message; never a request body, an input value or card data.
+create table if not exists public.demo_activity_failures (
+  id bigint primary key,
+  account_id text,
+  session_id text,                    -- first eight characters of the session token's hash, not the token
+  at timestamptz not null,
+  kind text not null check (kind in ('api', 'error', 'auth')),
+  page text,
+  target text,
+  detail jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null
+);
+
 create index if not exists demo_notes_account_idx on public.demo_notes (account_id);
+create index if not exists demo_activity_failures_account_idx on public.demo_activity_failures (account_id, at desc);
 create index if not exists demo_orders_account_idx on public.demo_orders (account_id);
 create index if not exists demo_payments_order_idx on public.demo_payments (order_ref);
 
@@ -91,8 +106,9 @@ alter table public.demo_notes enable row level security;
 alter table public.demo_orders enable row level security;
 alter table public.demo_payments enable row level security;
 alter table public.demo_settlements enable row level security;
+alter table public.demo_activity_failures enable row level security;
 
-revoke all on public.demo_accounts, public.demo_notes, public.demo_orders, public.demo_payments, public.demo_settlements from public, anon, authenticated;
-grant select, insert, update, delete on public.demo_accounts, public.demo_notes, public.demo_orders, public.demo_payments, public.demo_settlements to service_role;
+revoke all on public.demo_accounts, public.demo_notes, public.demo_orders, public.demo_payments, public.demo_settlements, public.demo_activity_failures from public, anon, authenticated;
+grant select, insert, update, delete on public.demo_accounts, public.demo_notes, public.demo_orders, public.demo_payments, public.demo_settlements, public.demo_activity_failures to service_role;
 
 commit;

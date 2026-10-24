@@ -56,6 +56,9 @@ const staticFiles = new Map([
   ['/dashboard.js', ['dashboard.js', 'text/javascript; charset=utf-8']],
   ['/dashboard-view.js', ['dashboard-view.js', 'text/javascript; charset=utf-8']],
   ['/theme.js', ['theme.js', 'text/javascript; charset=utf-8']],
+  // --- activity log (feature/activity) ---
+  ['/activity.js', ['activity.js', 'text/javascript; charset=utf-8']],
+  // --- end activity log ---
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -75,7 +78,7 @@ function json(response, status, data, extraHeaders = {}) {
   response.end(JSON.stringify(data));
 }
 
-async function readJson(request) {
+async function readJson(request, maxBytes = 4096) {
   const bytes = await new Promise((resolveBody, reject) => {
     let size = 0;
     const chunks = [];
@@ -86,7 +89,7 @@ async function readJson(request) {
     const onEnd = () => { cleanup(); resolveBody(Buffer.concat(chunks)); };
     const onData = chunk => {
       size += chunk.length;
-      if (size > 4096) {
+      if (size > maxBytes) {
         cleanup(); request.resume(); reject(new RequestError(413, 'This submission is too large.'));
       } else chunks.push(chunk);
     };
@@ -246,6 +249,9 @@ export function createApp({
     response.setHeader('Link', '</llms.txt>; rel="describedby"; type="text/plain", </openapi.json>; rel="service-desc"; type="application/json", </agents>; rel="service-doc"; type="text/html"');
     try {
       const url = new URL(request.url, 'http://localhost');
+      // --- activity log (feature/activity): platform API calls and console page views are logged when the response finishes ---
+      demo.watch(request, response, url);
+      // --- end activity log ---
       if (url.pathname === '/mcp') {
         try {
           const address = clientAddress(request);

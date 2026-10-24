@@ -16,7 +16,11 @@ function demoDb() {
     CREATE TABLE notes (id TEXT PRIMARY KEY, account_id TEXT, author TEXT, text TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE orders (ref TEXT PRIMARY KEY, account_id TEXT, offer_id TEXT, neocloud_id TEXT, gpu TEXT, count INTEGER, region TEXT, kind TEXT, strike REAL, start TEXT, "end" TEXT, status TEXT, delivery_choice TEXT, premium_per_gpu_hour REAL, premium_total REAL, platform_fee REAL, booking_fee REAL, pay_now REAL, settlement_json TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE payments (id TEXT PRIMARY KEY, order_ref TEXT, account_id TEXT, amount REAL, brand TEXT, last4 TEXT, status TEXT, code TEXT, created_at TEXT, updated_at TEXT);
+    CREATE TABLE activity (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT, session_id TEXT, at TEXT, kind TEXT, page TEXT, target TEXT, detail TEXT, ok INTEGER, created_at TEXT);
   `);
+  const activity = db.prepare('INSERT INTO activity (account_id, session_id, at, kind, page, target, detail, ok, created_at) VALUES (?,?,?,?,?,?,?,?,?)');
+  activity.run('acc_1', 'ab12cd34', T1, 'api', '/api/orders/DOD-1/pay', null, JSON.stringify({ method: 'POST', path: '/api/orders/DOD-1/pay', status: 402, ms: 9, code: 'card_declined', message: 'The card was declined.' }), 0, T1);
+  activity.run('acc_1', 'ab12cd34', T1, 'click', '/checkout', 'Pay now', JSON.stringify({ tag: 'button' }), 1, T1);
   db.prepare('INSERT INTO accounts VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').run('acc_1', 'demo@dodona.markets', 'Sample Labs', 'buyer', 'verified', 'demo', null, null, T1, 'market', T1, 'scrypt$secret-hash', 'secret-salt', T1, T1);
   db.prepare('INSERT INTO sessions VALUES (?,?,?,?)').run('a'.repeat(64), 'acc_1', T1, T1);
   db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?)').run('note_1', 'acc_1', 'admin@dodona.markets', 'Walked through caps.', T1, T1);
@@ -52,7 +56,7 @@ test('the mirror stays off and says so honestly until all three settings are pre
   const status = mirror.status();
   assert.equal(status.configured, false);
   assert.equal(status.lastRunAt, null);
-  assert.deepEqual(status.tables, { accounts: 1, notes: 1, orders: 2, payments: 1, settlements: 1 });
+  assert.deepEqual(status.tables, { accounts: 1, notes: 1, orders: 2, payments: 1, settlements: 1, activity_failures: 1 });
 });
 
 test('a sync upserts every table with merge-duplicates and never sends secrets or card data', async () => {
@@ -60,7 +64,7 @@ test('a sync upserts every table with merge-duplicates and never sends secrets o
   const mirror = createCrmMirror({ db: demoDb(), environment: ENV, fetchImpl: fake.fetchImpl, logger: quiet });
   const result = await mirror.run();
   assert.equal(result.ok, true);
-  assert.deepEqual(result.pushed, { accounts: 1, notes: 1, orders: 2, payments: 1, settlements: 1 });
+  assert.deepEqual(result.pushed, { accounts: 1, notes: 1, orders: 2, payments: 1, settlements: 1, activity_failures: 1 });
   assert.deepEqual(fake.calls.map(c => new URL(c.url).pathname + new URL(c.url).search), MIRROR_TABLES.map(t => `/rest/v1/${t.remote}?on_conflict=${t.key}`));
   for (const call of fake.calls) {
     assert.equal(new URL(call.url).origin, 'https://test-project.supabase.co');
@@ -73,6 +77,8 @@ test('a sync upserts every table with merge-duplicates and never sends secrets o
   assert.deepEqual(fake.calls[3].body[0], { id: 'pay_1', order_ref: 'DOD-1', account_id: 'acc_1', amount: 1002, status: 'succeeded', outcome: null, created_at: T1, updated_at: T1 });
   assert.deepEqual(fake.calls[4].body, [{ order_ref: 'DOD-1', account_id: 'acc_1', kind: 'cap', window_avg: 2.7, strike: 2.5, hours: 1344, compute_bill: 3360, saving: 268.8, payout: null, resale_proceeds: 0, premium_paid: 1000, net_result: -731.2, computed_at: T2, updated_at: T1 }]);
   assert.equal(fake.calls[2].body[0].window_end, T2);
+  // Only the failed call goes to Supabase; the click stays local.
+  assert.deepEqual(fake.calls[5].body, [{ id: 1, account_id: 'acc_1', session_id: 'ab12cd34', at: T1, kind: 'api', page: '/api/orders/DOD-1/pay', target: null, detail: { method: 'POST', path: '/api/orders/DOD-1/pay', status: 402, ms: 9, code: 'card_declined', message: 'The card was declined.' }, created_at: T1 }]);
 });
 
 test('later runs send only rows changed since the last successful run', async () => {
@@ -81,7 +87,7 @@ test('later runs send only rows changed since the last successful run', async ()
   const mirror = createCrmMirror({ db, environment: ENV, fetchImpl: fake.fetchImpl, logger: quiet });
   await mirror.run();
   fake.calls.length = 0;
-  assert.deepEqual((await mirror.run()).pushed, { accounts: 0, notes: 0, orders: 0, payments: 0, settlements: 0 });
+  assert.deepEqual((await mirror.run()).pushed, { accounts: 0, notes: 0, orders: 0, payments: 0, settlements: 0, activity_failures: 0 });
   assert.equal(fake.calls.length, 0);
   db.prepare('UPDATE accounts SET stage = ?, updated_at = ? WHERE id = ?').run('active', T2, 'acc_1');
   const third = await mirror.run();
