@@ -22,7 +22,7 @@ export async function api(path, { method = 'GET', body } = {}) {
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
-    throw new ApiError(0, 'network', 'The demo server did not answer. Check that it is running and try again.');
+    throw new ApiError(0, 'network', 'The server did not answer. Check your connection and try again.');
   }
   if (response.status === 204) return {};
   let data = null;
@@ -101,7 +101,7 @@ const EVENT_TEXT = {
   'window.closed': 'The delivery window closed',
   'settlement.computed': 'Settled on the window average',
   'invoice.issued': 'Compute invoice issued',
-  'payout.issued': 'Payout issued through the escrow agent (simulated)',
+  'payout.issued': 'Payout issued through the escrow agent',
   'listing.created': 'Listing posted',
   'bid.received': 'A bid arrived on your listing',
   'resale.completed': 'Resale completed',
@@ -234,7 +234,7 @@ function wireClock(box, account, onChange) {
     try {
       const result = await CLOCK_CALLS[kind]();
       if (kind === 'reset') { armedReset = false; button.classList.remove('is-armed'); button.querySelector('span').textContent = 'Reset this demo account'; }
-      await finish(result, kind === 'reset' ? 'Demo account reset to its seeded start.' : '');
+      await finish(result, kind === 'reset' ? 'Account reset to its starting state.' : '');
     } catch (error) {
       toast(error.message);
     } finally { setBusy(false); }
@@ -324,7 +324,7 @@ export function showGate(account, { gate = 'p-gate', content = 'p-content' } = {
   if ($(content)) $(content).hidden = true;
   if (!box) return;
   box.hidden = false;
-  if (account?.off) box.innerHTML = '<p class="p-off">The demo platform is off on this server.</p>';
+  if (account?.off) box.innerHTML = '<p class="p-off">The platform is off on this server.</p>';
 }
 
 /** Standard page start: account, then the shell, then the page's own loader; the gate when signed out. */

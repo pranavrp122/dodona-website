@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Checkout · Console — Dodona</title>
-  <meta name="description" content="Demo checkout with a mock card processor.">
+  <meta name="description" content="Checkout: review the terms, pick the quantity and pay by card.">
   <meta name="robots" content="noindex">
   <!-- CANONICAL -->
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
@@ -26,10 +26,10 @@
     <!-- P_RAIL -->
     <main id="main" class="d-main">
       <section class="c-ctr p-gate" id="p-gate" aria-labelledby="p-gate-h" hidden>
-        <p class="eyebrow">Dodona · Demo</p>
+        <p class="eyebrow">Dodona</p>
         <h1 id="p-gate-h">Sign in to check out</h1>
-        <p>Checkout uses a mock card processor and the escrow agent (simulated). Sign in with a demo account first.</p>
-        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create a demo account</a></div>
+        <p>Payments run through the escrow agent. Sign in to check out.</p>
+        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create an account</a></div>
       </section>
 
       <div class="p-content" id="p-content">
@@ -55,7 +55,7 @@
             </section>
 
             <section class="c-ctr" aria-labelledby="co-pay-h">
-              <div class="c-ctr-h"><div><h2 id="co-pay-h">2 · Pay by card <span class="tag d-tag-demo">demo data</span></h2><p>A mock processor. No card is charged and the number is never stored; only the brand and last four digits are kept.</p></div></div>
+              <div class="c-ctr-h"><div><h2 id="co-pay-h">2 · Pay by card <span class="tag d-tag-demo">demo data</span></h2><p>The card number is never stored; only the brand and last four digits are kept.</p></div></div>
               <form class="p-form" id="co-form" method="post" action="/checkout" novalidate autocomplete="on">
                 <div class="field"><label for="co-name">Name on card</label><input id="co-name" type="text" autocomplete="cc-name" required maxlength="80"></div>
                 <div class="p-card-row">
@@ -74,7 +74,7 @@
                 </aside>
                 <p class="p-err" id="co-err" role="alert"></p>
                 <button type="submit" class="btn btn-primary p-pay" id="co-pay"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg><span id="co-pay-lbl">Pay</span></button>
-                <p class="fine">Paid through the escrow agent (simulated). Dodona never holds funds. The premium goes 85% to the neocloud and 15% to Dodona.</p>
+                <p class="fine">Paid through the escrow agent. Dodona never holds funds. The premium goes 85% to the neocloud and 15% to Dodona.</p>
               </form>
             </section>
           </div>

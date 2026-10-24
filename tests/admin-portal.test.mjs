@@ -23,7 +23,7 @@ test('the admin page and its assets are served without inline scripts or style a
   assert.equal(page.status, 200);
   assert.match(page.headers.get('content-security-policy'), /script-src 'self'/);
   const html = await page.text();
-  assert.match(html, /<title>Admin · Demo accounts — Dodona<\/title>/);
+  assert.match(html, /<title>Admin · Accounts — Dodona<\/title>/);
   assert.match(html, /<script type="module" src="\/admin\.js"><\/script>/);
   assert.equal(/<script(?![^>]*\bsrc=)[^>]*>/.test(html), false, 'no inline script');
   assert.equal(/\sstyle=|\son[a-z]+=/i.test(html), false, 'no style attributes or inline handlers');

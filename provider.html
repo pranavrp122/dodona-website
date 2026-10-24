@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Provider portal · Demo — Dodona</title>
-  <meta name="description" content="Demo provider portal for a mock neocloud: capacity, reservations, contracts, settlements, payouts and the integration log.">
+  <title>Provider portal — Dodona</title>
+  <meta name="description" content="Provider portal for your neocloud: capacity, reservations, contracts, settlements, payouts and the integration log.">
   <meta name="robots" content="noindex">
   <!-- CANONICAL -->
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
@@ -117,7 +117,7 @@
 
     <main id="main" class="d-main" data-screen="overview">
       <section class="d-signin c-ctr" id="p-gate" aria-labelledby="p-gate-h" hidden>
-        <p class="eyebrow">Dodona · Demo provider portal</p>
+        <p class="eyebrow">Dodona · Provider portal</p>
         <h1 id="p-gate-h">Sign in as a provider</h1>
         <p id="p-gate-text">This portal is for neoclouds that supply the compute behind Dodona contracts. Sign in with a provider account to see capacity, reservations, contracts and payouts.</p>
         <div class="d-signin-acts">
@@ -125,7 +125,7 @@
           <a class="btn" id="p-gate-home" href="/dashboard" hidden><span>Go to your console</span></a>
           <button type="button" class="btn" id="p-gate-signout" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-log-out"/></svg><span>Sign out</span></button>
         </div>
-        <p class="fine">Demo provider login: ops@northwind.example with the demo password shown on the sign-in page.</p>
+        <p class="fine">The Northwind Compute provider login is listed on the sign-in page.</p>
       </section>
 
       <div id="d-content" hidden>
@@ -134,7 +134,7 @@
           <div class="c-page-row">
             <div class="c-page-title">
               <h1 id="p-title">Overview</h1>
-              <p id="p-desc">Capacity, income and what needs your attention on your mock neocloud.</p>
+              <p id="p-desc">Capacity, income and what needs your attention.</p>
             </div>
             <div class="c-acts">
               <a class="btn" href="/docs/neocloud-api"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-book-open"/></svg><span>Integration guide</span></a>
@@ -149,7 +149,7 @@
             <div class="c-ctr-b" id="p-capacity"><p class="d-muted">Capacity loads with JavaScript.</p></div>
           </section>
           <section class="c-ctr c-s5" aria-labelledby="p-inc-h">
-            <div class="c-ctr-h"><div><h2 id="p-inc-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-wallet"/></svg>Income</h2><p>This month at the demo date, and to date.</p></div></div>
+            <div class="c-ctr-h"><div><h2 id="p-inc-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-wallet"/></svg>Income</h2><p>This month and to date.</p></div></div>
             <div id="p-income"><p class="d-empty">Income loads with JavaScript.</p></div>
           </section>
           <section class="c-ctr c-s4" aria-labelledby="p-pend-h">
@@ -162,7 +162,7 @@
             <ul class="c-dates" id="p-next"><li class="d-muted">Deliveries load with JavaScript.</li></ul>
           </section>
           <section class="c-ctr c-s4" aria-labelledby="p-cloud-h">
-            <div class="c-ctr-h"><div><h2 id="p-cloud-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-server"/></svg>Your mock neocloud</h2><p>How Dodona sees you.</p></div></div>
+            <div class="c-ctr-h"><div><h2 id="p-cloud-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-server"/></svg>Your neocloud</h2><p>How Dodona sees you.</p></div></div>
             <dl class="d-kv" id="p-cloud"></dl>
           </section>
         </div>
@@ -207,14 +207,14 @@
 
         <div class="c-stack" data-screens="settlements" hidden>
           <section class="c-ctr" aria-labelledby="p-stl-h">
-            <div class="c-ctr-h"><div><h2 id="p-stl-h">Settlement statements <span class="c-count" id="p-stl-count"></span></h2><p>Computed when the demo clock passes a window end, on the window average of the daily index.</p></div>
+            <div class="c-ctr-h"><div><h2 id="p-stl-h">Settlement statements <span class="c-count" id="p-stl-count"></span></h2><p>Computed when a window ends, on the window average of the daily index.</p></div>
               <button type="button" class="btn btn-sm" data-act="csv"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-download"/></svg><span>Export CSV</span></button></div>
             <div class="d-scroll"><table class="d-table p-table"><caption class="visually-hidden">Settlement statements</caption>
               <thead><tr><th scope="col">Order</th><th scope="col" class="r">Window average</th><th scope="col" class="r">Strike</th><th scope="col" class="r">GPU-hours</th><th scope="col" class="r">Compute bill</th><th scope="col" class="r">Premium</th><th scope="col" class="r">Saving or payout</th><th scope="col">Computed</th></tr></thead>
               <tbody id="p-settlements"></tbody></table></div>
           </section>
           <section class="c-ctr" aria-labelledby="p-pay-h">
-            <div class="c-ctr-h"><div><h2 id="p-pay-h">Payouts <span class="c-count" id="p-pay-count"></span></h2><p>Premium shares at payment, compute bills one simulated day after settlement, all through the escrow agent (simulated).</p></div></div>
+            <div class="c-ctr-h"><div><h2 id="p-pay-h">Payouts <span class="c-count" id="p-pay-count"></span></h2><p>Premium shares at payment and compute bills a day after settlement, all through the escrow agent.</p></div></div>
             <div class="d-scroll"><table class="d-table p-table"><caption class="visually-hidden">Payouts</caption>
               <thead><tr><th scope="col">Order</th><th scope="col">What</th><th scope="col" class="r">Amount</th><th scope="col">Status</th><th scope="col">Due</th><th scope="col">Paid</th></tr></thead>
               <tbody id="p-payouts"></tbody></table></div>
@@ -228,12 +228,12 @@
             <ul class="p-events" id="p-events"><li class="d-muted">Messages load with JavaScript.</li></ul>
           </section>
           <section class="c-ctr c-s6" aria-labelledby="p-key-h">
-            <div class="c-ctr-h"><div><h2 id="p-key-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-key"/></svg>API key <span class="tag d-tag-demo">mock</span></h2><p>Your neocloud signs its calls to Dodona with this key.</p></div>
+            <div class="c-ctr-h"><div><h2 id="p-key-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-key"/></svg>API key <span class="tag d-tag-demo">demo data</span></h2><p>Your neocloud signs its calls to Dodona with this key.</p></div>
               <button type="button" class="btn btn-sm" data-act="api-key"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-rotate-ccw"/></svg><span>Regenerate</span></button></div>
             <div class="c-ctr-b"><p id="p-key-state">The current key is never shown again after it is created.</p><div id="p-key-once" hidden></div></div>
           </section>
           <section class="c-ctr c-s6" aria-labelledby="p-hook-h">
-            <div class="c-ctr-h"><div><h2 id="p-hook-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-webhook"/></svg>Webhook endpoint</h2><p>Where Dodona would send reservation requests. Display only in the demo: nothing is called.</p></div></div>
+            <div class="c-ctr-h"><div><h2 id="p-hook-h"><svg class="ic c-h-ic" aria-hidden="true" focusable="false"><use href="#i-webhook"/></svg>Webhook endpoint</h2><p>Where Dodona sends reservation requests.</p></div></div>
             <form class="c-ctr-b p-hook" id="p-hook-form" novalidate>
               <div class="field"><label for="p-hook-url">Webhook URL</label><input id="p-hook-url" name="webhookUrl" type="url" inputmode="url" maxlength="300" placeholder="https://ops.your-cloud.example/dodona" autocomplete="off" aria-describedby="p-hook-help"><p class="fine" id="p-hook-help">Must start with https://. Leave it empty to clear it.</p></div>
               <p class="field-error" id="p-hook-err" role="alert"></p>
@@ -244,8 +244,8 @@
 
         <div class="c-grid" data-screens="settings" hidden>
           <section class="c-ctr c-s6" aria-labelledby="p-res-h">
-            <div class="c-ctr-h"><div><h2 id="p-res-h">Reservation handling</h2><p>How your mock neocloud answers reservation requests.</p></div></div>
-            <div class="d-toggles"><label class="d-toggle"><span><b>Auto-confirm reservations</b><span class="d-sub p-wrap">On: each request confirms when the demo clock next moves by an hour or more. Off: requests wait in Orders for you to confirm or decline.</span></span><input type="checkbox" id="p-auto"></label></div>
+            <div class="c-ctr-h"><div><h2 id="p-res-h">Reservation handling</h2><p>How your neocloud answers reservation requests.</p></div></div>
+            <div class="d-toggles"><label class="d-toggle"><span><b>Auto-confirm reservations</b><span class="d-sub p-wrap">On: each request confirms automatically within the hour. Off: requests wait in Orders for you to confirm or decline.</span></span><input type="checkbox" id="p-auto"></label></div>
           </section>
           <section class="c-ctr c-s6" aria-labelledby="p-co-h">
             <div class="c-ctr-h"><div><h2 id="p-co-h">Company details</h2><p>From your account. The founders' admin view can change these.</p></div></div>

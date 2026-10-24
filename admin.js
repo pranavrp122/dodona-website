@@ -7,12 +7,12 @@ const esc = v.esc;
 const SEARCH_DELAY_MS = 250;
 const CONFIRM_MS = 6000;
 const SCREENS = {
-  accounts: { title: 'Accounts', desc: 'Every demo account, who it belongs to and how far along it is.' },
+  accounts: { title: 'Accounts', desc: 'Every account, who it belongs to and how far along it is.' },
   account: { title: 'Account', desc: '' },
-  orders: { title: 'Orders', desc: 'Every order across the demo accounts, newest first.' },
-  neoclouds: { title: 'Neoclouds', desc: 'The simulated neoclouds: capacity per GPU and region, and the contracts written on it.' },
+  orders: { title: 'Orders', desc: 'Every order across all accounts, newest first.' },
+  neoclouds: { title: 'Neoclouds', desc: 'The neoclouds: capacity per GPU and region, and the contracts written on it.' },
   activity: { title: 'Activity', desc: 'Recent failures across every account, and the latest messages between Dodona and the neoclouds.' },
-  sync: { title: 'Supabase sync', desc: 'Save the demo CRM to your Supabase project.' },
+  sync: { title: 'Supabase sync', desc: 'Save the CRM to your Supabase project.' },
 };
 
 const state = { me: null, route: { screen: 'accounts', id: '' }, filters: {}, orderStatus: '', creating: false, detail: null, eventRef: '', searchTimer: 0, resetTimer: 0 };
@@ -95,14 +95,14 @@ async function showAccounts() {
       <button type="button" class="btn btn-primary" data-act="create-open" aria-expanded="${state.creating}" aria-controls="a-create-slot">${v.icon('user-plus')}<span>Create account</span></button>`,
   });
   const create = state.creating
-    ? v.container({ id: 'a-create-box', title: 'Create a demo account', iconName: 'user-plus', desc: 'Pre-make a login for a meeting. It signs in at /sign-in like any other account.', body: `<div class="c-ctr-b">${v.createForm()}</div>` })
+    ? v.container({ id: 'a-create-box', title: 'Create an account', iconName: 'user-plus', desc: 'Pre-make a login for a meeting. It signs in at /sign-in like any other account.', body: `<div class="c-ctr-b">${v.createForm()}</div>` })
     : '';
   screen(`<div class="c-stack">
     <div id="a-create-slot">${create}</div>
     <section class="c-ctr" aria-labelledby="a-acc-h">
-      <div class="c-ctr-h"><div><h2 id="a-acc-h">Demo accounts <span class="c-count" id="a-acc-count"></span></h2><p>Open a row for the contact card, notes, orders and activity.</p></div></div>
+      <div class="c-ctr-h"><div><h2 id="a-acc-h">Accounts <span class="c-count" id="a-acc-count"></span></h2><p>Open a row for the contact card, notes, orders and activity.</p></div></div>
       <div class="c-ctr-b a-filter-bar">${v.accountFilters(state.filters)}</div>
-      ${v.table('Demo accounts', v.ACCOUNT_HEADS, [`<tr><td colspan="${v.ACCOUNT_HEADS.length}" class="d-empty">Loading accounts…</td></tr>`], '').replace('<tbody>', '<tbody id="a-acc-rows">')}
+      ${v.table('Accounts', v.ACCOUNT_HEADS, [`<tr><td colspan="${v.ACCOUNT_HEADS.length}" class="d-empty">Loading accounts…</td></tr>`], '').replace('<tbody>', '<tbody id="a-acc-rows">')}
     </section></div>`);
   await loadAccountRows();
 }
@@ -132,7 +132,7 @@ function eventsFor(detail) {
   const acts = state.eventRef ? `<button type="button" class="btn btn-sm" data-act="events-all">${v.icon('x')}<span>Show all</span></button>` : '';
   return v.container({
     id: 'a-d-events', title: state.eventRef ? `Neocloud messages for ${state.eventRef}` : 'Integration events', iconName: 'activity', count: events.length, acts,
-    desc: 'The webhook-style messages Dodona and the neocloud exchanged for this account (simulated).',
+    desc: 'The messages Dodona and the neocloud exchanged for this account.',
     body: `<div class="a-tall">${v.table('Integration events', v.EVENT_HEADS, v.eventRows(events), 'No events yet.')}</div>`,
   });
 }
@@ -144,12 +144,12 @@ function accountDetailHtml(d) {
     ${v.container({ id: 'a-d-contact', title: 'Contact', iconName: 'users', span: 'c-s5', desc: `${v.roleText(a.role)} · ${a.company || a.email}`, body: `<div class="a-pills">${v.kybPill(a.kyb)}${v.stagePill(a.stage)}</div>${v.contactCard(a)}` })}
     ${v.container({ id: 'a-d-notes', title: 'Notes', iconName: 'message-square', count: d.notes.length, span: 'c-s7', desc: 'Newest first. Only admins see these.', body: `<div class="c-ctr-b">${v.notesList(d.notes)}${v.noteForm()}</div>` })}
     ${v.container({ id: 'a-d-clock', title: 'Demo clock', iconName: 'calendar-clock', span: provider ? 'c-s5' : 'c-s12', desc: 'Where this account\'s demo time and index scenario stand.', body: `<div id="a-clock-body">${v.clockCard(a, false)}</div>` })}
-    ${provider ? v.container({ id: 'a-d-neocloud', title: 'Neocloud', iconName: 'server', span: 'c-s7', desc: 'The simulated neocloud this provider login runs.', body: v.neocloudCard(d.neocloud) }) : ''}
+    ${provider ? v.container({ id: 'a-d-neocloud', title: 'Neocloud', iconName: 'server', span: 'c-s7', desc: 'The neocloud this provider login runs.', body: v.neocloudCard(d.neocloud) }) : ''}
     <div class="c-s12" id="a-d-activity-slot">${v.activityPanel(state.act)}</div>
     ${v.container({ id: 'a-d-orders', title: 'Orders', iconName: 'layers', count: d.orders.length, span: 'c-s12', body: v.table('Orders', v.orderHeads(false), v.orderRows(d.orders), 'No orders yet.') })}
-    ${v.container({ id: 'a-d-payments', title: 'Payments', iconName: 'credit-card', count: d.payments.length, span: 'c-s12', desc: 'Mock card payments. Only the brand and last four digits are kept.', body: v.table('Payments', v.PAYMENT_HEADS, v.paymentRows(d.payments), 'No payments yet.') })}
-    ${v.container({ id: 'a-d-payouts', title: 'Payouts', iconName: 'receipt', count: d.payouts.length, span: 'c-s12', desc: 'Through the escrow agent (simulated).', body: v.table('Payouts', v.PAYOUT_HEADS, v.payoutRows(d.payouts), 'No payouts yet.') })}
-    ${v.container({ id: 'a-d-emails', title: 'Emails sent', iconName: 'mail', count: d.emails.length, span: 'c-s12', desc: 'The mock outbox. Nothing left the server.', body: `<div class="a-tall">${v.table('Emails', v.EMAIL_HEADS, v.emailRows(d.emails), 'No emails yet.')}</div>` })}
+    ${v.container({ id: 'a-d-payments', title: 'Payments', iconName: 'credit-card', count: d.payments.length, span: 'c-s12', desc: 'Card payments. Only the brand and last four digits are kept.', body: v.table('Payments', v.PAYMENT_HEADS, v.paymentRows(d.payments), 'No payments yet.') })}
+    ${v.container({ id: 'a-d-payouts', title: 'Payouts', iconName: 'receipt', count: d.payouts.length, span: 'c-s12', desc: 'Through the escrow agent.', body: v.table('Payouts', v.PAYOUT_HEADS, v.payoutRows(d.payouts), 'No payouts yet.') })}
+    ${v.container({ id: 'a-d-emails', title: 'Emails sent', iconName: 'mail', count: d.emails.length, span: 'c-s12', desc: 'Every email sent to this account.', body: `<div class="a-tall">${v.table('Emails', v.EMAIL_HEADS, v.emailRows(d.emails), 'No emails yet.')}</div>` })}
     <div class="c-s12" id="a-d-events-slot">${eventsFor(d)}</div>
   </div>`;
 }
@@ -256,7 +256,7 @@ async function resetAccount() {
   clearTimeout(state.resetTimer);
   try {
     await api(`/api/admin/accounts/${encodeURIComponent(state.route.id)}/reset`, { method: 'POST', body: {} });
-    toast('Demo account reset to its starting state.');
+    toast('Account reset to its starting state.');
   } catch (error) {
     toast(error.message);
   }

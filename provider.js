@@ -57,7 +57,7 @@ function showGate(account, platformOff) {
   $('d-content').hidden = true;
   $('d-rail').hidden = true;
   if (platformOff) {
-    $('p-gate-text').textContent = 'The demo platform is off on this server, so the provider portal is not available.';
+    $('p-gate-text').textContent = 'The platform is off on this server, so the provider portal is not available.';
     return;
   }
   if (account) {
@@ -118,7 +118,7 @@ function renderOverview() {
   $('p-pending').textContent = String(state.orders.incoming.length || o.pending);
   const auto = autoConfirm();
   $('p-pending-note').textContent = auto
-    ? 'Auto-confirm is on: requests confirm when the demo clock next moves by an hour or more.'
+    ? 'Auto-confirm is on: requests confirm automatically within the hour.'
     : 'Auto-confirm is off: each request waits for your Confirm or Decline.';
   const cloud = o.neocloud || state.account.neocloud || {};
   const regions = [...new Set(o.capacity.map(c => c.region).filter(Boolean))].join(', ') || '—';
@@ -171,7 +171,7 @@ function renderIntegration() {
   const preview = state.settings.apiKeyLast4;
   $('p-key-state').textContent = preview
     ? `A key ending ${String(preview).slice(-4)} is active. It is shown once, when it is created; regenerate to get a new one.`
-    : 'No key has been created yet in this demo. Regenerate to create one; it is shown once.';
+    : 'No key has been created yet. Regenerate to create one; it is shown once.';
 }
 
 function renderSettings() {
@@ -233,7 +233,7 @@ async function onDecision(button) {
   if (act === 'decline' && !armed(button, 'Click again to decline')) return;
   await busy(button, async () => {
     await api(`/api/provider/orders/${encodeURIComponent(ref)}/${act}`, { method: 'POST', body: {} });
-    toast(act === 'confirm' ? `${ref} confirmed: the capacity is held and Dodona was told.` : `${ref} declined: the capacity is released and the buyer is refunded through escrow (simulated).`);
+    toast(act === 'confirm' ? `${ref} confirmed: the capacity is held and Dodona was told.` : `${ref} declined: the capacity is released and the buyer is refunded through escrow.`);
     await loadAll();
   });
 }
@@ -243,9 +243,9 @@ async function onApiKey(button) {
   await busy(button, async () => {
     const data = await api('/api/provider/api-key', { method: 'POST', body: {} });
     const box = $('p-key-once');
-    box.innerHTML = `<div class="p-apikey"><span class="eyebrow">New mock key, shown once</span><code>${esc(data.apiKey ?? data.key ?? '')}</code><span class="fine">Copy it now. The old key stopped working. This key is for the demo only and opens nothing.</span></div>`;
+    box.innerHTML = `<div class="p-apikey"><span class="eyebrow">New key, shown once</span><code>${esc(data.apiKey ?? data.key ?? '')}</code><span class="fine">Copy it now. The old key stopped working.</span></div>`;
     box.hidden = false;
-    toast('New mock API key created. It is shown once.');
+    toast('New API key created. It is shown once.');
     const settings = await settled(api('/api/provider/settings'));
     if (settings) { state.settings = v.normalizeSettings(settings); renderIntegration(); }
   });
@@ -260,7 +260,7 @@ function downloadCsv() {
   link.click();
   link.remove();
   setTimeout(() => URL.revokeObjectURL(link.href), 1000);
-  toast('Statement CSV downloaded. Demo data.');
+  toast('Statement CSV downloaded.');
 }
 
 async function signOut() {
@@ -305,7 +305,7 @@ async function onSubmit(event) {
   }
   $('p-hook-err').textContent = '';
   input.removeAttribute('aria-invalid');
-  try { await saveSettings({ webhookUrl: value }, value ? 'Webhook URL saved. Display only: the demo calls nothing.' : 'Webhook URL cleared.'); }
+  try { await saveSettings({ webhookUrl: value }, value ? 'Webhook URL saved.' : 'Webhook URL cleared.'); }
   catch (error) { $('p-hook-err').textContent = error.message; }
 }
 

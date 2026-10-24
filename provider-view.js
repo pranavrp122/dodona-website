@@ -6,10 +6,10 @@ export { escapeHtml };
 const MINUS = '−';
 export const SCREENS = ['overview', 'orders', 'contracts', 'settlements', 'integration', 'settings'];
 export const PAGES = {
-  overview: ['Overview', 'Capacity, income and what needs your attention on your mock neocloud.'],
+  overview: ['Overview', 'Capacity, income and what needs your attention.'],
   orders: ['Orders', 'Reservations Dodona sent you: confirm or decline incoming ones, follow active windows, review settled ones.'],
   contracts: ['Contracts', 'Caps you sold and floors you bought, valued at the expected window average.'],
-  settlements: ['Settlements and payouts', 'The statement for every settled order and each payout through the escrow agent (simulated).'],
+  settlements: ['Settlements and payouts', 'The statement for every settled order and each payout through the escrow agent.'],
   integration: ['Integration', 'Every message between Dodona and your neocloud, shaped like the webhooks a real integration would use.'],
   settings: ['Settings', 'Reservation handling and company details.'],
 };
@@ -115,7 +115,7 @@ export function incomeList(income) {
   return `<dl class="p-income">
     ${row('Premiums received', 'Your 85% share of cap premiums', income.month.premiums, income.toDate.premiums)}
     ${row('Compute bills', 'Invoiced at settlement, paid through escrow', income.month.computeBills, income.toDate.computeBills)}
-    ${row('Floor payouts', 'From the matched buyer pool (simulated)', income.month.floorPayouts, income.toDate.floorPayouts)}
+    ${row('Floor payouts', 'From the matched buyer pool', income.month.floorPayouts, income.toDate.floorPayouts)}
     <div class="is-total"><dt>This month</dt><dd>${money(totalMonth)}<small>${money(totalAll)} to date</small></dd></div>
   </dl>`;
 }
@@ -239,7 +239,7 @@ export function whatIfSummary(all, avg) {
 /* ---------- settlements and payouts ---------- */
 export function settlementRows(rows) {
   const items = list(rows, 'settlements');
-  if (!items.length) return empty('No order has settled yet. Advance the demo clock past a window end.', 8);
+  if (!items.length) return empty('No order has settled yet. Statements appear here when a window ends.', 8);
   return items.map(raw => {
     const s = raw.settlement ?? raw;
     return `<tr><th scope="row"><span class="d-pos-l">${escapeHtml(raw.orderRef ?? raw.ref ?? '')}</span><span class="d-pos-s">${escapeHtml(KIND_TEXT[s.kind] || s.kind || '')}</span></th>

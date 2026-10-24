@@ -46,7 +46,7 @@ test('sign-in failures, sign-out and the signed-out state', async t => {
   const f = await setup(t);
   const bad = await f.anonymous.post('/api/auth/sign-in', { email: BUYER, password: 'wrong-password' });
   assert.equal(bad.status, 401);
-  assert.deepEqual(bad.data, { ok: false, error: { code: 'bad_credentials', message: 'That email and password do not match a demo account.' } });
+  assert.deepEqual(bad.data, { ok: false, error: { code: 'bad_credentials', message: 'That email and password do not match an account.' } });
   assert.equal((await f.anonymous.post('/api/auth/sign-in', { email: 'nobody@example.com', password: 'whatever1' })).status, 401);
   assert.equal((await f.anonymous.get('/api/account')).status, 401);
   const buyer = await f.as(BUYER);
@@ -88,7 +88,7 @@ test('sign-up validates input, sets the cookie and gives a provider its own neoc
   assert.equal(again.status, 409);
   const acme = f.client(made.headers.get('set-cookie').split(';')[0]);
   const emails = (await acme.get('/api/emails')).data.emails;
-  assert.deepEqual(emails.map(e => e.subject), ['Welcome to the Dodona demo']);
+  assert.deepEqual(emails.map(e => e.subject), ['Welcome to Dodona']);
 });
 
 test('passwords are scrypt hashes with their own salts and compare in constant time', async () => {

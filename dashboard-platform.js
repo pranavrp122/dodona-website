@@ -64,7 +64,7 @@ export async function renderEmails(list, count) {
   try {
     const { emails = [] } = await api('/api/emails');
     count.textContent = String(emails.length);
-    list.innerHTML = emailItems(emails) || '<li class="d-empty">No emails yet. Place an order or move the demo clock.</li>';
+    list.innerHTML = emailItems(emails) || '<li class="d-empty">No emails yet. Your first receipt arrives when you place an order.</li>';
   } catch (error) {
     list.innerHTML = `<li class="d-muted p-pad">${esc(error.message)}</li>`;
   }
@@ -81,7 +81,7 @@ export async function renderStatements(box) {
     box.innerHTML = `<div class="d-scroll"><table class="d-table"><caption class="visually-hidden">Monthly statement</caption>
       <thead><tr><th scope="col">Month</th><th scope="col" class="r">Premiums</th><th scope="col" class="r">Booking fees</th><th scope="col" class="r">Compute bills</th><th scope="col" class="r">Payouts in</th><th scope="col" class="r">Net</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="6" class="d-muted">No activity yet.</td></tr>'}</tbody></table></div>
-      <p class="c-note">Net is payouts in less premiums, booking fees and compute bills. Every amount moves through the escrow agent (simulated).</p>`;
+      <p class="c-note">Net is payouts in less premiums, booking fees and compute bills. Every amount moves through the escrow agent.</p>`;
   } catch (error) {
     box.innerHTML = `<p class="d-muted p-pad">${esc(error.message)}</p>`;
   }

@@ -37,7 +37,7 @@ function lines() {
   const be = breakEven(t.kind, t.strike, b.premiumPerGpuHour ?? t.premiumPerGpuHour);
   const used = lock ? 'Compute bill at the fixed price' : isFloor(t.kind) ? 'Floor revenue if the window average is below it' : 'Compute bill if you use every hour at the cap';
   return [
-    ['Neocloud', t.neocloud?.name || 'Partner neocloud (simulated)', t.region],
+    ['Neocloud', t.neocloud?.name || 'Partner neocloud', t.region],
     ['Compute', `${Number(page.order?.count ?? $('co-count').value).toLocaleString('en-US')} × ${t.gpu}${t.config ? ` · ${t.config}` : ''}`],
     ['Window', windowLabel(t.start, t.end), `${utcStamp(t.start)} to ${utcStamp(t.end)}`],
     [lock ? 'Fixed price' : isFloor(t.kind) ? 'Floor' : 'Cap', `${rate(t.strike)} per GPU-hour`, lock ? '' : 'Settles on the average daily index over the window'],
@@ -57,7 +57,7 @@ function renderSummary() {
   $('co-sum-sub').textContent = page.order ? `Order ${page.order.ref} · awaiting payment` : 'Estimate from the offer; confirmed when the order is placed.';
   $('co-lines').innerHTML = rows.map(([term, value, note, cls]) => `<div${cls ? ` class="${cls}"` : ''}><dt>${esc(term)}${note ? `<small>${esc(note)}</small>` : ''}</dt><dd>${esc(value)}</dd></div>`).join('');
   $('co-sum-foot').textContent = isFloor(t.kind)
-    ? 'A price floor pays you the difference when the window average ends below the floor, from the matched buyer pool (simulated). Usually bought by providers.'
+    ? 'A price floor pays you the difference when the window average ends below the floor, from the matched buyer pool. Usually bought by providers.'
     : isLock(t.kind) ? 'A fixed price bills every hour at the set price, whatever the index does.' : 'A price cap bills the lower of the window average and the cap for each GPU-hour you use.';
   $('co-pay-lbl').textContent = `Pay ${rows.at(-1)[1]}`;
 }
@@ -166,7 +166,7 @@ async function load() {
   }
   const t = termsOf();
   $('co-title').textContent = `${kindName(t.kind)} · ${t.gpu} · ${windowLabel(t.start, t.end)}`;
-  $('co-sub').textContent = `${t.neocloud?.name || 'Partner neocloud (simulated)'} · ${t.region}. Review the terms, pick the quantity and pay with a test card.`;
+  $('co-sub').textContent = `${t.neocloud?.name || 'Partner neocloud'} · ${t.region}. Review the terms, pick the quantity and pay by card.`;
   $('co-body').hidden = false;
   renderQuantity();
   renderSummary();

@@ -214,7 +214,7 @@ function syncStatus(s) {
   const counts = Object.entries(s.tables || {}).map(([name, n]) => `<tr><th scope="row">${esc(label(name))}</th><td class="r d-num">${n == null ? '—' : esc(n)}</td><td class="r d-num">${esc(result?.pushed?.[name] ?? '—')}</td></tr>`);
   return container({
     id: 'a-sync-state', title: 'Mirror status', iconName: 'database', span: 'c-s7',
-    desc: 'The demo database is the source of truth. The mirror copies the CRM tables to your Supabase project.',
+    desc: 'The platform database is the source of truth. The mirror copies the CRM tables to your Supabase project.',
     acts: `<button type="button" class="btn btn-primary" data-act="sync-now">${icon('refresh-cw')}<span>Sync now</span></button>`,
     body: `<dl class="d-kv">
         <div><dt>State</dt><dd>${state}</dd></div>
@@ -223,7 +223,7 @@ function syncStatus(s) {
         <div><dt>Last result</dt><dd>${esc(result ? result.message : 'No run yet')}</dd></div>
       </dl>
       <p class="a-sync-msg" id="a-sync-msg" role="status" hidden></p>
-      ${table('Rows per table', ['Table', ['Rows in the demo database'], ['Sent in the last run']], counts, 'No tables.')}`,
+      ${table('Rows per table', ['Table', ['Rows in the platform database'], ['Sent in the last run']], counts, 'No tables.')}`,
     foot: 'Password hashes, session tokens and card details are never sent. Payments go across as amount and outcome only.',
   });
 }

@@ -26,7 +26,7 @@ function timeline(order) {
   const exits = {
     pending_payment: `<p class="p-err p-exit">Awaiting payment. The order is held until it is paid.&nbsp;<a href="/checkout?order=${encodeURIComponent(order.ref)}">Pay now</a></p>`,
     cancelled: '<p class="p-err p-exit">Cancelled. Nothing was charged and the capacity hold was released.</p>',
-    declined: '<p class="p-err p-exit">The neocloud declined the reservation. The payment is returned through the escrow agent (simulated).</p>',
+    declined: '<p class="p-err p-exit">The neocloud declined the reservation. The payment is returned through the escrow agent.</p>',
   };
   $('od-exit').innerHTML = exits[order.status] || '';
   $('od-tl-note').textContent = order.status === 'reserving' ? 'Waiting for the neocloud to confirm the capacity hold.' : `Now: ${statusName(order.status)}.`;
@@ -39,7 +39,7 @@ function terms(order) {
   $('od-kind').innerHTML = kindPill(order.kind);
   $('od-terms-note').textContent = order.paidAt || order.createdAt ? `Placed ${fmtDate(order.paidAt || order.createdAt)}` : '';
   $('od-terms').innerHTML = lineRows([
-    ['Neocloud', order.neocloud?.name || 'Partner neocloud (simulated)', order.region],
+    ['Neocloud', order.neocloud?.name || 'Partner neocloud', order.region],
     ['Compute', `${Number(order.count).toLocaleString('en-US')} × ${order.gpu}${order.config ? ` · ${order.config}` : ''}`],
     ['Window', windowLabel(order.start, order.end), `${utcStamp(order.start)} to ${utcStamp(order.end)}`],
     [lock ? 'Fixed price' : isFloor(order.kind) ? 'Floor' : 'Cap', `${rate(order.strike)} per GPU-hour`, lock ? 'Paid on every hour, whatever the index does' : 'Settles on the average daily index over the window'],
@@ -82,14 +82,14 @@ function listing(order, bids) {
   const form = canList ? `<form class="p-form" id="od-list-form" novalidate><div class="p-row"><div class="field"><label for="od-ask">Asking, $ per GPU-hour</label>
       <input id="od-ask" type="number" inputmode="decimal" min="0.01" max="100" step="0.01" required value="${esc((Number(order.strike) + 0.25).toFixed(2))}"></div></div>
       <div class="c-acts"><button type="submit" class="btn btn-primary">${icon('tag')}<span>List the hours</span></button></div>
-      <p class="fine">The mock market bids one simulated day after you list, at the forward for the window minus $0.10, and raises by $0.05 on each counter up to the forward.</p></form>` : '';
+      <p class="fine">Buyers usually bid within a day of listing. Each counter can lift the bid toward the forward price for the window.</p></form>` : '';
   const sold = l?.status === 'accepted' && order.resoldTo;
   const price = sold ? order.resoldTo.pricePerHour : l?.askPerHour;
   const head = l ? `<div class="c-ctr-b"><p>${sold ? 'Sold' : l.status === 'open' ? 'Listed' : l.status === 'accepted' ? 'Sold' : 'Withdrawn'} at <b>${esc(rate(price))}/GPU-h</b> · ${esc(fmtDate(sold ? order.resoldTo.at : l.createdAt))}${sold ? ` · to ${esc(order.resoldTo.bidder)} · you asked ${esc(rate(l.askPerHour))}` : ''}</p>
       ${l.status === 'open' ? `<p class="c-acts c-note"><button type="button" class="btn btn-sm" data-act="withdraw">${icon('x')}<span>Withdraw the listing</span></button></p>` : ''}</div>` : '';
   const rows = (bids || []).map(b => bidRow(b, order, l?.status === 'open')).join('');
   const table = l ? `<div class="d-scroll"><table class="d-table p-bids"><caption class="visually-hidden">Bids on this listing</caption><thead><tr><th scope="col">Bidder</th><th scope="col" class="r">Bid</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="4" class="d-muted">No bids yet. Move the demo clock on a day.</td></tr>'}</tbody></table></div>` : '';
+      <tbody>${rows || '<tr><td colspan="4" class="d-muted">No bids yet. Bids usually arrive within a day.</td></tr>'}</tbody></table></div>` : '';
   $('od-listing').innerHTML = head + form + table;
 }
 
@@ -106,7 +106,7 @@ function settlement(s, order) {
     [lock ? 'Fixed price' : floor ? 'Floor' : 'Cap', `${rate(s.strike)}/GPU-h · ${kindName(kind)}`],
     ['GPU-hours', Math.round(s.hours).toLocaleString('en-US')],
     ...(floor ? [] : [['Compute bill', resold ? 'Paid by the resale buyer' : money(s.computeBill), lock ? 'Fixed price × hours' : 'Lower of the window average and the cap × hours']]),
-    [floor ? 'Floor payout' : lock ? 'Saving against the window average' : 'Saving from the cap', signedMoney(payout), floor ? 'From the matched buyer pool (simulated)' : lock ? 'Negative when the average ends below the fixed price' : 'Never below zero'],
+    [floor ? 'Floor payout' : lock ? 'Saving against the window average' : 'Saving from the cap', signedMoney(payout), floor ? 'From the matched buyer pool' : lock ? 'Negative when the average ends below the fixed price' : 'Never below zero'],
     ...(resold ? [['Resale proceeds', signedMoney(s.resaleProceeds), 'Bid minus the price you would have paid, × hours']] : []),
     ['Fee paid', money(-(s.premiumPaid ?? 0)), lock ? 'No premium on a fixed price' : 'Premium paid at checkout'],
     ['Net result', signedMoney(s.netResult), s.netResult < 0 ? 'Below zero: the protection cost more than it returned this time' : '', 'is-total', tone(s.netResult)],
@@ -119,7 +119,7 @@ function render(data) {
   document.title = `${order.ref} · Orders · Console — Dodona`;
   $('od-crumb').textContent = order.ref;
   $('od-title').textContent = `${kindName(order.kind)} · ${Number(order.count).toLocaleString('en-US')} ${order.gpu} · ${windowLabel(order.start, order.end)}`;
-  $('od-sub').textContent = `${order.ref} · ${order.neocloud?.name || 'Partner neocloud (simulated)'} · ${order.region || ''}`;
+  $('od-sub').textContent = `${order.ref} · ${order.neocloud?.name || 'Partner neocloud'} · ${order.region || ''}`;
   $('od-acts').innerHTML = order.status === 'pending_payment' ? `<a class="btn btn-primary" href="/checkout?order=${encodeURIComponent(order.ref)}">${icon('credit-card')}<span>Pay now</span></a>`
     : RUNNING.includes(order.status) ? `<button type="button" class="btn" data-act="to-end">${icon('flag')}<span>Advance to this window's end</span></button>` : '';
   timeline(order);
@@ -201,7 +201,7 @@ function onSubmit(event) {
   event.preventDefault();
   const ask = Number($('od-ask').value);
   if (!(ask > 0 && ask <= 100)) { toast('Enter an asking price between $0.01 and $100 per GPU-hour.'); return; }
-  act('list', { askPerHour: ask }, `Listed at ${rate(ask)}/GPU-h. A bid arrives one simulated day later.`);
+  act('list', { askPerHour: ask }, `Listed at ${rate(ask)}/GPU-h. Bids usually arrive within a day.`);
 }
 
 let wired = false;

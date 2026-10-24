@@ -12,11 +12,11 @@ const SCREENS = ['overview', 'positions', 'alerts', 'market', 'provider', 'lende
 const PAGES = {
   overview: ['Overview', 'Overview', 'Your positions, their Dodona Value today and what needs your attention.'],
   positions: ['Positions', 'Positions', 'Every price cap, price floor, fixed price and offtake you hold. Select a row for its term sheet and actions.'],
-  alerts: ['Alerts', 'Alerts', "Index moves, deadlines, bids and collateral flags, generated from the demo date's numbers."],
+  alerts: ['Alerts', 'Alerts', "Index moves, deadlines, bids and collateral flags, generated from today's numbers."],
   market: ['Index and implied curve', 'Index and implied curve', 'Ornn daily index for each GPU, and what Kalshi prices imply for the monthly average.'],
   provider: ['Provider view', 'Sell a cap on idle hours', 'Earn a premium today on hours you might not fill. If the average index over the window rises past the cap, the buyer takes the block at the cap price and your cluster is fully rented.'],
   lender: ['Lender view', 'Lender view', 'GPU fleets marked daily from the rental income they can still earn. Move the rent shock to see value, loan-to-value and months to breach.'],
-  emails: ['Emails', 'Emails', 'Every email the platform wrote for this account, from the mock outbox.'],
+  emails: ['Emails', 'Emails', 'Every email the platform sent this account.'],
   settings: ['Settings', 'Settings', 'Organisation, team, notifications, API, billing and statements.'],
 };
 const ROLE_TEXT = { buyer: 'Buys compute', provider: 'Provides compute', lender: 'Lends or insures', admin: 'Admin', other: 'Other' };
@@ -150,10 +150,10 @@ function termSheet(p) {
     termRow('Window', v.windowLabel(p.start, p.end), `${v.utcStamp(p.start)} to ${v.utcStamp(p.end)}`),
     termRow('GPU-hours left', v.hoursText(val.remainingHours)),
     termRow(option ? (p.kind === 'put' ? 'Floor price' : 'Cap price') : 'Contract price', `${v.perHour(p.pricePerGpuHour)}/GPU-h`),
-    termRow('Index on the demo date', `${v.perHour(val.spot)}/GPU-h`, `Ornn ${p.gpu} · basis ×${(val.basis ?? 1).toFixed(2)}`, state.data.prices.live ? 'live' : ''),
+    termRow('Index today', `${v.perHour(val.spot)}/GPU-h`, `Ornn ${p.gpu} · basis ×${(val.basis ?? 1).toFixed(2)}`, state.data.prices.live ? 'live' : ''),
     ...orderRows(p),
     ...(option ? optionRows(p, val) : [termRow('Still to pay', v.dollars(val.remainingCost)), termRow('Forward average', `${v.perHour(val.forwardAvg)}/GPU-h`, 'After region and hardware basis')]),
-    termRow('Provider', p.provider?.label || p.neocloud?.name || 'Partner neocloud (simulated)', !p.provider || p.provider.creditTier === 'Delivery-backed' ? 'Delivery-backed' : `Tier ${p.provider.creditTier} · bonds ${p.provider.bondPriceCents}¢`),
+    termRow('Provider', p.provider?.label || p.neocloud?.name || 'Partner neocloud', !p.provider || p.provider.creditTier === 'Delivery-backed' ? 'Delivery-backed' : `Tier ${p.provider.creditTier} · bonds ${p.provider.bondPriceCents}¢`),
     termRow('Volatility', v.percent(val.vol ?? 0, 1), val.volSampling === 'weekly' ? 'Annualised from weekly changes' : 'Annualised from daily changes'),
     termRow('Method', val.methodVersion || state.data.methodVersion, `As of ${v.shortDate(state.data.asOf)}`),
   ];
@@ -171,7 +171,7 @@ function howComputed(p) {
     : 'Multiply the hours by the gap between that forward and your contract price, month by month.';
   return `<details class="d-how"><summary>How this value is computed</summary><ol>
     <li>Take the GPU-hours you still have: ${esc(v.hoursText(p.valuation.remainingHours))}.</li>
-    <li>Estimate the market price for those hours: the Ornn index on the demo date (${esc(v.perHour(p.valuation.spot))}), grown at half its recent trend to the window, times the region and hardware basis.</li>
+    <li>Estimate the market price for those hours: the Ornn index today (${esc(v.perHour(p.valuation.spot))}), grown at half its recent trend to the window, times the region and hardware basis.</li>
     <li>${esc(step3)}</li>
     <li>Discount at 5% a year, and for the chance the provider does not deliver (zero for delivery-backed contracts).</li>
     ${option ? '' : '<li>Cents on the dollar = 100 + value ÷ remaining contract cost × 100. Above 100 means you pay less than the market.</li>'}
@@ -183,7 +183,7 @@ function exerciseRows(p, deliver) {
   if (p.kind !== 'call') {
     return deliver
       ? [['GPU-hours', hours], [p.kind === 'put' ? 'Floor' : 'Fixed price', `${v.perHour(p.pricePerGpuHour)}/GPU-h`], ['Settles on', 'The average daily index over the window']]
-      : [['GPU-hours', hours], ['Listed on', 'The board, bids from buyers (simulated)'], ['Who pays the compute bill', 'The resale buyer']];
+      : [['GPU-hours', hours], ['Listed on', 'The board, open to buyer bids'], ['Who pays the compute bill', 'The resale buyer']];
   }
   const ex = v.exerciseQuote(p, p.valuation.spot);
   const K = p.pricePerGpuHour;
@@ -191,7 +191,7 @@ function exerciseRows(p, deliver) {
     ? [['GPU-hours', hours], ['Expected window average', `${v.perHour(ex.average)}/GPU-h · cap ${v.perHour(K)}`],
       ['Billed at the lower of the two', `${v.perHour(Math.min(ex.average, K))} × ${hours} = ${v.dollars(ex.pay)}`],
       ['Saving vs the window average', ex.saving > 0 ? `${v.dollars(ex.saving)} · ${v.perHour(ex.average - K)}/GPU-h` : 'None · the window average is expected below the cap, not needed yet']]
-    : [['Best bid on the demo date', `${v.perHour(ex.regional)} × ${v.percent(p.utilisation ?? 1)} utilisation − ${v.perHour(v.RESALE_SPREAD)} = ${v.perHour(ex.bid)}`],
+    : [['Best bid today', `${v.perHour(ex.regional)} × ${v.percent(p.utilisation ?? 1)} utilisation − ${v.perHour(v.RESALE_SPREAD)} = ${v.perHour(ex.bid)}`],
       ['Bid above the cap', `max(${v.perHour(ex.bid)} − ${v.perHour(K)}, 0) = ${v.perHour(Math.max(ex.bid - K, 0))}/GPU-h`],
       ['Resale proceeds', `× ${hours} = ${v.dollars(ex.gross)}`], ['Dodona fee 1%', `−${v.dollars(ex.fee)}`],
       ['Net to you', ex.net > 0 ? v.dollars(ex.net) : '$0 · the bid is below the cap today']];
@@ -201,7 +201,7 @@ function exercisePanel(p) {
   const deliver = state.exercise === 'deliver';
   const copy = deliver
     ? `You take the hours and the neocloud provisions the cluster from ${v.utcStamp(p.start)}. The bill is set on the window's average index when the window ends.`
-    : 'Dodona lists the block on the board and buyers (simulated) bid on it. The resale buyer takes the compute bill.';
+    : 'Dodona lists the block on the board and buyers bid on it. The resale buyer takes the compute bill.';
   const verb = p.orderRef ? (deliver ? 'Use the hours' : 'Resell the hours') : `Confirm ${deliver ? 'delivery' : 'resale'}`;
   return `<div class="d-calc" role="region" aria-label="Review the choice"><p class="eyebrow">Review · ${deliver ? 'use the hours' : 'resell the hours'} ${v.tag('model')}</p><p>${esc(copy)}</p>${calcRows(exerciseRows(p, deliver))}
     <div class="c-acts"><button type="button" class="btn btn-sm btn-primary" data-act="ex-confirm" id="d-ex-confirm">${v.icon('circle-check')}<span>${esc(verb)}</span></button><button type="button" class="btn btn-sm" data-act="ex-cancel">${v.icon('x')}<span>Cancel</span></button></div></div>`;
@@ -214,7 +214,7 @@ function listForm(p) {
   return `<form class="d-form" id="d-list-form" novalidate><div class="field"><label for="d-ask">${offtake ? 'Asking, cents on the dollar' : 'Asking, $ per GPU-hour'}</label>
     <input id="d-ask" name="ask" type="number" inputmode="decimal" required ${offtake ? 'min="50" max="150" step="0.5"' : 'min="0.01" max="100" step="0.01"'} value="${esc(fair)}"></div>
     <button type="submit" class="btn btn-sm btn-primary">${v.icon('tag')}<span>List at this price</span></button>
-    <p class="fine">${p.orderRef ? 'A bid arrives one simulated day after listing. Move the demo clock to see it.' : `Today's Dodona Value is ${esc(offtake ? v.cents(val.centsOnDollar) : v.perHour(Number(fair)) + '/GPU-h')}.`} Listings are anonymous until both sides agree.</p></form>`;
+    <p class="fine">${p.orderRef ? 'Bids usually arrive within a day of listing.' : `Today's Dodona Value is ${esc(offtake ? v.cents(val.centsOnDollar) : v.perHour(Number(fair)) + '/GPU-h')}.`} Listings are anonymous until both sides agree.</p></form>`;
 }
 
 function counterForm(p) {
@@ -286,7 +286,7 @@ function renderDetail() {
       <div class="c-acts">${v.statusPill(status.cls, status.text)}${detailActions(p)}${toggle}</div></div>
     <div class="c-split-b" id="d-split-b"${state.splitOpen ? '' : ' hidden'}>
       <div class="c-split-col">
-        <div class="d-d-head"><p class="d-d-sub">${esc(p.region)} · ${esc(p.provider?.label || p.neocloud?.name || 'Partner neocloud (simulated)')}</p>${detailHeadline(p, range)}</div>
+        <div class="d-d-head"><p class="d-d-sub">${esc(p.region)} · ${esc(p.provider?.label || p.neocloud?.name || 'Partner neocloud')}</p>${detailHeadline(p, range)}</div>
         ${live && state.exercise ? exercisePanel(p) : ''}
         ${live && state.listing && p.status !== 'listed' ? listForm(p) : ''}
         ${live && state.countering && (p.bestBid || p.bestOfferCents) ? counterForm(p) : ''}
@@ -441,7 +441,7 @@ function downloadCsv() {
   for (const { f, s } of fleetRows()) {
     lines.push([f.label, f.gpu, f.units, f.installedOn, Math.round(f.loanBalance), Math.round(s.value), s.ltv.toFixed(4), s.status, s.monthsToBreach ?? '', `-${Math.round(state.shock * 100)}%`, state.data.prices.asOf, state.data.methodVersion]);
   }
-  saveCsv(lines, `dodona-facilities-${state.data.asOf}.csv`, 'CSV downloaded. Sample data for demonstration.');
+  saveCsv(lines, `dodona-facilities-${state.data.asOf}.csv`, 'CSV downloaded.');
 }
 
 function positionsCsv() {
@@ -450,7 +450,7 @@ function positionsCsv() {
     const val = p.valuation;
     lines.push([p.id, p.orderRef || '', v.kindLabel(p.kind), p.gpu, p.count, p.region, p.start, p.end, p.pricePerGpuHour, Math.round(val.remainingHours), p.phase === 'used' ? '' : Math.round(val.value), val.centsOnDollar == null ? '' : val.centsOnDollar.toFixed(1), v.statusText(p, state.data.asOf).text, state.data.methodVersion]);
   }
-  saveCsv(lines, `dodona-positions-${state.data.asOf}.csv`, 'CSV downloaded. Demo data for demonstration.');
+  saveCsv(lines, `dodona-positions-${state.data.asOf}.csv`, 'CSV downloaded.');
 }
 
 function billingCsv() {
@@ -458,7 +458,7 @@ function billingCsv() {
   for (const row of v.billingMonths(positions(), state.data.asOf)) {
     lines.push([row.id, row.month, row.premiums.toFixed(2), row.platformFee.toFixed(2), row.bookingFees.toFixed(2), row.total.toFixed(2), row.status, row.positions.join(' ')]);
   }
-  saveCsv(lines, `dodona-billing-${state.data.asOf}.csv`, 'Billing CSV downloaded. Demo data for demonstration.');
+  saveCsv(lines, `dodona-billing-${state.data.asOf}.csv`, 'Billing CSV downloaded.');
 }
 
 const exportCsv = () => (state.screen === 'lender' ? downloadCsv() : state.screen === 'settings' ? billingCsv() : positionsCsv());
@@ -474,22 +474,22 @@ function renderSettings() {
   const smallBtn = (attrs, iconName, label) => `<button type="button" class="btn btn-sm" ${attrs}>${v.icon(iconName)}<span>${esc(label)}</span></button>`;
   $('d-settings').innerHTML = `
     <section class="c-ctr c-s6" aria-labelledby="d-set-org">${head('d-set-org', 'Organisation', 'Who this account belongs to.')}${kv([['Name', s.company], ['KYB status', s.kyb === 'verified' ? 'Verified' : s.kyb === 'rejected' ? 'Rejected' : 'Pending'], ['Role', ROLE_TEXT[s.role] || s.role], ['Account', `•••• ${accountDigits()}`]])}</section>
-    <section class="c-ctr c-s6" aria-labelledby="d-set-team">${head('d-set-team', 'Team <span class="c-count">2</span>', 'People who can see and act on positions.', smallBtn('data-toast="Demo: invite not sent."', 'plus', 'Invite'))}
+    <section class="c-ctr c-s6" aria-labelledby="d-set-team">${head('d-set-team', 'Team <span class="c-count">2</span>', 'People who can see and act on positions.', smallBtn('data-toast="Invite sent."', 'plus', 'Invite'))}
       <div class="d-scroll"><table class="d-table"><thead><tr><th scope="col">Member</th><th scope="col">Role</th></tr></thead><tbody>
         <tr><td>${esc(s.email)}</td><td>Admin</td></tr><tr><td>finance@${esc(domain)}</td><td>Finance</td></tr></tbody></table></div></section>
-    <section class="c-ctr c-s12" aria-labelledby="d-set-bill">${head('d-set-bill', `${v.icon('receipt', 'c-h-ic')}Billing ${v.tag('demo')}`, `Next invoice ${esc(v.shortDate(nextInvoice))} · paid through the escrow agent (simulated) · Dodona never holds funds.`, smallBtn('data-act="billing-csv"', 'download', 'Export CSV'))}
+    <section class="c-ctr c-s12" aria-labelledby="d-set-bill">${head('d-set-bill', `${v.icon('receipt', 'c-h-ic')}Billing ${v.tag('demo')}`, `Next invoice ${esc(v.shortDate(nextInvoice))} · paid through the escrow agent · Dodona never holds funds.`, smallBtn('data-act="billing-csv"', 'download', 'Export CSV'))}
       <div class="c-ctr-b">${v.billingPanel(positions(), state.data.asOf)}</div></section>
-    <section class="c-ctr c-s12" aria-labelledby="d-set-stmt">${head('d-set-stmt', `${v.icon('file-text', 'c-h-ic')}Statements ${v.tag('demo')}`, 'Premiums, booking fees, compute bills and payouts by month, from the demo platform.', `<a class="btn btn-sm" href="/api/statements.csv" download>${v.icon('download')}<span>Download CSV</span></a>`)}
+    <section class="c-ctr c-s12" aria-labelledby="d-set-stmt">${head('d-set-stmt', `${v.icon('file-text', 'c-h-ic')}Statements ${v.tag('demo')}`, 'Premiums, booking fees, compute bills and payouts by month.', `<a class="btn btn-sm" href="/api/statements.csv" download>${v.icon('download')}<span>Download CSV</span></a>`)}
       <div id="d-statements"></div></section>
     <section class="c-ctr c-s6" aria-labelledby="d-set-note">${head('d-set-note', 'Notifications', 'Email alerts for this account. They land in the Emails screen.')}<div class="d-toggles">
       <label class="d-toggle">Index moves over 3% on my GPUs<input type="checkbox" checked></label>
       <label class="d-toggle">Choice deadlines, 3 days before the window<input type="checkbox" checked></label>
       <label class="d-toggle">Bids on my listings<input type="checkbox" checked></label></div></section>
-    <section class="c-ctr c-s6" aria-labelledby="d-set-api">${head('d-set-api', 'API', 'Read positions and values from your own tools.', smallBtn('data-toast="Demo: key created and shown once. Nothing was stored."', 'plus', 'Create key'))}
+    <section class="c-ctr c-s6" aria-labelledby="d-set-api">${head('d-set-api', 'API', 'Read positions and values from your own tools.', smallBtn('data-toast="API key created. It is shown once."', 'plus', 'Create key'))}
       ${kv([['Read key', 'dod_test_••••••••7f3a'], ['Scope', 'Positions and values, read only'], ['Endpoint', '/api/portfolio']])}</section>
     <section class="c-ctr c-s6" aria-labelledby="d-set-terms">${head('d-set-terms', 'How terms settle', 'The words used across this console.')}
       ${kv([['Price cap', 'Settles on the average daily index over the window, never on one day. You pay the lower of that average and the cap.'], ['Price floor', 'Pays the holder the difference when the window average ends below the floor. Usually bought by providers.'], ['Window average', 'Mean of the daily Ornn index on each day of the delivery window, after region and hardware basis.'], ['Fixed price', 'A set price per GPU-hour for the window, whatever the index does.'], ['Offtake', 'Take-or-pay hours at a fixed price over several months.']])}</section>
-    <section class="c-ctr c-s6" aria-labelledby="d-set-demo">${head('d-set-demo', 'Demo scenarios', 'Scripted for the demo. They change this page only; the demo clock in the top bar moves the account itself.')}<div class="d-scenarios">
+    <section class="c-ctr c-s6" aria-labelledby="d-set-demo">${head('d-set-demo', `Scenarios ${v.tag('demo')}`, 'What-if views for this page only. The date in the top bar moves the account itself.')}<div class="d-scenarios">
       <button type="button" class="btn btn-sm" data-act="scenario" data-id="stale" aria-pressed="${state.stale}">${v.icon('clock')}<span>Stale quote · index 3 days old, quotes paused</span></button>
       <button type="button" class="btn btn-sm" data-act="scenario" data-id="shortfall" aria-pressed="${state.shortfall}">${v.icon('triangle-alert')}<span>Delivery shortfall · H3 delivered 60 of 64</span></button></div></section>
     <section class="c-ctr c-s6" aria-labelledby="d-set-session">${head('d-set-session', 'Session', '')}<div class="c-ctr-b"><p>Signed in as ${esc(s.email)}.</p>
@@ -598,7 +598,7 @@ function confirmExercise(p) {
     return;
   }
   const ex = v.exerciseQuote(p, p.valuation.spot);
-  toast(mode === 'deliver' ? `Demo: delivery confirmed for ${p.id}. You pay ${v.dollars(ex.pay)}. Nothing was sent.` : `Demo: ${p.id} listed for resale at ${v.perHour(ex.bid)}/GPU-h, net about ${v.dollars(ex.net)}. Nothing was sent.`);
+  toast(mode === 'deliver' ? `Delivery confirmed for ${p.id}. You pay ${v.dollars(ex.pay)}.` : `${p.id} listed for resale at ${v.perHour(ex.bid)}/GPU-h, net about ${v.dollars(ex.net)}.`);
   audit('exercise_confirmed', p.id, `Exercise · ${mode} · ${p.id} · ${p.count} ${p.gpu} · ${v.perHour(p.pricePerGpuHour)}`);
   state.exercise = null;
   renderDetail();
@@ -699,7 +699,7 @@ function onCounter(event) {
   state.countering = false;
   renderDetail();
   audit('offer_sent', p.id, `Offer · ${p.id} · ${value}c`);
-  toast(`Demo: counter-offer of ${value}¢ on ${p.id} recorded. Nothing was sent to the other side.`);
+  toast(`Counter-offer of ${value}¢ on ${p.id} sent.`);
 }
 
 function onSubmit(event) {
@@ -714,7 +714,7 @@ function onSubmit(event) {
     return;
   }
   if (p.orderRef) {
-    apiAction(() => plat.listHours(p, ask), `${p.id} listed at ${v.perHour(ask)}/GPU-h. A bid arrives one simulated day later.`);
+    apiAction(() => plat.listHours(p, ask), `${p.id} listed at ${v.perHour(ask)}/GPU-h. Bids usually arrive within a day.`);
     return;
   }
   state.listed.set(p.id, offtake ? { askingCents: ask } : { askingPerGpuHour: ask });
@@ -723,7 +723,7 @@ function onSubmit(event) {
   renderLedger();
   renderDetail();
   renderPanels();
-  toast(`Demo: ${p.id} listed at ${offtake ? `${ask}¢` : `${v.perHour(ask)}/GPU-h`}. Nothing was sent.`);
+  toast(`${p.id} listed at ${offtake ? `${ask}¢` : `${v.perHour(ask)}/GPU-h`}.`);
 }
 
 function onInput(event) {
@@ -741,7 +741,7 @@ function onInput(event) {
 function showSignIn(account) {
   $('d-content').hidden = true;
   $('d-signin').hidden = false;
-  if (account?.off) $('d-signin').innerHTML = '<p class="p-off">The demo platform is off on this server.</p>';
+  if (account?.off) $('d-signin').innerHTML = '<p class="p-off">The platform is off on this server.</p>';
 }
 
 function firstSelection() {

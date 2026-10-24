@@ -75,7 +75,7 @@ function quoteHtml(input, q) {
     ['Pay now', money(lock ? q.bookingFee : q.payNow), 'is-total'],
   ];
   return `<dl class="p-lines">${rows.map(([t, d, cls]) => `<div${cls ? ` class="${cls}"` : ''}><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl>
-    <div class="p-form"><p class="fine">Index as of ${esc(q.asOf || '—')} · method ${esc(q.method || 'black76-asian-v0')}. Premiums go 85% to the neocloud and 15% to Dodona, through the escrow agent (simulated).</p>
+    <div class="p-form"><p class="fine">Index as of ${esc(q.asOf || '—')} · method ${esc(q.method || 'black76-asian-v0')}. Premiums go 85% to the neocloud and 15% to Dodona, through the escrow agent.</p>
       <div class="c-acts"><button type="button" class="btn btn-primary" id="cu-go">${icon('credit-card')}<span>Continue to payment</span></button></div>
       <p class="p-err" id="cu-go-err" role="alert"></p></div>`;
 }

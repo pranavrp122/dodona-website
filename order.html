@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Order · Console — Dodona</title>
-  <meta name="description" content="Demo order: timeline, term sheet, delivery choice, resale, settlement and payouts.">
+  <meta name="description" content="Order: timeline, term sheet, delivery choice, resale, settlement and payouts.">
   <meta name="robots" content="noindex">
   <!-- CANONICAL -->
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
@@ -26,10 +26,10 @@
     <!-- P_RAIL -->
     <main id="main" class="d-main">
       <section class="c-ctr p-gate" id="p-gate" aria-labelledby="p-gate-h" hidden>
-        <p class="eyebrow">Dodona · Demo</p>
+        <p class="eyebrow">Dodona</p>
         <h1 id="p-gate-h">Sign in to see this order</h1>
-        <p>Orders belong to the demo account that placed them.</p>
-        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create a demo account</a></div>
+        <p>Orders belong to the account that placed them.</p>
+        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create an account</a></div>
       </section>
 
       <div class="p-content" id="p-content">
@@ -64,7 +64,7 @@
                 <div class="p-choice" id="od-choice"></div>
               </section>
               <section class="c-ctr" id="od-list-box" aria-labelledby="od-list-h" hidden>
-                <div class="c-ctr-h"><div><h2 id="od-list-h">Resale listing</h2><p>Buyers on the board (simulated) bid on the hours; you can counter or accept.</p></div></div>
+                <div class="c-ctr-h"><div><h2 id="od-list-h">Resale listing</h2><p>Buyers on the board bid on the hours; you can counter or accept.</p></div></div>
                 <div id="od-listing"></div>
               </section>
             </div>
@@ -74,7 +74,7 @@
                 <dl class="p-lines" id="od-terms"></dl>
               </section>
               <section class="c-ctr" aria-labelledby="od-pay-h">
-                <div class="c-ctr-h"><div><h2 id="od-pay-h">Payouts <span class="c-count" id="od-pay-count"></span></h2><p>Everything moves through the escrow agent (simulated). Dodona never holds funds.</p></div></div>
+                <div class="c-ctr-h"><div><h2 id="od-pay-h">Payouts <span class="c-count" id="od-pay-count"></span></h2><p>Everything moves through the escrow agent. Dodona never holds funds.</p></div></div>
                 <div class="d-scroll"><table class="d-table"><caption class="visually-hidden">Payouts for this order</caption>
                   <thead><tr><th scope="col">Flow</th><th scope="col" class="r">Amount</th><th scope="col">Status</th><th scope="col">Due</th><th scope="col">Paid</th></tr></thead>
                   <tbody id="od-payouts"></tbody></table></div>
@@ -83,14 +83,14 @@
           </div>
 
           <section class="c-ctr" aria-labelledby="od-mail-h">
-            <div class="c-ctr-h"><div><h2 id="od-mail-h">Emails about this order <span class="c-count" id="od-mail-count"></span></h2><p>From the mock outbox. Nothing was sent.</p></div></div>
+            <div class="c-ctr-h"><div><h2 id="od-mail-h">Emails about this order <span class="c-count" id="od-mail-count"></span> <span class="tag d-tag-demo">demo data</span></h2><p>Sent to you about this order.</p></div></div>
             <ul class="p-mails" id="od-emails"></ul>
           </section>
 
           <section class="c-ctr">
             <details class="p-events" id="od-events-box">
               <summary><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-activity"/></svg>What the neocloud saw <span class="c-count" id="od-ev-count"></span></summary>
-              <p class="fine c-ctr-b">Each message between Dodona and the mock neocloud, shaped like a webhook. Open one for its payload.</p>
+              <p class="fine c-ctr-b">Each message between Dodona and the neocloud. Open one for its payload.</p>
               <ul class="p-ev-list" id="od-events"></ul>
             </details>
           </section>

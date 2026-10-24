@@ -47,7 +47,7 @@ test('the guide names every message the mock neocloud exchanges', async t => {
   const html = await (await fetch(f.origin + '/docs/neocloud-api')).text();
   for (const type of ['reservation.requested', 'reservation.confirmed', 'usage.reported', 'settlement.computed', 'invoice.issued', 'payout.issued']) assert.ok(html.includes(type), type);
   assert.ok(html.includes('window average'));
-  assert.ok(html.includes('escrow agent (simulated)'));
+  assert.ok(html.includes('Everything moves through the escrow agent. Dodona never holds funds.'));
 });
 
 test('platform pages answer 404 when the demo platform is off', async t => {

@@ -69,7 +69,7 @@ async function showSignedIn() {
   try { account = await loadAccount(); } catch { return; }
   if (account?.off) {
     $('si-forms').hidden = true;
-    $('si-lede').textContent = 'The demo platform is off on this server.';
+    $('si-lede').textContent = 'The platform is off on this server.';
     return;
   }
   if (!account) return;

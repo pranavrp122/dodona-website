@@ -151,7 +151,7 @@ test('listing unused hours: the market bids a day later, raises on a counter, an
   assert.ok(step.data.fired.some(e => e.type === 'bid.received'));
   let d = await detail(buyer, order.ref);
   const [bid] = d.bids;
-  assert.equal(bid.bidder, 'Buyer B (simulated)');
+  assert.equal(bid.bidder, 'Halden Research');
   assert.equal(bid.status, 'open');
   const portfolio = (await buyer.get('/api/portfolio')).data;
   assert.equal(portfolio.positions.find(p => p.orderRef === order.ref).status, 'listed');
@@ -278,7 +278,7 @@ test('provider portal: capacity, contracts from both sides, settings and a mock 
   assert.equal((await provider.post('/api/provider/settings', { webhookUrl: 'javascript:alert(1)' })).status, 400);
   assert.equal((await provider.post('/api/provider/settings', { webhookUrl: 'https://hooks.northwind.example/dodona' })).data.neocloud.webhookUrl, 'https://hooks.northwind.example/dodona');
   const key = (await provider.post('/api/provider/api-key')).data;
-  assert.match(key.apiKey, /^dk_demo_[a-f0-9]{48}$/);
+  assert.match(key.apiKey, /^dk_[a-f0-9]{48}$/);
   assert.equal((await provider.get('/api/provider/settings')).data.neocloud.apiKeyLast4, key.last4);
   const stored = JSON.stringify(all(db, 'SELECT * FROM neoclouds'));
   assert.ok(!stored.includes(key.apiKey), 'only a hash of the key is kept');

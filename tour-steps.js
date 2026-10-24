@@ -12,7 +12,7 @@ export const homeTour = [
   { target: '[data-tour="window"]', title: 'Pick your window', body: 'Set when your run starts and ends. The shortcuts fill in a day, a week, two weeks or a month from the start date, and the times are shown in UTC as well.' },
   { target: '[data-tour="protection"]', title: 'Fixed price or a cap', body: 'A fixed price is just that: one rate per GPU-hour, whatever the market does. A cap means you pay at most this, and can walk away if prices fall.' },
   { target: '[data-tour="quote"]', title: 'Your quote', body: 'The fee pays for the protection and the booking fee is a flat $2. Pay now is the two added up. Underneath is the most you would pay for the compute if you use it.', placement: 'left' },
-  { target: '#co-buy', title: 'Buy protection', body: 'When it looks right, press Buy protection. You get a short review to confirm, then a demo receipt with a link to your dashboard. No money moves on this page.' },
+  { target: '#co-buy', title: 'Buy protection', body: 'When it looks right, press Buy protection. You get a short review to confirm, then a receipt with a link to your dashboard. No money moves on this page.' },
   { target: '[data-tour="costs"]', title: 'What it costs in practice', body: 'Two worked examples for the same booking. If the price rises to $4 an hour, you save $78. If it falls to $2, you rent elsewhere and are only out the $22 you paid upfront.' },
   { target: '[data-tour="resale"]', title: 'If plans change', body: 'Do not need the hours any more? List them for another user to buy. You set the asking price and see exactly what you would get after the fee before you accept.' },
   { target: '[data-tour="faq"]', title: 'Questions', body: 'Short answers to what people ask most: whether this is insurance, how you would get the compute and what the fees are. Tap a question to open it.' },
@@ -60,7 +60,7 @@ const consoleSteps = [
   { target: '[data-tour="what-if"]', title: 'What if', body: 'Drag the slider to try a different average price for the window and see what this contract would be worth to you. It is the quickest way to see where it starts to pay off.', before: openFirstPosition, when: hasPositions },
   { target: '.d-rail [data-nav="orders"]', title: 'Orders', body: 'Every order you have placed, from payment through delivery to settlement. Open one for its timeline, the emails it sent and what the GPU provider saw.', placement: 'right', before: overview(sec('d-hero-h')) },
   { target: '.d-rail [data-nav="offers"]', title: 'Offers', body: 'This is where you buy. GPU providers post price caps and fixed prices on real blocks of GPUs, and you can price your own dates too.', placement: 'right' },
-  { target: sec('d-mail-h'), title: 'Emails', body: 'A copy of every email the platform would have sent you: receipts, confirmations and settlement notices. Nothing actually leaves the demo.', before: go('#emails', sec('d-mail-h')) },
+  { target: sec('d-mail-h'), title: 'Emails', body: 'Every email the platform sent you: receipts, confirmations and settlement notices.', before: go('#emails', sec('d-mail-h')) },
   { target: sec('d-set-bill'), title: 'Billing and statements', body: 'Under Settings you can see what you have been billed and when the next invoice is due. Monthly statements sit just below, and both download as a spreadsheet.', before: go('#settings', sec('d-set-bill')) },
   accountMenuStep('#overview', sec('d-hero-h')),
 ];
@@ -107,14 +107,14 @@ async function openFirstAccount() {
 }
 
 export const adminTour = [
-  { target: sec('a-acc-h'), title: 'Every account', body: 'Each demo login, who it belongs to and how far along they are. Search, or filter by role, stage and KYB (the business identity check), to find someone fast.', before: async () => { await waitFor('body[data-admin="ready"]', 8000); await goToHash('#accounts', '#a-acc-rows tr[data-href]'); } },
+  { target: sec('a-acc-h'), title: 'Every account', body: 'Each login, who it belongs to and how far along they are. Search, or filter by role, stage and KYB (the business identity check), to find someone fast.', before: async () => { await waitFor('body[data-admin="ready"]', 8000); await goToHash('#accounts', '#a-acc-rows tr[data-href]'); } },
   { target: '[data-act="create-open"]', title: 'Create an account', body: 'Set up a login before a meeting. Choose the role and a password, and they can sign in straight away.', placement: 'left', before: go('#accounts', '[data-act="create-open"]') },
   { target: sec('a-d-contact-h'), title: 'Contact card', body: 'Open an account to see its details. You can fix the company name or phone, and move its stage and KYB status along as things progress.', before: openFirstAccount },
   { target: sec('a-d-notes-h'), title: 'Notes', body: 'Write down what happened in a meeting and what comes next. Only admins see these.', before: openFirstAccount },
   { target: sec('a-d-orders-h'), title: 'Their orders', body: 'Everything this account has bought, with its status, price and the result once it settles.', before: openFirstAccount },
   { target: sec('a-d-clock-h'), title: 'Demo clock and reset', body: 'Where this account\'s demo date stands. Reset puts its orders, prices, emails and clock back to the start, which is handy before showing it to someone new. Notes stay.', before: openFirstAccount },
   { target: sec('a-orders-h'), title: 'All orders', body: 'Every order across every account. The buttons at the top filter by status, and Events shows the messages for a single order.', before: go('#orders', sec('a-orders-h')) },
-  { target: '[aria-labelledby^="a-nc-"]', title: 'Neoclouds', body: 'The simulated GPU providers: how much capacity each one has, what is reserved, and the contracts written on it.', before: go('#neoclouds', '[aria-labelledby^="a-nc-"]') },
+  { target: '[aria-labelledby^="a-nc-"]', title: 'Neoclouds', body: 'The GPU providers: how much capacity each one has, what is reserved, and the contracts written on it.', before: go('#neoclouds', '[aria-labelledby^="a-nc-"]') },
   { target: sec('a-activity-h'), title: 'Activity', body: 'The latest messages between Dodona and the GPU providers, across all accounts. A good place to check that something really happened.', before: go('#activity', sec('a-activity-h')) },
   { target: sec('a-sync-state-h'), title: 'Supabase sync', body: 'Copies the CRM tables to your own Supabase project every minute or so. The steps next to it walk through the one-time setup.', before: go('#sync', sec('a-sync-state-h')) },
 ];
@@ -124,7 +124,7 @@ const pageReady = () => waitFor('body[data-ready="1"]', 8000);
 const shown = id => () => document.getElementById(id)?.hidden === false;
 
 export const orderTour = [
-  { target: sec('od-tl-h'), title: 'Where it stands', body: 'The order\'s journey from payment to settlement. The highlighted step is where it is now, and the demo clock moves it along.', before: async () => { await pageReady(); await waitFor('#od-body', 5000); } },
+  { target: sec('od-tl-h'), title: 'Where it stands', body: 'The order\'s journey from payment to settlement. The highlighted step is where it is now, and it moves along as each date passes.', before: async () => { await pageReady(); await waitFor('#od-body', 5000); } },
   { target: '#od-choice-box', when: shown('od-choice-box'), title: 'Use or resell', body: 'Before the window starts, choose whether you will use the hours yourself or resell them to someone else.' },
   { target: '#od-list-box', when: shown('od-list-box'), title: 'Your listing', body: 'When you resell, the hours go on the board. Bids come in from buyers, and you can counter or accept the best one.' },
   { target: '#od-settle-box', when: shown('od-settle-box'), title: 'Settlement statement', body: 'Once the window closes, this shows the average price over the window, what you were billed and what you saved.' },
@@ -149,7 +149,7 @@ export const offersTour = [
 export const checkoutTour = [
   { target: sec('co-qty-h'), title: 'How many', body: 'Choose how many GPUs you want from this block. The summary updates as you type.', before: async () => { await pageReady(); await waitFor('#co-body', 4000); } },
   { target: sec('co-sum-h'), title: 'Order summary', body: 'The full breakdown before you pay: the premium, the booking fee and what you pay today. For a cap, it also shows the break-even price.', placement: 'left' },
-  { target: '[data-tour="test-cards"]', title: 'Test cards', body: 'This is a demo, so no real card is charged. 4242 4242 4242 4242 goes through, and the other two show what a decline looks like.' },
+  { target: '[data-tour="test-cards"]', title: 'Test cards', body: 'Use a test card here. 4242 4242 4242 4242 goes through, and the other two show what a decline looks like.' },
   { target: '#co-pay', title: 'Pay', body: 'Paying takes you straight to your new order, where you can follow it from reservation to settlement.' },
 ];
 
