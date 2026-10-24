@@ -157,7 +157,7 @@ function termSheet(p) {
     termRow('Volatility', v.percent(val.vol ?? 0, 1), val.volSampling === 'weekly' ? 'Annualised from weekly changes' : 'Annualised from daily changes'),
     termRow('Method', val.methodVersion || state.data.methodVersion, `As of ${v.shortDate(state.data.asOf)}`),
   ];
-  return `<div class="example-terms d-terms"><dl>${rows.join('')}</dl></div>`;
+  return `<div class="example-terms d-terms" data-tour="terms"><dl>${rows.join('')}</dl></div>`;
 }
 
 function howComputed(p) {
@@ -281,7 +281,7 @@ function renderDetail() {
   const status = v.statusText(p, state.data.asOf);
   const toggle = `<button type="button" class="btn btn-sm btn-icon" data-act="split-toggle" aria-expanded="${state.splitOpen}" aria-controls="d-split-b" aria-label="${state.splitOpen ? 'Collapse' : 'Expand'} the detail panel">${v.icon(state.splitOpen ? 'chevron-down' : 'chevron-up')}</button>`;
   box.classList.toggle('is-collapsed', !state.splitOpen);
-  box.innerHTML = `<div class="c-split-h"><div><p class="eyebrow">1 selected · ${esc(p.id)} · ${esc(v.kindLabel(p.kind))}${p.orderRef ? ` · order ${esc(p.orderRef)}` : ''} ${v.tag(p.orderRef ? 'demo' : 'sample')}</p>
+  box.innerHTML = `<div class="c-split-h" data-tour="detail-head"><div><p class="eyebrow">1 selected · ${esc(p.id)} · ${esc(v.kindLabel(p.kind))}${p.orderRef ? ` · order ${esc(p.orderRef)}` : ''} ${v.tag(p.orderRef ? 'demo' : 'sample')}</p>
       <h2 id="d-split-h" tabindex="-1">${esc(p.label)}</h2></div>
       <div class="c-acts">${v.statusPill(status.cls, status.text)}${detailActions(p)}${toggle}</div></div>
     <div class="c-split-b" id="d-split-b"${state.splitOpen ? '' : ' hidden'}>

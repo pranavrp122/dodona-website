@@ -1,0 +1,49 @@
+/* Guided tour: overlay, spotlight, step card, Help buttons. Colours read the console tokens (dashboard.css) first and the
+   public site tokens (styles.css) second, so the tour follows light and dark on every page that loads it. */
+:root{--tour-dim:#052b4294;--tour-shadow:0 18px 48px -16px #052b4280}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--tour-dim:#000000ad;--tour-shadow:0 18px 48px -12px #000000cc}}
+:root[data-theme="dark"]{--tour-dim:#000000ad;--tour-shadow:0 18px 48px -12px #000000cc}
+
+.tour{position:fixed;inset:0;z-index:1000;opacity:0;transition:opacity .15s ease-out}
+.tour.is-on{opacity:1}
+.tour-shield{position:fixed;inset:0}
+.tour.is-plain .tour-shield{background:var(--tour-dim)}
+.tour-spot{position:fixed;border-radius:10px;pointer-events:none;box-shadow:0 0 0 2px var(--c-accent,var(--violet,#614efa)),0 0 0 9999px var(--tour-dim);transition:top .2s ease-out,left .2s ease-out,width .2s ease-out,height .2s ease-out}
+
+.tour-card{position:fixed;top:0;left:0;z-index:2;width:min(360px,calc(100vw - 24px));padding:16px 18px 14px;background:var(--c-surface,#fffefb);color:var(--c-text,var(--ink,#052b42));border:1px solid var(--c-border-strong,var(--border,#052b4224));border-radius:12px;box-shadow:var(--tour-shadow);font:500 14px/1.5 var(--body,system-ui,sans-serif);text-align:left}
+.tour .tour-count{margin:0 0 4px;font:600 11.5px/1.2 var(--body,system-ui,sans-serif);letter-spacing:.07em;text-transform:uppercase;color:var(--c-muted,var(--muted,#4f6676))}
+.tour .tour-title{margin:0 0 6px;font:600 18px/1.25 var(--display,var(--body,system-ui,sans-serif));letter-spacing:0;color:inherit}
+.tour .tour-body p{margin:0 0 6px;max-width:none;font-size:14px;line-height:1.5;color:inherit}
+.tour-acts{display:flex;align-items:center;gap:8px;margin-top:12px}
+.tour-spacer{flex:1}
+.tour-btn{display:inline-flex;align-items:center;justify-content:center;min-height:36px;padding:0 14px;border:1px solid var(--c-border-strong,var(--border,#052b4224));border-radius:8px;background:none;color:inherit;font:600 13px/1 var(--body,system-ui,sans-serif);cursor:pointer}
+.tour-btn:hover{background:var(--c-surface-2,var(--panel,#efefe9))}
+.tour-btn:focus-visible{outline:2px solid var(--c-accent,var(--violet,#614efa));outline-offset:2px}
+.tour-next{background:var(--c-lime,var(--lime,#e0ff4f));border-color:var(--c-lime-edge,#7a8c00);color:var(--c-on-lime,var(--ink,#052b42))}
+.tour-next:hover{background:var(--c-lime-hover,#d2f23a)}
+.tour-skip{border-color:transparent;padding-inline:4px;color:var(--c-muted,var(--muted,#4f6676));font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.tour-skip:hover{background:none;color:inherit}
+.tour-btn[hidden]{display:none}
+
+/* phone: the card becomes a bottom sheet (or a top sheet when the target is a bar fixed to the bottom) */
+.tour-card.is-sheet{top:auto;bottom:0;left:0;right:0;width:auto;max-height:55vh;overflow:auto;border-width:1px 0 0;border-radius:16px 16px 0 0;padding:16px max(18px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+.tour-card.is-sheet.is-top{top:0;bottom:auto;border-width:0 0 1px;border-radius:0 0 16px 16px;padding-top:calc(16px + env(safe-area-inset-top,0px))}
+.tour-card.is-sheet .tour-btn{min-height:44px}
+
+/* Help buttons and the "not seen yet" dot */
+.tour-dot{display:inline-block;flex:none;width:8px;height:8px;margin-left:6px;border-radius:50%;background:var(--c-lime,var(--violet,#614efa));vertical-align:middle}
+.p-tour{position:relative}
+.c-top-btn.p-tour-btn{position:relative;border-color:#ffffff38}
+.c-top-btn.p-tour-btn .ic{display:block}
+.p-tour-btn .tour-dot{position:absolute;top:5px;left:22px;margin:0;box-shadow:0 0 0 2px var(--c-top-bg,#052b42)}
+.p-pop-tour{min-width:220px}
+.p-pop-tour .c-menu-item{text-decoration:none}
+
+/* public pages: a Help button that reads like the links around it */
+.tour-link{display:inline-flex;align-items:center;padding:0;border:0;background:none;color:inherit;font:inherit;font-size:14px;font-weight:500;cursor:pointer}
+.tour-link:hover{text-decoration:underline}
+.section-nav .tour-link{min-height:44px;padding:10px 14px;border-radius:8px;font-weight:600}
+.section-nav .tour-link:hover{background:var(--lavender,#e0e4ff);text-decoration:none}
+
+@media(max-width:720px){.p-tour-lbl{display:none}.c-top-btn.p-tour-btn{padding:0 8px}}
+@media(prefers-reduced-motion:reduce){.tour,.tour-spot{transition:none}}

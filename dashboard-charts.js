@@ -104,7 +104,7 @@ export function whatIfBlock(p, avg) {
   const w = whatIfParts(p, avg);
   const key = lockLike(w.m.kind) ? '<li><i></i>Saving against the window average</li>'
     : `<li><i></i>${w.m.kind === 'call' ? 'Cap payoff' : 'Floor payout'}</li><li><i class="is-net"></i>Net after the fee</li>`;
-  return `<div class="d-whatif"><label for="d-whatif">If the window average ends at <span id="d-whatif-label">${w.label}</span></label>
+  return `<div class="d-whatif" data-tour="what-if"><label for="d-whatif">If the window average ends at <span id="d-whatif-label">${w.label}</span></label>
     <input type="range" id="d-whatif" min="${w.m.lo.toFixed(2)}" max="${w.m.hi.toFixed(2)}" step="${SLIDER_STEP}" value="${w.value.toFixed(2)}" aria-describedby="d-whatif-out">
     <div id="d-whatif-chart">${w.chart}</div>
     <ul class="p-key">${key}<li><i class="is-be"></i>Break-even</li></ul>

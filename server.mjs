@@ -59,6 +59,9 @@ const staticFiles = new Map([
   // --- activity log (feature/activity) ---
   ['/activity.js', ['activity.js', 'text/javascript; charset=utf-8']],
   // --- end activity log ---
+  ['/tour.js', ['tour.js', 'text/javascript; charset=utf-8']],
+  ['/tour-steps.js', ['tour-steps.js', 'text/javascript; charset=utf-8']],
+  ['/tour.css', ['tour.css', 'text/css; charset=utf-8']],
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
