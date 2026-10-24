@@ -10,7 +10,7 @@ const SCREENS = {
   accounts: { title: 'Accounts', desc: 'Every account, who it belongs to and how far along it is.' },
   account: { title: 'Account', desc: '' },
   orders: { title: 'Orders', desc: 'Every order across all accounts, newest first.' },
-  neoclouds: { title: 'Neoclouds', desc: 'The neoclouds: capacity per GPU and region, and the contracts written on it.' },
+  neoclouds: { title: 'Neoclouds', desc: 'Capacity per GPU and region for each neocloud, and the contracts written on it.' },
   activity: { title: 'Activity', desc: 'Recent failures across every account, and the latest messages between Dodona and the neoclouds.' },
   sync: { title: 'Supabase sync', desc: 'Save the CRM to your Supabase project.' },
 };
@@ -398,7 +398,7 @@ function showGate(account) {
   $('a-app').classList.add('is-gated');
   $('a-gate').hidden = false;
   if (!account) return;
-  $('a-gate-say').textContent = `You are signed in as ${account.email}, a ${v.roleText(account.role).toLowerCase()} account. The admin portal needs an admin login: sign out, then sign in as an admin.`;
+  $('a-gate-say').textContent = `You are signed in as ${account.email}, a ${v.roleText(account.role).toLowerCase()} account. The admin portal needs an admin login, so sign out and then sign in as an admin.`;
   mountShell(account);
 }
 

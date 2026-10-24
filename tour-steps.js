@@ -10,12 +10,12 @@ export const homeTour = [
   { target: '[data-tour="how"]', title: 'How it works', body: 'Choose the compute, pay a small fee to hold the price, then use it when your run starts. You only pay for the compute itself if you use it.' },
   { target: '#co-tabs', title: 'Pick a GPU', body: 'Start here. Each tab is a GPU model, and the chart shows what it has cost to rent over the last 90 days. Step 1, just below the chart, sets how many you need and where.' },
   { target: '[data-tour="window"]', title: 'Pick your window', body: 'Set when your run starts and ends. The shortcuts fill in a day, a week, two weeks or a month from the start date, and the times are shown in UTC as well.' },
-  { target: '[data-tour="protection"]', title: 'Fixed price or a cap', body: 'A fixed price is just that: one rate per GPU-hour, whatever the market does. A cap means you pay at most this, and can walk away if prices fall.' },
+  { target: '[data-tour="protection"]', title: 'Fixed price or a cap', body: 'A fixed price is one rate per GPU-hour, whatever the market does. A cap means you pay at most this, and can walk away if prices fall.' },
   { target: '[data-tour="quote"]', title: 'Your quote', body: 'The fee pays for the protection and the booking fee is a flat $2. Pay now is the two added up. Underneath is the most you would pay for the compute if you use it.', placement: 'left' },
   { target: '#co-buy', title: 'Buy protection', body: 'When it looks right, press Buy protection. You get a short review to confirm, then a receipt with a link to your dashboard. No money moves on this page.' },
   { target: '[data-tour="costs"]', title: 'What it costs in practice', body: 'Two worked examples for the same booking. If the price rises to $4 an hour, you save $78. If it falls to $2, you rent elsewhere and are only out the $22 you paid upfront.' },
   { target: '[data-tour="resale"]', title: 'If plans change', body: 'Do not need the hours any more? List them for another user to buy. You set the asking price and see exactly what you would get after the fee before you accept.' },
-  { target: '[data-tour="faq"]', title: 'Questions', body: 'Short answers to what people ask most: whether this is insurance, how you would get the compute and what the fees are. Tap a question to open it.' },
+  { target: '[data-tour="faq"]', title: 'Questions', body: 'Short answers to what people ask most, like whether this is insurance, how you would get the compute and what the fees are. Tap a question to open it.' },
   { target: '#waitlist-form', title: 'Get early access', body: 'Leave your email and we will tell you when you can book for real. A line about what you would use it for helps us build the right thing.' },
 ];
 
@@ -51,16 +51,16 @@ const accountMenuStep = (back, ready) => ({
 
 const consoleSteps = [
   { target: sec('d-hero-h'), title: 'Total Dodona Value', body: 'What your remaining GPU-hours are worth at today\'s prices, compared with what you agreed to pay for them. Above zero means your contracts are saving you money right now.', before: overview(sec('d-hero-h')) },
-  { target: sec('d-kpi-h'), title: 'Key figures', body: 'The numbers behind that total: what you still owe on fixed prices, the premiums paid for caps, the hours you have left and how the value moved this week.', before: overview(sec('d-kpi-h')) },
+  { target: sec('d-kpi-h'), title: 'Key figures', body: 'Behind that total sit what you still owe on fixed prices, the premiums paid for caps, the hours you have left and how the value moved this week.', before: overview(sec('d-kpi-h')) },
   { target: sec('d-chart-h'), title: 'Value over time', body: 'The top line is what your hours would cost at market prices and the lower one is what you committed to pay. The gap is your Dodona Value. The buttons from 1D to All change the range.', before: overview(sec('d-chart-h')) },
   { target: sec('d-alerts-mini-h'), title: 'Alerts', body: 'Things worth a look, like a big price move or a deadline coming up. The full list is under Alerts in the menu.', before: overview(sec('d-alerts-mini-h')) },
-  { target: `${sec('d-ledger-h')}:has([data-row])`, title: 'Positions', body: 'Every contract you hold, one per row: price caps, fixed prices and offtakes. Click a row to open its details underneath.', before: openFirstPosition, when: hasPositions },
+  { target: `${sec('d-ledger-h')}:has([data-row])`, title: 'Positions', body: 'Every price cap, fixed price and offtake you hold, one per row. Click a row to open its details underneath.', before: openFirstPosition, when: hasPositions },
   { target: '[data-tour="detail-head"]', title: 'The position you picked', body: 'Its name, where it stands and what you can do next. Before the window starts you can use the hours yourself or resell them. Open the order shows its full history.', before: openFirstPosition, when: hasPositions },
-  { target: '[data-tour="terms"]', title: 'Term sheet', body: 'Every detail of the contract in one place: the GPUs, the window, the price you locked in, today\'s index price and who supplies the compute.', before: openFirstPosition, when: hasPositions },
+  { target: '[data-tour="terms"]', title: 'Term sheet', body: 'Every detail of the contract in one place, with the GPUs, the window, the price you locked in, today\'s index price and who supplies the compute.', before: openFirstPosition, when: hasPositions },
   { target: '[data-tour="what-if"]', title: 'What if', body: 'Drag the slider to try a different average price for the window and see what this contract would be worth to you. It is the quickest way to see where it starts to pay off.', before: openFirstPosition, when: hasPositions },
   { target: '.d-rail [data-nav="orders"]', title: 'Orders', body: 'Every order you have placed, from payment through delivery to settlement. Open one for its timeline, the emails it sent and what the GPU provider saw.', placement: 'right', before: overview(sec('d-hero-h')) },
   { target: '.d-rail [data-nav="offers"]', title: 'Offers', body: 'This is where you buy. GPU providers post price caps and fixed prices on real blocks of GPUs, and you can price your own dates too.', placement: 'right' },
-  { target: sec('d-mail-h'), title: 'Emails', body: 'Every email the platform sent you: receipts, confirmations and settlement notices.', before: go('#emails', sec('d-mail-h')) },
+  { target: sec('d-mail-h'), title: 'Emails', body: 'Every receipt, confirmation and settlement notice the platform sent you.', before: go('#emails', sec('d-mail-h')) },
   { target: sec('d-set-bill'), title: 'Billing and statements', body: 'Under Settings you can see what you have been billed and when the next invoice is due. Monthly statements sit just below, and both download as a spreadsheet.', before: go('#settings', sec('d-set-bill')) },
   accountMenuStep('#overview', sec('d-hero-h')),
 ];
@@ -82,7 +82,7 @@ const providerReady = () => waitFor('body[data-portal="loaded"]', 8000);
 
 export const providerTour = [
   { target: '#p-clock', title: 'The demo clock', body: 'This is a demo, so you can move time forward. Reservations confirm, windows start, usage gets reported and payouts land as the date moves.', before: providerReady },
-  { target: sec('p-cap-h'), title: 'Capacity', body: 'Your GPUs by type and region: how many are held for Dodona orders and how many are still free to rent out.', before: go('#overview', sec('p-cap-h')) },
+  { target: sec('p-cap-h'), title: 'Capacity', body: 'Your GPUs by type and region, with how many are held for Dodona orders and how many are still free to rent out.', before: go('#overview', sec('p-cap-h')) },
   { target: sec('p-inc-h'), title: 'Income', body: 'What you have earned this month and in total, from premiums and compute bills. It is all paid out through the escrow agent.', before: go('#overview', sec('p-inc-h')) },
   { target: sec('p-in-h'), title: 'Orders to confirm', body: 'When a buyer pays, the request lands here. Confirm holds the GPUs for their window. Decline releases them and the buyer gets a refund.', before: go('#orders', sec('p-in-h')) },
   { target: sec('p-con-h'), title: 'Contracts', body: 'Caps you sell earn a premium today on hours that might otherwise sit idle. Floors you buy protect your revenue if prices drop. Value shows which way each one is leaning.', before: go('#contracts', sec('p-con-h')) },
@@ -114,7 +114,7 @@ export const adminTour = [
   { target: sec('a-d-orders-h'), title: 'Their orders', body: 'Everything this account has bought, with its status, price and the result once it settles.', before: openFirstAccount },
   { target: sec('a-d-clock-h'), title: 'Demo clock and reset', body: 'Where this account\'s demo date stands. Reset puts its orders, prices, emails and clock back to the start, which is handy before showing it to someone new. Notes stay.', before: openFirstAccount },
   { target: sec('a-orders-h'), title: 'All orders', body: 'Every order across every account. The buttons at the top filter by status, and Events shows the messages for a single order.', before: go('#orders', sec('a-orders-h')) },
-  { target: '[aria-labelledby^="a-nc-"]', title: 'Neoclouds', body: 'The GPU providers: how much capacity each one has, what is reserved, and the contracts written on it.', before: go('#neoclouds', '[aria-labelledby^="a-nc-"]') },
+  { target: '[aria-labelledby^="a-nc-"]', title: 'Neoclouds', body: 'Each GPU provider, how much capacity it has, what is reserved and the contracts written on it.', before: go('#neoclouds', '[aria-labelledby^="a-nc-"]') },
   { target: sec('a-activity-h'), title: 'Activity', body: 'The latest messages between Dodona and the GPU providers, across all accounts. A good place to check that something really happened.', before: go('#activity', sec('a-activity-h')) },
   { target: sec('a-sync-state-h'), title: 'Supabase sync', body: 'Copies the CRM tables to your own Supabase project every minute or so. The steps next to it walk through the one-time setup.', before: go('#sync', sec('a-sync-state-h')) },
 ];
@@ -128,7 +128,7 @@ export const orderTour = [
   { target: '#od-choice-box', when: shown('od-choice-box'), title: 'Use or resell', body: 'Before the window starts, choose whether you will use the hours yourself or resell them to someone else.' },
   { target: '#od-list-box', when: shown('od-list-box'), title: 'Your listing', body: 'When you resell, the hours go on the board. Bids come in from buyers, and you can counter or accept the best one.' },
   { target: '#od-settle-box', when: shown('od-settle-box'), title: 'Settlement statement', body: 'Once the window closes, this shows the average price over the window, what you were billed and what you saved.' },
-  { target: sec('od-terms-h'), title: 'Term sheet', body: 'The contract itself: GPUs, window, price and who supplies the compute.' },
+  { target: sec('od-terms-h'), title: 'Term sheet', body: 'The contract itself, with the GPUs, window, price and who supplies the compute.' },
   { target: sec('od-pay-h'), title: 'Payouts', body: 'Every payment tied to this order and whether it has gone out yet. Money always moves through the escrow agent, never through Dodona.' },
   { target: '#od-events-box', title: 'What the neocloud saw', body: 'The messages Dodona and the GPU provider swapped about this order. Open it to read each one.', placement: 'top' },
 ];
@@ -141,14 +141,14 @@ export const ordersTour = [
 
 export const offersTour = [
   { target: '#of-filters', title: 'Narrow it down', body: 'Filter the board by GPU, region or the kind of protection you want.', before: async () => { await pageReady(); await waitFor('#of-rows a[href^="/checkout"]', 5000); } },
-  { target: '#of-rows tr:first-child', title: 'An offer', body: 'Each row is a block of GPUs from a provider: the window, the price, the premium you pay now and the break-even, the average price where it starts paying for itself.' },
+  { target: '#of-rows tr:first-child', title: 'An offer', body: 'Each row is a block of GPUs from a provider, with the window, the price, the premium you pay now and the break-even, the average price where it starts paying for itself.' },
   { target: '#of-rows a[href^="/checkout"]', title: 'Take this offer', body: 'Found one you like? This takes you to checkout, where you choose how many GPUs and pay with a test card.', placement: 'left' },
   { target: '#custom', title: 'Price your own', body: 'Nothing on the board fits? Pick the GPU, the dates and a price, and you get a quote from the same model the board uses.' },
 ];
 
 export const checkoutTour = [
   { target: sec('co-qty-h'), title: 'How many', body: 'Choose how many GPUs you want from this block. The summary updates as you type.', before: async () => { await pageReady(); await waitFor('#co-body', 4000); } },
-  { target: sec('co-sum-h'), title: 'Order summary', body: 'The full breakdown before you pay: the premium, the booking fee and what you pay today. For a cap, it also shows the break-even price.', placement: 'left' },
+  { target: sec('co-sum-h'), title: 'Order summary', body: 'Before you pay you see the premium, the booking fee and what you pay today. For a cap, it also shows the break-even price.', placement: 'left' },
   { target: '[data-tour="test-cards"]', title: 'Test cards', body: 'Use a test card here. 4242 4242 4242 4242 goes through, and the other two show what a decline looks like.' },
   { target: '#co-pay', title: 'Pay', body: 'Paying takes you straight to your new order, where you can follow it from reservation to settlement.' },
 ];

@@ -80,7 +80,7 @@ test('full flow: sign in, order, pay, reserve, deliver, settle on the window ave
   assert.ok(d.payouts.every(p => p.status === 'paid'), 'compute bill paid one simulated day later');
   const types = d.events.map(e => e.type);
   for (const type of ['reservation.requested', 'reservation.confirmed', 'delivery.started', 'usage.reported', 'window.closed', 'settlement.computed', 'invoice.issued', 'payout.issued']) assert.ok(types.includes(type), type);
-  assert.deepEqual(d.emails.map(e => e.subject.split(':')[0].split(' for ')[0].split(' on ')[0]), ['Receipt', 'Capacity reserved', 'Your window starts tomorrow', 'Your window has started', 'Statement']);
+  assert.deepEqual(d.emails.map(e => e.subject.split(':')[0].split(' for ')[0].split(' on ')[0]), ['Receipt', 'Capacity reserved', 'Your window', 'Your window', 'Statement']);
   const statement = (await buyer.get('/api/statements')).data;
   const rows = statement.rows.filter(r => r.orderRef === order.ref);
   assert.deepEqual(rows.map(r => r.type).sort(), ['booking_fee', 'compute_bill', 'premium']);

@@ -70,7 +70,7 @@
     const y = v => high === low ? H / 2 : H - PAD - (v - low) / (high - low) * (H - 2 * PAD);
     const svg = svgEl('svg', {
       viewBox: `0 0 ${W} ${H}`, class: 'mk-spark', role: 'img', preserveAspectRatio: 'none',
-      'aria-label': `${gpu}, last ${values.length} index days: from ${money(values[0])} to ${money(values.at(-1))}, low ${money(low)}, high ${money(high)}`,
+      'aria-label': `${gpu} over the last ${values.length} index days went from ${money(values[0])} to ${money(values.at(-1))}, with a low of ${money(low)} and a high of ${money(high)}`,
     });
     svg.append(svgEl('path', { class: 'mk-spark-line', d: values.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('') }));
     const hover = svgEl('circle', { class: 'mk-spark-hover', cx: 0, cy: 0, r: 2.6, visibility: 'hidden' });
@@ -151,7 +151,7 @@
   function renderImplied(box, data) {
     const pending = data.tradeDates === 'pending';
     const gpus = ['B200', 'H100'].filter(gpu => Array.isArray(data[gpu]) && data[gpu].length);
-    const body = data.error ? [el('p', 'mk-implied-error', `Market-implied prices are unavailable right now: ${data.error}`)]
+    const body = data.error ? [el('p', 'mk-implied-error', `Market-implied prices are unavailable right now. ${data.error}`)]
       : gpus.length ? gpus.map(gpu => impliedTable(gpu, data[gpu], pending))
         : [el('p', 'mk-implied-error', 'No Kalshi ladder says anything about the median today.')];
     const label = el('p', 'mk-implied-note', data.label);

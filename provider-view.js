@@ -7,7 +7,7 @@ const MINUS = '−';
 export const SCREENS = ['overview', 'orders', 'contracts', 'settlements', 'integration', 'settings'];
 export const PAGES = {
   overview: ['Overview', 'Capacity, income and what needs your attention.'],
-  orders: ['Orders', 'Reservations Dodona sent you: confirm or decline incoming ones, follow active windows, review settled ones.'],
+  orders: ['Orders', 'Confirm or decline the reservations Dodona sends you, follow active windows and review settled ones.'],
   contracts: ['Contracts', 'Caps you sold and floors you bought, valued at the expected window average.'],
   settlements: ['Settlements and payouts', 'The statement for every settled order and each payout through the escrow agent.'],
   integration: ['Integration', 'Every message between Dodona and your neocloud, shaped like the webhooks a real integration would use.'],
@@ -226,8 +226,8 @@ export function whatIfSummary(all, avg) {
   const caps = contracts.filter(c => c.kind === 'cap'), floors = contracts.filter(c => c.kind === 'floor');
   const sum = (items, key) => items.reduce((total, c) => total + providerPayoff(c, avg)[key], 0);
   const capNet = sum(caps, 'net'), floorNet = sum(floors, 'net');
-  const capNote = !caps.length ? 'No caps sold.' : caps.some(c => avg > c.strike) ? 'Above a strike: you give up the excess over it.' : 'Below every strike: you keep the full premium.';
-  const floorNote = !floors.length ? 'No floors bought.' : floors.some(c => avg < c.strike) ? 'Below a strike: the floor pays the shortfall.' : 'Above every strike: the floor pays nothing.';
+  const capNote = !caps.length ? 'No caps sold.' : caps.some(c => avg > c.strike) ? 'Above a strike you give up the excess over it.' : 'Below every strike you keep the full premium.';
+  const floorNote = !floors.length ? 'No floors bought.' : floors.some(c => avg < c.strike) ? 'Below a strike the floor pays the shortfall.' : 'Above every strike the floor pays nothing.';
   const cell = (label, value, note) => `<div><dt>${escapeHtml(label)}</dt><dd class="${toneOf(value)}">${signedMoney(value)}</dd><p class="p-note">${escapeHtml(note)}</p></div>`;
   return `<dl class="p-whatif-dl">
     ${cell('Caps sold, net of premium', capNet, capNote)}

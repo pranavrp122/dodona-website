@@ -56,13 +56,13 @@
     <section class="c-ctr g-sec" id="flow" aria-labelledby="g-flow">
       <h2 id="g-flow">The life of one order</h2>
       <ol class="g-flow">
-        <li><span class="g-dir">Dodona to you</span><span><code>reservation.requested</code>: a buyer has paid. Please hold this many GPUs of this type, in this region, for this window.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>reservation.requested</code> means a buyer has paid. Please hold this many GPUs of this type, in this region, for this window.</span></li>
         <li><span class="g-dir">You to Dodona</span><span><code>reservation.confirmed</code> or <code>reservation.declined</code>. Confirming keeps the hold; declining releases it and the buyer is refunded through the escrow agent.</span></li>
-        <li><span class="g-dir">You to Dodona</span><span><code>delivery.started</code>: the window has opened and you have handed the GPUs to the buyer (or to whoever bought the hours from them).</span></li>
-        <li><span class="g-dir">You to Dodona</span><span><code>usage.reported</code>, once a day: how many GPU-hours were delivered. For a full day that is GPUs × 24 hours.</span></li>
-        <li><span class="g-dir">Dodona to you</span><span><code>settlement.computed</code>: the window has ended (Dodona notes <code>window.closed</code> internally) and the result is worked out on the window average of the daily index.</span></li>
-        <li><span class="g-dir">Dodona to you</span><span><code>invoice.issued</code>: the compute bill for the hours, at the price the contract says.</span></li>
-        <li><span class="g-dir">Dodona to you</span><span><code>payout.issued</code>: money released to you by the escrow agent, such as your premium share or the compute bill.</span></li>
+        <li><span class="g-dir">You to Dodona</span><span><code>delivery.started</code> means the window has opened and you have handed the GPUs to the buyer (or to whoever bought the hours from them).</span></li>
+        <li><span class="g-dir">You to Dodona</span><span><code>usage.reported</code> says how many GPU-hours were delivered, once a day. For a full day that is GPUs × 24 hours.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>settlement.computed</code> means the window has ended (Dodona notes <code>window.closed</code> internally) and the result is worked out on the window average of the daily index.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>invoice.issued</code> carries the compute bill for the hours, at the price the contract says.</span></li>
+        <li><span class="g-dir">Dodona to you</span><span><code>payout.issued</code> confirms money released to you by the escrow agent, such as your premium share or the compute bill.</span></li>
       </ol>
       <p class="fine">If the holder resells the hours before the window, Dodona handles the listing and bids itself (<code>listing.created</code>, <code>bid.received</code>) and sends you <code>resale.completed</code> with the new buyer. You deliver to them the same way; nothing else changes for you.</p>
     </section>
@@ -136,7 +136,7 @@
     "netResult": 860.16
   }
 }</code></pre>
-      <p>Here the average (2.62) ended above the cap (2.40), so the buyer is billed at the cap: 21,504 GPU-hours × $2.40 = $51,609.60, and saves $4,730.88 against the average.</p>
+      <p>Here the average (2.62) ended above the cap (2.40), so the buyer is billed at the cap, 21,504 GPU-hours × $2.40 = $51,609.60, and saves $4,730.88 against the average.</p>
 
       <h3>invoice.issued and payout.issued (Dodona to you)</h3>
       <pre><code>{ "orderRef": "DOD-7Q4K2M", "amount": 51609.6, "billedTo": "holder", "dueAt": "2026-12-01T00:00:00.000Z", "through": "the escrow agent" }
@@ -158,7 +158,7 @@
 
     <section class="c-ctr g-sec" id="settlement" aria-labelledby="g-settle">
       <h2 id="g-settle">How settlement on the window average works</h2>
-      <p>Every contract settles on one number: the <b>average of the daily index over the delivery window</b>. A single expensive day cannot swing the result; the whole window counts. Index data is demonstration only.</p>
+      <p>Every contract settles on one number, the <b>average of the daily index over the delivery window</b>. A single expensive day cannot swing the result; the whole window counts. Index data is demonstration only.</p>
       <dl class="g-math">
         <div><dt>Cap</dt><dd>The buyer pays the lower of the window average and the cap, per GPU-hour. That is your compute bill. If the average ends above the cap, the buyer saves the difference; as the seller of the cap you were paid a premium up front for giving that up.</dd></div>
         <div><dt>Floor</dt><dd>If the window average ends below the floor, the holder receives the difference per GPU-hour from the matched buyer pool. Neoclouds usually buy floors to protect income on idle capacity.</dd></div>
@@ -166,7 +166,7 @@
       </dl>
       <h3>Who gets paid what</h3>
       <ul>
-        <li>Premiums split at payment: 85% to the neocloud, 15% to Dodona as the platform fee.</li>
+        <li>Premiums split at payment, 85% to the neocloud and 15% to Dodona as the platform fee.</li>
         <li>Compute bills are invoiced at settlement and paid one day later.</li>
         <li>Everything moves through the escrow agent. Dodona never holds funds.</li>
       </ul>

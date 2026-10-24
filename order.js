@@ -29,7 +29,7 @@ function timeline(order) {
     declined: '<p class="p-err p-exit">The neocloud declined the reservation. The payment is returned through the escrow agent.</p>',
   };
   $('od-exit').innerHTML = exits[order.status] || '';
-  $('od-tl-note').textContent = order.status === 'reserving' ? 'Waiting for the neocloud to confirm the capacity hold.' : `Now: ${statusName(order.status)}.`;
+  $('od-tl-note').textContent = order.status === 'reserving' ? 'Waiting for the neocloud to confirm the capacity hold.' : `Currently ${statusName(order.status).toLowerCase()}.`;
 }
 
 function terms(order) {
@@ -109,7 +109,7 @@ function settlement(s, order) {
     [floor ? 'Floor payout' : lock ? 'Saving against the window average' : 'Saving from the cap', signedMoney(payout), floor ? 'From the matched buyer pool' : lock ? 'Negative when the average ends below the fixed price' : 'Never below zero'],
     ...(resold ? [['Resale proceeds', signedMoney(s.resaleProceeds), 'Bid minus the price you would have paid, × hours']] : []),
     ['Fee paid', money(-(s.premiumPaid ?? 0)), lock ? 'No premium on a fixed price' : 'Premium paid at checkout'],
-    ['Net result', signedMoney(s.netResult), s.netResult < 0 ? 'Below zero: the protection cost more than it returned this time' : '', 'is-total', tone(s.netResult)],
+    ['Net result', signedMoney(s.netResult), s.netResult < 0 ? 'Below zero, so the protection cost more than it returned this time' : '', 'is-total', tone(s.netResult)],
   ]);
 }
 

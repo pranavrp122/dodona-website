@@ -118,8 +118,8 @@ function renderOverview() {
   $('p-pending').textContent = String(state.orders.incoming.length || o.pending);
   const auto = autoConfirm();
   $('p-pending-note').textContent = auto
-    ? 'Auto-confirm is on: requests confirm automatically within the hour.'
-    : 'Auto-confirm is off: each request waits for your Confirm or Decline.';
+    ? 'Auto-confirm is on, so requests confirm automatically within the hour.'
+    : 'Auto-confirm is off, so each request waits for your Confirm or Decline.';
   const cloud = o.neocloud || state.account.neocloud || {};
   const regions = [...new Set(o.capacity.map(c => c.region).filter(Boolean))].join(', ') || '—';
   const total = o.capacity.reduce((sum, c) => sum + c.total, 0);
@@ -233,7 +233,7 @@ async function onDecision(button) {
   if (act === 'decline' && !armed(button, 'Click again to decline')) return;
   await busy(button, async () => {
     await api(`/api/provider/orders/${encodeURIComponent(ref)}/${act}`, { method: 'POST', body: {} });
-    toast(act === 'confirm' ? `${ref} confirmed: the capacity is held and Dodona was told.` : `${ref} declined: the capacity is released and the buyer is refunded through escrow.`);
+    toast(act === 'confirm' ? `${ref} confirmed. The capacity is held and Dodona was told.` : `${ref} declined. The capacity is released and the buyer is refunded through escrow.`);
     await loadAll();
   });
 }
@@ -312,7 +312,7 @@ async function onSubmit(event) {
 async function onChange(event) {
   if (event.target.id !== 'p-auto') return;
   const on = event.target.checked;
-  try { await saveSettings({ autoConfirm: on }, on ? 'Auto-confirm on.' : 'Auto-confirm off: new requests wait in Orders.'); }
+  try { await saveSettings({ autoConfirm: on }, on ? 'Auto-confirm on.' : 'Auto-confirm off. New requests wait in Orders.'); }
   catch (error) { event.target.checked = !on; toast(error.message); }
 }
 

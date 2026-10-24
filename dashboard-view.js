@@ -9,7 +9,7 @@ export const PLACEHOLDER_PREMIUM = 0.1;
 export const LTV_WATCH = 0.6;
 export const LTV_BREACH = 0.75;
 export const HOURS_PER_MONTH = 720;
-export const FOOTER_LINE = 'Index data: Ornn daily index, demonstration only; not licensed for commercial valuation. Dodona Value is an estimate, not an appraisal, offer or advice.';
+export const FOOTER_LINE = 'Index data comes from the Ornn daily index, demonstration only; not licensed for commercial valuation. Dodona Value is an estimate, not an appraisal, offer or advice.';
 export const BANNER_LINE = 'Demo account · sample data · nothing here is a live price, order or account';
 
 const DAY_MS = 86400000;

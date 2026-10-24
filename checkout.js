@@ -329,7 +329,7 @@ function renderWindow(w) {
   const has = w.start !== undefined;
   $("co-dur").textContent = has && w.end > w.start ? `${w.hours.toLocaleString("en-US")} h` : "—";
   $("co-win-local").textContent = has ? `${fmtLong(w.start, w.tz)} → ${fmtLong(w.end, w.tz)}` : "";
-  $("co-win-utc").textContent = has ? "UTC " + fmtUtcRange(w.start, w.end) + (w.shifted ? " · clock change: moved to the next real hour" : "") : "";
+  $("co-win-utc").textContent = has ? "UTC " + fmtUtcRange(w.start, w.end) + (w.shifted ? " · moved to the next real hour for the clock change" : "") : "";
   const err = $("co-error");
   err.hidden = w.ok; err.textContent = w.ok ? "" : w.msg;
   markInvalid(["co-start-d", "co-start-h"], !w.ok && w.field === "start");
@@ -363,7 +363,7 @@ function renderHow(q, result) {
   setText("co-h-fwd", perHour(round2(d.forward)) + ` (index today ${usd2(d.spot)})`);
   setText("co-h-vol", `${(d.vol * 100).toFixed(0)}% a year, ${d.volSampling}-sampled and annualised, from the Ornn ${q.g} series`);
   setText("co-h-win", `${q.w.hours.toLocaleString("en-US")} h, starting in ${startsIn.toFixed(1)} days · averaging time ${(d.tEffYears * 365).toFixed(1)} days`);
-  setText("co-h-method", result.offline ? "Indicative (offline): simple volatility formula" : (d.type === "lock" ? "Forward plus a 2% provider margin" : "Black-76 on the forward, average-price adjusted") + ` · ${d.method}`);
+  setText("co-h-method", result.offline ? "Indicative (offline) · simple volatility formula" : (d.type === "lock" ? "Forward plus a 2% provider margin" : "Black-76 on the forward, average-price adjusted") + ` · ${d.method}`);
   setText("co-h-asof", fmtDay(d.asOf) + (Number.isFinite(d.computeMs) ? ` · priced in ${d.computeMs < 10 ? d.computeMs.toFixed(1) : Math.round(d.computeMs)} ms` : ""));
 }
 
@@ -389,7 +389,7 @@ function renderQuote() {
   $("co-q-compute").textContent = d ? usd2(d.costIfUsed) : wait;
   $("co-q-be").textContent = d && d.breakEven != null ? perHour(d.breakEven) : wait;
   $("co-q-total").textContent = d ? usd2(round2(d.payNow + d.costIfUsed)) : wait;
-  $("co-q-source").textContent = d ? (result.offline ? "Indicative (offline): the pricing service did not answer." : "Priced by Dodona pricing v0 on the Ornn daily index." + (cap ? " Hours are billed at the lower of the window’s average index price and the cap." : "")) : q.ok ? "Pricing…" : "";
+  $("co-q-source").textContent = d ? (result.offline ? "Indicative price. The pricing service did not answer." : "Priced by Dodona pricing v0 on the Ornn daily index." + (cap ? " Hours are billed at the lower of the window’s average index price and the cap." : "")) : q.ok ? "Pricing…" : "";
   $("co-q-source").classList.toggle("co-offline", Boolean(d && result.offline));
   $("co-fee-tag").hidden = !d || result.offline;
   renderHow(q, result);

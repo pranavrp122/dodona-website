@@ -165,13 +165,13 @@ function howComputed(p) {
   const put = p.kind === 'put';
   const timeValue = p.valuation.timeValue == null
     ? 'Time value (the chance it moves further before the window) is added once the pricing engine is connected; it is not included here.'
-    : `Plus time value from the pricing engine: ${v.usd(p.valuation.timeValue)}.`;
+    : `The pricing engine adds ${v.usd(p.valuation.timeValue)} of time value.`;
   const step3 = option
     ? `A ${put ? 'price floor' : 'price cap'} settles on the average daily index over its window, never on one day's print. Its value is how far the expected window average sits ${put ? 'below the floor' : 'above the cap'}, times the hours, discounted: max(${put ? `${v.perHour(p.pricePerGpuHour)} − Ā × basis` : `Ā × basis − ${v.perHour(p.pricePerGpuHour)}`}, 0) × hours × discount. Before the window Ā is the forward at mid-window; during it, the average printed so far blended by days with the forward for the rest. ${timeValue} The premium you paid is already spent and is not counted.`
     : 'Multiply the hours by the gap between that forward and your contract price, month by month.';
   return `<details class="d-how"><summary>How this value is computed</summary><ol>
-    <li>Take the GPU-hours you still have: ${esc(v.hoursText(p.valuation.remainingHours))}.</li>
-    <li>Estimate the market price for those hours: the Ornn index today (${esc(v.perHour(p.valuation.spot))}), grown at half its recent trend to the window, times the region and hardware basis.</li>
+    <li>Take the ${esc(v.hoursText(p.valuation.remainingHours))} you still have.</li>
+    <li>Estimate the market price for those hours from the Ornn index today (${esc(v.perHour(p.valuation.spot))}), grown at half its recent trend to the window, times the region and hardware basis.</li>
     <li>${esc(step3)}</li>
     <li>Discount at 5% a year, and for the chance the provider does not deliver (zero for delivery-backed contracts).</li>
     ${option ? '' : '<li>Cents on the dollar = 100 + value ÷ remaining contract cost × 100. Above 100 means you pay less than the market.</li>'}
@@ -228,7 +228,7 @@ function counterForm(p) {
   return `<form class="d-form" id="d-offer-form" novalidate><div class="field"><label for="d-counter">Counter-offer, cents on the dollar</label>
     <input id="d-counter" type="number" inputmode="decimal" required min="50" max="150" step="0.5" value="${esc(Math.round((p.bestOfferCents + p.askingCents) / 2))}"></div>
     <button type="submit" class="btn btn-sm btn-primary">${v.icon('message-square')}<span>Send counter-offer</span></button>
-    <p class="fine">Best offer today: ${esc(p.bestOfferCents)}¢ against your ask of ${esc(p.askingCents)}¢. Both sides stay anonymous until agreed.</p></form>`;
+    <p class="fine">The best offer today is ${esc(p.bestOfferCents)}¢ against your ask of ${esc(p.askingCents)}¢. Both sides stay anonymous until agreed.</p></form>`;
 }
 
 // Same button set as the row: one primary, the rest outlined, a third and later under "More".
@@ -399,7 +399,7 @@ async function renderProvider() {
       <div class="d-pick"><span>Cap price</span>${seg('cap', [[1, chip(index, 1, "Today's index")], [1.1, chip(index, 1.1, '+10%')], [1.2, chip(index, 1.2, '+20%')]])}</div>
       <p class="fine">${pv.units.toLocaleString('en-US')} ${esc(pv.gpu)} ${esc(pv.config)} in ${esc(pv.region)} · ${v.percent(pv.utilisation)} utilised · Ornn ${esc(pv.gpu)} index ${esc(v.perHour(index))}/GPU-h. Window ${esc(v.utcStamp(win.start))} to ${esc(v.utcStamp(win.end))}.</p>
       ${scenarioTable(rows)}
-      <p class="fine">With the cap: premium income plus either the market rental (cap unused) or the whole block at the cap price (cap used).</p>
+      <p class="fine">With the cap, income is the premium plus either the market rental (cap unused) or the whole block at the cap price (cap used).</p>
     </div></section>
     <div class="c-stack">
       <div class="d-result"><p class="eyebrow">Premium income, paid now ${v.tag('model')}</p><strong>${esc(v.dollars(capQuote.premium * gpuHours))}</strong>
@@ -594,7 +594,7 @@ async function apiAction(run, message, after = {}) {
 function confirmExercise(p) {
   const mode = state.exercise;
   if (p.orderRef) {
-    apiAction(() => plat.chooseDelivery(p.orderRef, mode), mode === 'deliver' ? `${p.id}: you will use the hours. The neocloud provisions the cluster for the window.` : `${p.id}: you will resell the hours. Set an asking price to list them.`, mode === 'resell' ? { listing: true } : {});
+    apiAction(() => plat.chooseDelivery(p.orderRef, mode), mode === 'deliver' ? `You will use the hours on ${p.id}. The neocloud provisions the cluster for the window.` : `You will resell the hours on ${p.id}. Set an asking price to list them.`, mode === 'resell' ? { listing: true } : {});
     return;
   }
   const ex = v.exerciseQuote(p, p.valuation.spot);
@@ -615,7 +615,7 @@ function runScenario(id) {
     renderAlerts();
   }
   renderSettings();
-  toast(id === 'stale' ? (state.stale ? 'Scenario on: quotes paused until the index updates.' : 'Scenario off: quotes resume.') : (state.shortfall ? 'Scenario on: delivery shortfall on H3.' : 'Scenario off: delivery shortfall cleared.'));
+  toast(id === 'stale' ? (state.stale ? 'Stale index scenario on. Quotes pause until the index updates.' : 'Stale index scenario off. Quotes resume.') : (state.shortfall ? 'Delivery shortfall scenario on for H3.' : 'Delivery shortfall cleared.'));
 }
 
 // Row and panel actions open the split panel on that position first.
@@ -781,7 +781,7 @@ async function start() {
     state.data = await plat.loadPortfolio();
     state.details = await plat.orderDetails(state.data.positions);
   } catch (error) {
-    toast(`Values could not be loaded: ${error.message}`);
+    toast(`Values could not be loaded. ${error.message}`);
     return;
   }
   state.selected = firstSelection();

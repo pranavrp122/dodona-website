@@ -142,6 +142,88 @@ test('tour steps only mention the demo in the demo-clock steps', () => {
   assert.ok(checked > 20, 'every tour was read');
 });
 
+/* ---------- colons: prose never introduces an explanation or a list with "word: " ---------- */
+
+const PROSE_TAGS = /<(p|h[1-3]|li|figcaption|dd|summary)\b[^>]*>([\s\S]*?)<\/\1>/gi;
+const NOT_PROSE = [/\b\d{1,2}:\d{2}\b/g, /\b[a-z][\w+.-]*:\/\/\S+/gi];
+const CLIENT_SOURCES = ['dashboard.js', 'dashboard-view.js', 'dashboard-platform.js', 'dashboard-charts.js', 'provider.js', 'provider-view.js', 'admin.js', 'admin-view.js',
+  'platform-shell.js', 'platform-checkout.js', 'order.js', 'orders.js', 'offers.js', 'sign-in.js', 'checkout.js', 'market.js', 'lib/portfolio.mjs', 'lib/outbox.mjs', 'lib/orders.mjs'];
+
+const proseColon = text => NOT_PROSE.reduce((t, pattern) => t.replace(pattern, ''), text).match(/\S{0,40}:\s\S{0,40}/)?.[0];
+
+// Every prose colon in [where, text] pairs, so one failing run lists them all.
+const colonHits = pairs => pairs.map(([where, text]) => [where, proseColon(text)]).filter(([, hit]) => hit).map(([where, hit]) => `${where}: …${hit}…`);
+
+// Prose elements of a page, minus code, the demo clock and the demo-accounts box (its password row is a key and value).
+function proseBlocks(html) {
+  let out = html.replace(/<!--[\s\S]*?-->/g, '').replace(/<(script|style|svg|code|pre)\b[\s\S]*?<\/\1>/gi, ' ');
+  out = stripAllowed(out.replace(/<footer\b/gi, '<div data-footer')).replace(/data-footer/g, '');
+  return [...out.matchAll(PROSE_TAGS)].map(m => m[2].replace(/<[^>]+>/g, '').replace(/&[a-z#0-9]+;/gi, ' ').replace(/\s+/g, ' ').trim());
+}
+
+// String literals on lines of client code that show a toast or render prose: `${…}` holes read as a word.
+function sourceStrings(file, text) {
+  const out = [];
+  text.split(/\r?\n/).forEach((line, i) => {
+    if (/^\s*(\/\/|\*|\/\*)/.test(line)) return;
+    for (const m of line.matchAll(/(['"`])((?:(?!\1)[^\\]|\\.)*?)\1/g)) {
+      const s = m[2].replace(/\$\{[^}]*\}/g, 'X');
+      if (!/[A-Za-z]{3}/.test(s) || s.includes('${') || line.includes('p-clock')) continue;
+      const isToast = /toast\(|data-toast=/.test(line);
+      const isSentence = /^[A-Z<]/.test(s) && /\.(<\/[a-z]+>)?$/.test(s) && / /.test(s);
+      if (isToast || isSentence) out.push([`${file}:${i + 1}`, s]);
+    }
+  });
+  return out;
+}
+
+test('prose on every served page uses no colon to introduce an explanation or a list', async t => {
+  const f = await setup(t);
+  const buyer = await f.as(BUYER);
+  const [first] = (await buyer.get('/api/orders')).data.orders;
+  const reads = [...SIGNED_OUT_PAGES.map(path => [f.anonymous, path]), ...['/dashboard', '/offers', '/orders', '/checkout', `/orders/${first.ref}`].map(path => [buyer, path]),
+    [await f.as(LENDER), '/dashboard'], [await f.as(PROVIDER), '/provider'], [await f.as(ADMIN), '/admin']];
+  const pairs = [];
+  for (const [client, path] of reads) {
+    const response = await client.get(path);
+    assert.equal(response.status, 200, path);
+    pairs.push(...proseBlocks(response.data).map(block => [path, block]));
+  }
+  assert.deepEqual(colonHits(pairs), []);
+});
+
+test('email subjects and bodies for the seeded accounts read without prose colons', async t => {
+  const f = await setup(t);
+  const buyer = await f.as(BUYER);
+  await buyAndList(buyer);
+  // Statement lines such as "Compute bill: $1,234.00" are a key and its value, not prose.
+  const keyValue = line => /^[A-Z][A-Za-z ,'()-]{0,60}: \S/.test(line) && !/\. /.test(line);
+  const pairs = [];
+  for (const email of [BUYER, PROVIDER]) {
+    const { emails } = (await (await f.as(email)).get('/api/emails')).data;
+    assert.ok(emails.length, `${email} has emails`);
+    for (const { subject, body } of emails) {
+      pairs.push([`${email} subject`, subject], ...body.split('\n').filter(line => !keyValue(line)).map(line => [`${email}: ${subject}`, line]));
+    }
+  }
+  assert.deepEqual(colonHits(pairs), []);
+});
+
+test('toasts, rendered sentences and tour step bodies use no prose colons', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const pairs = [];
+  for (const file of CLIENT_SOURCES) pairs.push(...sourceStrings(file, await readFile(new URL(`../${file}`, import.meta.url), 'utf8')));
+  for (const [name, steps] of Object.entries(tours)) if (Array.isArray(steps)) for (const step of steps) pairs.push([`${name}: ${step.title}`, step.body || '']);
+  assert.ok(pairs.length > 200, 'the sources were read');
+  assert.deepEqual(colonHits(pairs), []);
+});
+
+test('the colon check flags an explanation colon and skips times, URLs and code', () => {
+  assert.ok(proseColon('Three things matter: price, window and strike.'));
+  assert.equal(proseColon('Starts 14:00 UTC at https://dodona.markets/docs.'), undefined);
+  assert.deepEqual(proseBlocks('<p>Send it in the <code>Authorization: Bearer</code> header.</p>'), ['Send it in the header.']);
+});
+
 test('the copy check catches a banned word outside a disclaimer and ignores one inside', () => {
   assert.throws(() => assertClean(visibleText('<main><p>Your mock neocloud</p></main>'), 'probe'));
   assert.throws(() => assertClean(visibleText('<meta name="description" content="Demo console">'), 'probe'));

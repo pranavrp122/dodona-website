@@ -168,7 +168,7 @@ export function clockCard(a, confirming) {
       <div><dt>Demo date</dt><dd>${esc(stamp(a.demoNow))}</dd></div>
       <div><dt>Scenario</dt><dd>${esc(label(a.scenario || 'market'))}</dd></div>
     </dl>
-    <div class="c-ctr-b a-clock-acts"><p class="fine">Reset reseeds this account: orders, index prints, emails and its demo clock go back to the starting state. Notes stay.</p>${reset}</div>`;
+    <div class="c-ctr-b a-clock-acts"><p class="fine">Reset puts this account's orders, index prints, emails and demo clock back to the starting state. Notes stay.</p>${reset}</div>`;
 }
 
 export function capacityTable(n) {
@@ -234,12 +234,12 @@ function syncSteps(s) {
     body: `<ol class="a-steps">
         <li>Create a Supabase project at supabase.com, or open the one the signup form already uses.</li>
         <li>Open the SQL editor, paste the file <code>supabase/demo-crm.sql</code> from this repository and run it. It creates six tables with row level security on and no public access.</li>
-        <li>In the project's API settings, copy the project URL and the service role key. The key is a server secret: never share it or put it in a browser.</li>
+        <li>In the project's API settings, copy the project URL and the service role key. The key is a server secret, so never share it or put it in a browser.</li>
         <li>Add three lines to the server's environment: <code>SUPABASE_URL</code>, <code>SUPABASE_SERVICE_ROLE_KEY</code> and <code>DEMO_SUPABASE_MIRROR=1</code>.</li>
         <li>On the live site the demo platform also needs <code>DEMO_PLATFORM=1</code> and <code>DEMO_SEED_PASSWORD</code> (12 characters or more), which becomes the password of the seeded demo logins.</li>
         <li>Restart the server. This panel then shows "Mirroring", and Supabase's Table editor shows the demo accounts within a minute.</li>
       </ol>
-      ${s.missing?.length ? `<p class="fine c-ctr-foot">Missing now: ${s.missing.map(m => `<code>${esc(m)}</code>`).join(', ')}.</p>` : ''}
+      ${s.missing?.length ? `<p class="fine c-ctr-foot">Still missing ${s.missing.map(m => `<code>${esc(m)}</code>`).join(', ')}.</p>` : ''}
       ${s.invalid ? `<p class="fine c-ctr-foot is-loss">${esc(s.invalid)}</p>` : ''}`,
   });
 }

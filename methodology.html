@@ -26,10 +26,10 @@
     <h2 id="inputs">Inputs</h2>
     <dl class="mt-terms">
       <div><dt>Price index</dt><dd>The Ornn daily GPU rental index, about 90 days of daily points per GPU. Used here for demonstration only; not licensed for commercial valuation.</dd></div>
-      <div><dt>Forward price</dt><dd>Today's index grown at a drift: the average daily log return, annualised, clamped to ±30% and halved, because 90 days is weak evidence of a trend.</dd></div>
-      <div><dt>Volatility</dt><dd>Sampled weekly: every 7th index point back from the latest, log returns between them, annualised with √52. The daily index mean-reverts, so daily returns would overstate term risk.</dd></div>
+      <div><dt>Forward price</dt><dd>Today's index grown at a drift, which is the average daily log return, annualised, clamped to ±30% and halved, because 90 days is weak evidence of a trend.</dd></div>
+      <div><dt>Volatility</dt><dd>Sampled weekly, taking every 7th index point back from the latest and the log returns between them, annualised with √52. The daily index mean-reverts, so daily returns would overstate term risk.</dd></div>
       <div><dt>Basis</dt><dd>A multiplier for region (US East 1.00, US West 1.00, Europe 1.04) and hardware configuration (SXM with InfiniBand 1.00, PCIe 0.85). These are placeholders, not fitted values.</dd></div>
-      <div><dt>Provider credit</dt><dd>From the provider's bond price: spread = (100 − price in cents) / 100 × 0.5 a year, hazard = spread / (1 − 40% recovery).</dd></div>
+      <div><dt>Provider credit</dt><dd>Worked out from the provider's bond price, where spread = (100 − price in cents) / 100 × 0.5 a year and hazard = spread / (1 − 40% recovery).</dd></div>
       <div><dt>Discount rate</dt><dd>5% a year, continuously compounded.</dd></div>
     </dl>
 
@@ -42,7 +42,7 @@ Q_m   = e^(−h·t_m)                     provider survival
 V     = Σ_m H_m · (F(t_m)·b − K) · D_m · Q_m</code></pre>
     <p>K is the contract price per GPU-hour. When the holder can cancel, each monthly term is floored at zero, because the holder walks away when the market is below K. The range shown beside a value recomputes V with the forward scaled down and up by e<sup>σ√t</sup> at the middle of the remaining window.</p>
     <p><strong>Cents on the dollar</strong> is (C + V) / C × 100, where C = Σ H<sub>m</sub> · K is the cost still owed. Above 100 means the locked price beats the market. The 90-day history repeats the calculation on each past index date with that day's index, holding volatility and drift at today's values.</p>
-    <p>Lender marks on GPU fleets use the income approach: rent at today's index × 24 × 30 hours × utilisation for each month of useful life left (48 months by default), discounted, plus a 10% residual. Loan-to-value is watched at 60% and flagged at 75%.</p>
+    <p>Lender marks on GPU fleets use the income approach. Rent at today's index × 24 × 30 hours × utilisation for each month of useful life left (48 months by default), discounted, plus a 10% residual. Loan-to-value is watched at 60% and flagged at 75%.</p>
 
     <h2 id="caps">How caps are priced</h2>
     <p>A price cap is a call on the GPU-hour price over a window. The fee is priced with Black-76 on the forward for the window, with an adjustment for paying the average price over the window rather than a single day's price.</p>
@@ -54,7 +54,7 @@ d2    = d1 − σ·√t_eff
 Call  = e^(−r·t_end) · [F·N(d1) − K·N(d2)],   r = 5%
 Floor = Call − e^(−r·t_end) · (F − K)       put-call parity</code></pre>
     <p>The fee per GPU-hour is rounded up to the cent, with a one-cent minimum. A fixed price (a lock) is the forward plus a 2% provider margin, with no fee. The quote also shows a $2 booking fee, the most you would pay if you use the hours (cap price × hours) and the window average above which the cap pays off (cap price + fee). Dodona's platform fee is 15% of the cap fee and is shown inside it. Volatility and drift come from the same series and the same steps as Dodona Value, so a quote and a valuation agree on the market.</p>
-    <p>Public pages show the Ornn index and the status of compute futures only. Inside the signed-in dashboard, a market strip also shows what Kalshi's public prices imply for the monthly average B200 and H100 price, in three views: a bracket from bids and asks at 50 cents, a median from quotes with a bid-ask spread of 20 cents or less, and a median from last trades with their trade date. Each view reads an "above $X" price as the chance the month settles above X, keeps that chance from rising with X, and interpolates where it crosses 50%. The figures are fetched live, held in memory for ten minutes, never stored, and not used in any value or quote.</p>
+    <p>Public pages show the Ornn index and the status of compute futures only. Inside the signed-in dashboard, a market strip also shows what Kalshi's public prices imply for the monthly average B200 and H100 price in three views. One is a bracket from bids and asks at 50 cents, another a median from quotes with a bid-ask spread of 20 cents or less, and the third a median from last trades with their trade date. Each view reads an "above $X" price as the chance the month settles above X, keeps that chance from rising with X, and interpolates where it crosses 50%. The figures are fetched live, held in memory for ten minutes, never stored, and not used in any value or quote.</p>
     <h2 id="versioning">Versioning</h2>
     <p>Each number states its method version (today <code>v0.1-test</code> for values and <code>black76-asian-v0</code> for caps) and the index as-of date. Before launch, each published number will also carry a hash of its inputs, so the same inputs always reproduce the same number. Method changes get a new version and are announced on this page before they apply. Past numbers are not restated silently.</p>
 
@@ -74,6 +74,6 @@ Floor = Call − e^(−r·t_end) · (F − K)       put-call parity</code></pre>
     <h2 id="contact">Contact</h2>
     <p>Questions about the method, or a number that looks wrong? <a href="/contact">Send us a message</a>. <!-- ABOUT_CONTACT --></p>
   </main>
-  <footer><div class="wrap footer-grid"><p>Index data: Ornn daily index, demonstration only; not licensed for commercial valuation. Dodona Value is an estimate, not an appraisal, offer or advice. Dodona never holds funds.</p><div class="footer-links"><a href="/dashboard">Dashboard</a><a href="/">Back to Dodona</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+  <footer><div class="wrap footer-grid"><p>Index data comes from the Ornn daily index, demonstration only; not licensed for commercial valuation. Dodona Value is an estimate, not an appraisal, offer or advice. Dodona never holds funds.</p><div class="footer-links"><a href="/dashboard">Dashboard</a><a href="/">Back to Dodona</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
 </body>
 </html>
