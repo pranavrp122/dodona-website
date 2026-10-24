@@ -1,5 +1,7 @@
-/** Demo platform shell shared by the console pages: same-origin JSON API calls, toasts, the account menu, the phone "More" sheet and the demo clock. */
+/** Demo platform shell shared by the console pages: same-origin JSON API calls, toasts, the Help menu and guided tour, the account menu, the phone "More" sheet and the demo clock. */
 import { escapeHtml as esc, icon, shortDate, pill } from '/dashboard-view.js';
+import { startTour, tourDot } from '/tour.js';
+import { tourFor, tourName } from '/tour-steps.js';
 
 export const SCENARIOS = [['market', 'Market · follows the fitted trend'], ['rise', 'Rise · +35% over 60 days'], ['fall', 'Fall · −25% over 60 days'], ['spike', 'Spike · +60% in 10 days, then back'], ['flat', 'Flat · no drift']];
 const ROLE_TEXT = { buyer: 'Buys compute', lender: 'Lends or insures', provider: 'Provides compute', admin: 'Admin' };
@@ -154,6 +156,27 @@ function mountAccount(account) {
     </div>`;
 }
 
+/* ---------- Help menu: the page's guided tour and a link or two ---------- */
+let helpTour = null;
+
+function mountHelp(account) {
+  const box = $('p-tour');
+  helpTour = box ? tourFor(tourName(location.pathname, account.role), account) : null;
+  if (!helpTour) return;
+  const links = helpTour.links.map(([href, iconName, label]) => `<a class="c-menu-item" href="${esc(href)}">${icon(iconName)}<span>${esc(label)}</span></a>`).join('');
+  box.innerHTML = `<button type="button" class="c-top-btn p-tour-btn" id="p-tour-btn" data-pop="p-tour-pop" aria-expanded="false" aria-controls="p-tour-pop" aria-label="Help">${icon('circle-help')}<span class="p-tour-lbl">Help</span></button>
+    <div class="p-pop p-pop-tour" id="p-tour-pop" hidden>
+      <button type="button" class="c-menu-item" data-shell="tour">${icon('circle-play')}<span>Take the tour</span></button>${links}
+    </div>`;
+  const dot = tourDot(helpTour.key);
+  if (dot) $('p-tour-btn').append(dot);
+  box.hidden = false;
+}
+
+function runTour() {
+  if (helpTour) startTour(helpTour.steps, { key: helpTour.key, opener: $('p-tour-btn') });
+}
+
 export async function signOut() {
   try { await api('/api/auth/sign-out', { method: 'POST', body: {} }); } catch { /* the cookie may already be gone; go to sign-in anyway */ }
   location.assign('/sign-in');
@@ -260,7 +283,8 @@ function wirePops() {
       return;
     }
     if (event.target.closest('[data-shell="sign-out"]')) { signOut(); return; }
-    if (!event.target.closest('.p-pop')) closePops();
+    if (event.target.closest('[data-shell="tour"]')) { closePops(); runTour(); return; }
+    if (!event.target.closest('.p-pop') || event.target.closest('.p-pop a')) closePops();
   });
   document.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
@@ -282,12 +306,13 @@ export function wireNavMore() {
 }
 
 /**
- * Fills the top bar for a signed-in account: account chip with sign-out, and the demo clock.
+ * Fills the top bar for a signed-in account: the Help menu, account chip with sign-out, and the demo clock.
  * `onChange(account)` runs after every clock move so the page can reload its data.
  */
 export function mountShell(account, { onChange } = {}) {
   wirePops();
   wireNavMore();
+  mountHelp(account);
   mountAccount(account);
   mountClock(account, onChange);
 }

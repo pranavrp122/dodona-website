@@ -24,17 +24,19 @@
   <script src="/checkout.js" defer></script>
   <link rel="stylesheet" href="/market.css">
   <script src="/market.js" defer></script>
+  <link rel="stylesheet" href="/tour.css">
+  <script type="module" src="/tour.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="nav"><div class="wrap nav-inner">
     <a class="logo" href="#top" aria-label="Dodona home">DODONA<span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
-    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#flexibility">Selling</a><a href="#faq">FAQ</a></nav>
+    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#flexibility">Selling</a><a href="#faq">FAQ</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
     <a class="btn btn-ink btn-sm nav-cta" href="#early-access">Join early access <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
   </div></header>
   <main id="main">
     <section class="hero" id="top" aria-labelledby="hero-title"><div class="wrap hero-grid">
-      <div class="hero-copy">
+      <div class="hero-copy" data-tour="promise">
         <p class="status-pill"><span aria-hidden="true"></span> In development</p>
         <h1 id="hero-title">Protect your <em>compute budget.</em></h1>
         <p class="lede">A higher GPU bill shouldn’t derail your next run. Pay to lock in a rental price, then decide whether to use it. If prices fall, you can rent elsewhere instead.</p>
@@ -68,7 +70,7 @@
         <p class="visual-caption"><span aria-hidden="true">◆</span> You choose whether to use the compute.</p>
       </div>
     </div></section>
-    <nav class="section-nav wrap" aria-label="On this page"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#flexibility">Selling</a><a href="#faq">Questions</a><a href="#early-access">Sign up</a></nav>
+    <nav class="section-nav wrap" aria-label="On this page"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#flexibility">Selling</a><a href="#faq">Questions</a><a href="#early-access">Sign up</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
 
     <section class="mk-sec" id="market-strip" aria-labelledby="mk-title"><div class="wrap">
       <div class="mk-head"><div><p class="eyebrow">Market today</p><h2 id="mk-title" class="mk-title">GPU rental prices</h2></div><p class="mk-asof" data-mk="asof">Ornn daily index · demonstration only; not licensed for commercial valuation</p></div>
@@ -77,7 +79,7 @@
     </div></section>
 
     <section class="sec" id="how-it-works" aria-labelledby="how-title"><div class="wrap">
-      <div class="sec-head"><div><p class="eyebrow">How it works</p><h2 id="how-title">Book a price for<br>your next GPU run.</h2></div><p>Pay for the price protection and a separate booking fee upfront. Pay for the compute itself only if you use it.</p></div>
+      <div class="sec-head" data-tour="how"><div><p class="eyebrow">How it works</p><h2 id="how-title">Book a price for<br>your next GPU run.</h2></div><p>Pay for the price protection and a separate booking fee upfront. Pay for the compute itself only if you use it.</p></div>
       <div class="paper-order" id="paper-order" aria-labelledby="co-title">
         <link rel="stylesheet" href="/checkout.css">
         <div class="co-head"><div><p class="eyebrow">Try it here</p><h3 id="co-title">Book GPU compute</h3></div><span class="co-badge">Demo · no real money</span></div>
@@ -99,7 +101,7 @@
                 <div class="field"><label for="co-region">Region preference</label><select id="co-region"><option>US East (Virginia)</option><option>US West (Oregon)</option><option>Europe (Netherlands)</option></select></div>
               </div>
             </fieldset>
-            <fieldset class="co-step">
+            <fieldset class="co-step" data-tour="window">
               <legend><span class="co-num">2</span>Exact dates</legend>
               <div class="field co-tz"><label for="co-tz">Time zone</label><select id="co-tz"></select></div>
               <div class="co-row">
@@ -110,7 +112,7 @@
               <div class="co-window"><p class="co-dur" id="co-dur"></p><p id="co-win-local"></p><p class="co-utc" id="co-win-utc"></p></div>
               <p class="co-error" id="co-error" aria-live="polite" hidden></p>
             </fieldset>
-            <fieldset class="co-step">
+            <fieldset class="co-step" data-tour="protection">
               <legend><span class="co-num">3</span>Protection</legend>
               <div class="co-types" role="group" aria-label="Protection type">
                 <button type="button" data-kind="lock" aria-pressed="true"><b>Lock</b><span>Fixed price per GPU-hour for the window.</span></button>
@@ -124,7 +126,7 @@
               </div>
             </fieldset>
           </form>
-          <aside class="co-quote" aria-labelledby="co-quote-title">
+          <aside class="co-quote" aria-labelledby="co-quote-title" data-tour="quote">
             <p class="eyebrow">Your quote · USD</p>
             <h4 id="co-quote-title">H100 · Lock</h4>
             <dl class="co-lines">
@@ -210,7 +212,7 @@
         </div>
       </article>
       <div class="decision-head"><h3>If rental prices change</h3><p>Same GPU and usage window. The rental price here is the average of the daily index over that window. Both examples include the $22 upfront payment and exclude taxes or other charges.</p></div>
-      <div class="decision-grid">
+      <div class="decision-grid" data-tour="costs">
         <article><p class="scenario-label">Rental price rises to $4 an hour</p><h4>Use the price you booked.</h4><p>Renting separately would cost $400. Use your secured price and pay $300, plus $20 protection and $2 booking: <strong>$322 total, or $78 less</strong>.</p></article>
         <article><p class="scenario-label">Rental price falls to $2 an hour</p><h4>Rent elsewhere for less.</h4><p>If comparable compute is available for $200, you can rent it elsewhere. With the $22 already paid, that’s <strong>$222 total</strong>. Using your booked price would cost $322.</p></article>
       </div>
@@ -221,7 +223,7 @@
     <section class="sec flexibility-section" id="flexibility" aria-labelledby="flexibility-title"><div class="wrap">
       <div class="sec-head"><div><p class="eyebrow">Selling your protection</p><h2 id="flexibility-title">If you no longer<br>need the compute</h2></div><p>The plan is to offer two ways to sell before the access deadline. You’d see your payout before accepting. The original booking fee stays paid.</p></div>
       <div class="exit-grid">
-        <article class="exit-card"><p class="eyebrow">Sell to another user</p><h3>List it on Dodona.</h3><p>Choose an asking price, including what you originally paid. You need a buyer willing to pay it. Dodona takes a fee when the sale completes.</p><dl class="payout"><div><dt>Example sale price</dt><dd>$20.00</dd></div><div><dt>Resale transaction fee · 5%</dt><dd>−$1.00</dd></div><div class="payout-total"><dt>You receive</dt><dd>$19.00</dd></div></dl><p class="exit-note">The buyer gets the remaining compute access on the same terms.</p></article>
+        <article class="exit-card" data-tour="resale"><p class="eyebrow">Sell to another user</p><h3>List it on Dodona.</h3><p>Choose an asking price, including what you originally paid. You need a buyer willing to pay it. Dodona takes a fee when the sale completes.</p><dl class="payout"><div><dt>Example sale price</dt><dd>$20.00</dd></div><div><dt>Resale transaction fee · 5%</dt><dd>−$1.00</dd></div><div class="payout-total"><dt>You receive</dt><dd>$19.00</dd></div></dl><p class="exit-note">The buyer gets the remaining compute access on the same terms.</p></article>
         <article class="exit-card exit-card-buyback"><p class="eyebrow">Accept a buyback quote</p><h3>Request a buyback quote.</h3><p>Dodona would arrange a buyback when a supplier commits funds to buy your protection. The quote uses its value today, less the deduction shown below.</p><dl class="payout"><div><dt>Supplier’s funded offer</dt><dd>$20.00</dd></div><div><dt>Buyback deduction · 7.5%</dt><dd>−$1.50</dd></div><div class="payout-total"><dt>You receive</dt><dd>$18.50</dd></div></dl><p class="exit-note">The deduction covers processing and Dodona’s margin. No extra resale fee applies in this example. Quotes depend on supplier funding.</p></article>
       </div>
       <div class="fee-note"><h3>What happens to the booking fee?</h3><p>It pays for arranging your agreement. It stays paid whether you use the compute, sell the protection, accept a buyback, or let it expire, subject to required refund rights.</p></div>
@@ -260,7 +262,7 @@
 
     <section class="sec faq-section" id="faq" aria-labelledby="faq-title"><div class="wrap faq-grid">
       <div><p class="eyebrow">Questions</p><h2 id="faq-title">Before you sign up</h2></div>
-      <div class="faq-list">
+      <div class="faq-list" data-tour="faq">
         <details id="faq-demo"><summary>Can I buy protection now?<span aria-hidden="true">+</span></summary><p>No. This is a demo. The waitlist is for updates and possible early access.</p></details>
         <details id="faq-purpose"><summary>Is this insurance?<span aria-hidden="true">+</span></summary><p>It serves a similar purpose: protect your budget from rising costs. It’s a compute pricing agreement, not an insurance policy. You’d get the choice to rent the agreed compute at a fixed price, rather than an expense reimbursement.</p></details>
         <details id="faq-access"><summary>How would I get the compute?<span aria-hidden="true">+</span></summary><p>Request access by the agreed deadline and pay the booked rental price. The provider would give you GPU access for the agreed window. You’re renting compute, not buying hardware.</p></details>
