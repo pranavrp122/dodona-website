@@ -24,6 +24,7 @@
   <script src="/checkout.js" defer></script>
   <link rel="stylesheet" href="/market.css">
   <script src="/market.js" defer></script>
+  <script src="/home-media.js" defer></script>
   <link rel="stylesheet" href="/tour.css">
   <script type="module" src="/tour.js"></script>
 </head>
@@ -31,7 +32,7 @@
   <a class="skip-link" href="#main">Skip to content</a>
   <header class="nav"><div class="wrap nav-inner">
     <a class="logo" href="#top" aria-label="Dodona home">DODONA<span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
-    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#who-its-for">Why sign up</a><a href="#flexibility">Selling</a><a href="#faq">FAQ</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
+    <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#dashboard">Dashboard</a><a href="#example">Costs</a><a href="#who-its-for">Why sign up</a><a href="#flexibility">Selling</a><a href="#faq">FAQ</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
     <a class="btn btn-ink btn-sm nav-cta" href="#early-access">Join early access <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a>
   </div></header>
   <main id="main">
@@ -70,7 +71,7 @@
         <p class="visual-caption"><span aria-hidden="true">◆</span> You choose whether to use the compute.</p>
       </div>
     </div></section>
-    <nav class="section-nav wrap" aria-label="On this page"><a href="#how-it-works">How it works</a><a href="#example">Costs</a><a href="#who-its-for">Why sign up</a><a href="#flexibility">Selling</a><a href="#faq">Questions</a><a href="#early-access">Sign up</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
+    <nav class="section-nav wrap" aria-label="On this page"><a href="#how-it-works">How it works</a><a href="#dashboard">Dashboard</a><a href="#example">Costs</a><a href="#who-its-for">Why sign up</a><a href="#flexibility">Selling</a><a href="#faq">Questions</a><a href="#early-access">Sign up</a><button type="button" class="tour-link" data-tour-start="home">Help</button></nav>
 
     <section class="mk-sec" id="market-strip" aria-labelledby="mk-title"><div class="wrap">
       <div class="mk-head"><div><p class="eyebrow">Market today</p><h2 id="mk-title" class="mk-title">GPU rental prices</h2></div><p class="mk-asof" data-mk="asof">Ornn daily index · demonstration only; not licensed for commercial valuation</p></div>
@@ -187,6 +188,22 @@
         <li class="stage"><span class="step-number">03 <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5 5 19M5 5v14h14"/></svg></span></span><h3>Use it when you need it</h3><p>Request access by the deadline, pay the agreed price, and receive usable compute access. You can also leave it unused or try to sell it.</p></li>
       </ol>
       <div class="clarification"><span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v11h14m-5-5 5 5-5 5"/></svg></span><p><strong>The supplier would provide the compute.</strong> The plan is to back each agreement with reserved capacity or a binding provider commitment. Supplier arrangements and checks are still being developed.</p></div>
+    </div></section>
+
+    <section class="sec preview-section" id="dashboard" aria-labelledby="preview-title"><div class="wrap">
+      <div class="sec-head" data-tour="preview"><div><p class="eyebrow">The dashboard</p><h2 id="preview-title">Every contract,<br>in one view</h2></div><p>See where every contract stands, what it is worth today and what needs your attention.</p></div>
+      <figure class="preview-frame">
+        <div class="preview-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div class="preview-media">
+          <video id="preview-video" autoplay muted loop playsinline preload="metadata" poster="/assets/media/dashboard-preview.jpg" width="1440" height="900" aria-describedby="preview-desc">
+            <source src="/assets/media/dashboard-preview.webm" type="video/webm">
+            <source src="/assets/media/dashboard-preview.mp4" type="video/mp4">
+          </video>
+          <button type="button" class="preview-toggle" id="preview-toggle" data-state="playing" hidden><svg class="icon preview-icon-play" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg><svg class="icon preview-icon-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg><span class="preview-toggle-label">Pause</span></button>
+        </div>
+        <figcaption class="visually-hidden" id="preview-desc">A short silent recording of the Dodona dashboard. It opens on the overview with the total value of every contract, then lists the positions and opens a price cap to show its term sheet. Sliding the window average shows how the payout would change. It then takes a price cap from the board of neocloud offers to the checkout summary and returns to the overview.</figcaption>
+      </figure>
+      <p class="preview-cta"><a class="text-link" href="/sign-in">Try it with a sample account <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a></p>
     </div></section>
 
     <section class="sec example-section" id="example" aria-labelledby="example-title"><div class="wrap">

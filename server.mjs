@@ -67,9 +67,23 @@ const staticFiles = new Map([
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
   ['/assets/social-card.png', ['assets/social-card.png', 'image/png']],
   ['/assets/favicon.svg', ['assets/favicon.svg', 'image/svg+xml']],
+  ['/home-media.js', ['home-media.js', 'text/javascript; charset=utf-8']],
+  ['/assets/media/dashboard-preview.mp4', ['assets/media/dashboard-preview.mp4', 'video/mp4']],
+  ['/assets/media/dashboard-preview.webm', ['assets/media/dashboard-preview.webm', 'video/webm']],
+  ['/assets/media/dashboard-preview.jpg', ['assets/media/dashboard-preview.jpg', 'image/jpeg']],
   ...['bricolage-grotesque-latin-standard-normal.woff2', 'albert-sans-latin-wght-normal.woff2', 'open-sans-latin-wght-normal.woff2'].map(name =>
     [`/assets/fonts/${name}`, [`assets/fonts/${name}`, 'font/woff2']]),
 ]);
+// The home page preview video and its poster change rarely, so browsers may keep them for 30 days.
+const mediaCache = 'public, max-age=2592000';
+// A single 'bytes=start-end' range of a media file (Safari asks for one before it plays a video), or null for the whole file.
+function byteRange(header, size) {
+  const match = /^bytes=(\d*)-(\d*)$/.exec(header || '');
+  if (!match || (match[1] === '' && match[2] === '')) return null;
+  const start = match[1] === '' ? Math.max(0, size - Number(match[2])) : Number(match[1]);
+  const end = match[1] === '' || match[2] === '' ? size - 1 : Math.min(Number(match[2]), size - 1);
+  return start <= end && start < size ? { start, end } : { invalid: true };
+}
 const unavailable = 'We can’t accept signups right now. Please check back later.';
 
 class RequestError extends Error {
@@ -248,7 +262,7 @@ export function createApp({
     response.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     response.setHeader('X-Frame-Options', 'DENY');
     response.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-    response.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'sha256-${structuredDataHash}'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`);
+    response.setHeader('Content-Security-Policy', `default-src 'none'; script-src 'self' 'sha256-${structuredDataHash}'; style-src 'self'; img-src 'self'; font-src 'self'; media-src 'self'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'`);
     response.setHeader('Link', '</llms.txt>; rel="describedby"; type="text/plain", </openapi.json>; rel="service-desc"; type="application/json", </agents>; rel="service-doc"; type="text/html"');
     try {
       const url = new URL(request.url, 'http://localhost');
@@ -380,6 +394,20 @@ export function createApp({
       if (['GET', 'HEAD'].includes(request.method) && staticFiles.has(url.pathname)) {
         const [path, type] = staticFiles.get(url.pathname);
         let content = await readFile(resolve(root, path));
+        if (type.startsWith('video/') || type === 'image/jpeg') {
+          const range = type.startsWith('video/') ? byteRange(request.headers.range, content.length) : null;
+          if (range?.invalid) {
+            response.writeHead(416, { 'Content-Range': `bytes */${content.length}`, 'Cache-Control': mediaCache });
+            return response.end();
+          }
+          if (range) {
+            const part = content.subarray(range.start, range.end + 1);
+            response.writeHead(206, { 'Content-Type': type, 'Content-Length': part.length, 'Content-Range': `bytes ${range.start}-${range.end}/${content.length}`, 'Accept-Ranges': 'bytes', 'Cache-Control': mediaCache });
+            return response.end(request.method === 'HEAD' ? undefined : part);
+          }
+          response.writeHead(200, { 'Content-Type': type, 'Content-Length': content.length, 'Accept-Ranges': type.startsWith('video/') ? 'bytes' : 'none', 'Cache-Control': mediaCache });
+          return response.end(request.method === 'HEAD' ? undefined : content);
+        }
         if (type.startsWith('text/html')) content = Buffer.from(renderPage(content.toString('utf8'), { settings: siteSettings, origin, path: path === 'privacy.html' ? '/privacy' : path === 'agents.html' ? '/agents' : '/' }));
         response.writeHead(200, { 'Content-Type': type, 'Content-Length': content.length, 'Cache-Control': 'no-cache' });
         return response.end(request.method === 'HEAD' ? undefined : content);
