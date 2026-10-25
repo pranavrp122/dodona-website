@@ -3,7 +3,6 @@ import { escapeHtml as esc, windowLabel, utcStamp } from '/dashboard-view.js';
 import { api, startPage, toast, money, rate, kindPill, kindName, isFloor, isLock, breakEven } from '/platform-shell.js';
 
 const HOUR_MS = 3600000;
-const BOOKING_FEE = 2;
 const PLATFORM_SHARE = 0.15;
 const DECLINES = {
   card_declined: 'The card was declined. Try 4242 4242 4242 4242 to see a successful payment.',
@@ -22,12 +21,13 @@ function estimate(offer, count) {
   const premiumTotal = lock ? 0 : cents(offer.premiumPerGpuHour * gpuHours);
   return {
     premiumPerGpuHour: lock ? 0 : offer.premiumPerGpuHour, premiumTotal, platformFee: cents(premiumTotal * PLATFORM_SHARE),
-    bookingFee: BOOKING_FEE, payNow: cents(premiumTotal + BOOKING_FEE), computeCostIfUsed: cents(offer.strike * gpuHours),
+    payNow: premiumTotal, computeCostIfUsed: cents(offer.strike * gpuHours),
     breakEven: breakEven(offer.kind, offer.strike, offer.premiumPerGpuHour).value, gpuHours,
   };
 }
 
 const termsOf = () => page.order || page.offer;
+const nothingToPay = () => breakdownOf().payNow === 0;
 const breakdownOf = () => (page.order ? page.order.breakdown || page.order : estimate(page.offer, Number($('co-count').value) || page.offer.minGpus));
 
 function lines() {
@@ -43,10 +43,9 @@ function lines() {
     [lock ? 'Fixed price' : isFloor(t.kind) ? 'Floor' : 'Cap', `${rate(t.strike)} per GPU-hour`, lock ? '' : 'Settles on the average daily index over the window'],
     ['GPU-hours', Math.round(b.gpuHours).toLocaleString('en-US')],
     ...(lock ? [] : [['Premium', `${rate(b.premiumPerGpuHour)} × GPU-hours = ${money(b.premiumTotal)}`], ['of which Dodona platform fee (15%)', money(b.platformFee), '', 'is-sub']]),
-    ['Booking fee', money(b.bookingFee)],
     [used, money(b.computeCostIfUsed), 'Not charged now'],
     ['Break-even', be.text],
-    ['Pay now', money(lock ? b.bookingFee : b.payNow), '', 'is-total'],
+    ['Pay now', b.payNow > 0 ? money(b.payNow) : 'Nothing', lock ? 'A fixed price has no premium. The compute bill comes at settlement.' : '', 'is-total'],
   ];
 }
 
@@ -59,7 +58,20 @@ function renderSummary() {
   $('co-sum-foot').textContent = isFloor(t.kind)
     ? 'A price floor pays you the difference when the window average ends below the floor, from the matched buyer pool. Usually bought by providers.'
     : isLock(t.kind) ? 'A fixed price bills every hour at the set price, whatever the index does.' : 'A price cap bills the lower of the window average and the cap for each GPU-hour you use.';
-  $('co-pay-lbl').textContent = `Pay ${rows.at(-1)[1]}`;
+  renderPayment();
+}
+
+// A fixed price has nothing to pay now, so the card form gives way to a plain confirm button.
+function renderPayment() {
+  const free = nothingToPay();
+  $('co-card').hidden = free;
+  $('co-none').hidden = !free;
+  $('co-pay-t').textContent = free ? '2 · Confirm' : '2 · Pay by card';
+  $('co-pay-p').textContent = free ? 'Nothing is charged today.' : 'The card number is never stored; only the brand and last four digits are kept.';
+  $('co-pay-fine').textContent = free
+    ? 'The compute bill is paid through the escrow agent at settlement. Dodona never holds funds.'
+    : 'Paid through the escrow agent. Dodona never holds funds. The premium goes 85% to the neocloud and 15% to Dodona.';
+  $('co-pay-lbl').textContent = free ? 'Confirm order' : `Pay ${money(breakdownOf().payNow)}`;
 }
 
 function renderQuantity() {
@@ -125,7 +137,8 @@ async function pay(event) {
   event.preventDefault();
   $('co-count').removeAttribute('aria-invalid');
   if (!validCount()) return;
-  const read = readCard();
+  const free = nothingToPay();
+  const read = free ? { card: null } : readCard();
   if (read.error) { showError(read.error[1], read.error[0]); return; }
   showError('');
   const button = $('co-pay');
@@ -133,7 +146,7 @@ async function pay(event) {
   button.setAttribute('aria-busy', 'true');
   try {
     const order = await ensureOrder();
-    await api(`/api/orders/${encodeURIComponent(order.ref)}/pay`, { method: 'POST', body: { card: read.card } });
+    await api(`/api/orders/${encodeURIComponent(order.ref)}/pay`, { method: 'POST', body: free ? {} : { card: read.card } });
     $('co-number').value = '';
     $('co-cvc').value = '';
     location.assign(`/orders/${encodeURIComponent(order.ref)}`);
@@ -166,7 +179,7 @@ async function load() {
   }
   const t = termsOf();
   $('co-title').textContent = `${kindName(t.kind)} · ${t.gpu} · ${windowLabel(t.start, t.end)}`;
-  $('co-sub').textContent = `${t.neocloud?.name || 'Partner neocloud'} · ${t.region}. Review the terms, pick the quantity and pay by card.`;
+  $('co-sub').textContent = `${t.neocloud?.name || 'Partner neocloud'} · ${t.region}. ${nothingToPay() ? 'Review the terms, pick the quantity and confirm. Nothing is charged today.' : 'Review the terms, pick the quantity and pay by card.'}`;
   $('co-body').hidden = false;
   renderQuantity();
   renderSummary();

@@ -18,15 +18,19 @@ const tone = v => (v > 0.005 ? 'is-gain' : v < -0.005 ? 'is-loss' : '');
 
 function timeline(order) {
   const at = STEPS.findIndex(([status]) => status === order.status);
-  $('od-timeline').innerHTML = STEPS.map(([status, iconName, label], i) => {
+  const free = (order.breakdown || order).payNow === 0;
+  $('od-timeline').innerHTML = STEPS.map(([status, iconName, step], i) => {
+    const label = status === 'paid' && free ? 'Confirmed' : step;
     const cls = at < 0 ? '' : i < at || order.status === 'settled' ? 'is-done' : i === at ? 'is-now' : '';
     return `<li class="p-step ${cls}"${i === at ? ' aria-current="step"' : ''}><span class="p-dot">${icon(cls === 'is-done' ? 'check' : iconName)}</span><b>${esc(label)}</b></li>`;
   }).join('');
   $('od-status').innerHTML = statusPill(order.status);
   const exits = {
-    pending_payment: `<p class="p-err p-exit">Awaiting payment. The order is held until it is paid.&nbsp;<a href="/checkout?order=${encodeURIComponent(order.ref)}">Pay now</a></p>`,
+    pending_payment: free
+      ? `<p class="p-err p-exit">Awaiting confirmation. Nothing is due now.&nbsp;<a href="/checkout?order=${encodeURIComponent(order.ref)}">Confirm now</a></p>`
+      : `<p class="p-err p-exit">Awaiting payment. The order is held until it is paid.&nbsp;<a href="/checkout?order=${encodeURIComponent(order.ref)}">Pay now</a></p>`,
     cancelled: '<p class="p-err p-exit">Cancelled. Nothing was charged and the capacity hold was released.</p>',
-    declined: '<p class="p-err p-exit">The neocloud declined the reservation. The payment is returned through the escrow agent.</p>',
+    declined: `<p class="p-err p-exit">The neocloud declined the reservation. ${free ? 'Nothing was charged, so there is nothing to return.' : 'The payment is returned through the escrow agent.'}</p>`,
   };
   $('od-exit').innerHTML = exits[order.status] || '';
   $('od-tl-note').textContent = order.status === 'reserving' ? 'Waiting for the neocloud to confirm the capacity hold.' : `Currently ${statusName(order.status).toLowerCase()}.`;
@@ -45,10 +49,9 @@ function terms(order) {
     [lock ? 'Fixed price' : isFloor(order.kind) ? 'Floor' : 'Cap', `${rate(order.strike)} per GPU-hour`, lock ? 'Paid on every hour, whatever the index does' : 'Settles on the average daily index over the window'],
     ['GPU-hours', Math.round(b.gpuHours ?? 0).toLocaleString('en-US')],
     ...(lock ? [] : [['Premium', `${rate(b.premiumPerGpuHour)}/GPU-h · ${money(b.premiumTotal)}`], ['of which Dodona platform fee (15%)', money(b.platformFee), '', 'is-sub']]),
-    ['Booking fee', money(b.bookingFee)],
     ['Break-even', be.text],
-    ...(order.payment ? [['Paid with', `${order.payment.brand} ending ${order.payment.last4}`]] : []),
-    ['Paid', ['pending_payment', 'cancelled'].includes(order.status) ? 'Not yet' : money(lock ? b.bookingFee : b.payNow), '', 'is-total'],
+    ...(order.payment?.method === 'card' ? [['Paid with', `${order.payment.brand} ending ${order.payment.last4}`]] : []),
+    ['Paid', ['pending_payment', 'cancelled'].includes(order.status) ? 'Not yet' : b.payNow > 0 ? money(b.payNow) : 'Nothing charged', lock ? 'The compute bill comes at settlement' : '', 'is-total'],
   ]);
 }
 

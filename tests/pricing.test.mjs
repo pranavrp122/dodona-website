@@ -5,7 +5,7 @@ import { fallbackHistory } from '../lib/prices.mjs';
 import { marketStats } from '../lib/valuation.mjs';
 import {
   normalCdf, black76Call, black76Put, effectiveTime, quoteCap, quotePut, quoteFromHistory, quoteInputFromQuery,
-  atTheMoneyStrike, BOOKING_FEE, PLATFORM_FEE_SHARE,
+  atTheMoneyStrike, PLATFORM_FEE_SHARE,
 } from '../lib/pricing.mjs';
 import { listen, close } from './fixture.mjs';
 
@@ -76,11 +76,11 @@ test('a call quote reuses the valuation statistics and carries the agreed fields
   assert.equal(q.gpuHours, 64 * 168);
   assert.equal(q.premiumTotal, Math.round(q.premiumPerGpuHour * q.gpuHours * 100) / 100);
   assert.equal(q.platformFee, Math.round(q.premiumTotal * PLATFORM_FEE_SHARE * 100) / 100);
-  assert.equal(q.bookingFee, BOOKING_FEE);
-  assert.equal(q.payNow, Math.round((q.premiumTotal + 2) * 100) / 100);
+  assert.equal(q.payNow, q.premiumTotal, 'a cap pays the premium up front and nothing else');
+  assert.ok(!('bookingFee' in q), 'no flat per-order fee');
   assert.equal(q.costIfUsed, Math.round(2.85 * q.gpuHours * 100) / 100);
   assert.equal(q.breakEven, Math.round((2.85 + q.premiumPerGpuHour) * 100) / 100);
-  for (const key of ['gpuHours', 'type', 'strike', 'premiumPerGpuHour', 'premiumTotal', 'platformFee', 'bookingFee', 'payNow', 'costIfUsed', 'breakEven', 'forward', 'spot', 'vol', 'volSampling', 'tYears', 'tEffYears', 'method', 'asOf', 'inputs']) {
+  for (const key of ['gpuHours', 'type', 'strike', 'premiumPerGpuHour', 'premiumTotal', 'platformFee', 'payNow', 'costIfUsed', 'breakEven', 'forward', 'spot', 'vol', 'volSampling', 'tYears', 'tEffYears', 'method', 'asOf', 'inputs']) {
     assert.ok(key in q, key);
   }
 });
@@ -97,7 +97,7 @@ test('a lock is the forward plus a two percent provider margin with no premium',
   assert.equal(lock.strike, Math.round(lock.forward * 1.02 * 100) / 100);
   assert.equal(lock.premiumPerGpuHour, 0);
   assert.equal(lock.premiumTotal, 0);
-  assert.equal(lock.payNow, 2);
+  assert.equal(lock.payNow, 0, 'a lock has nothing to pay up front');
   assert.equal(lock.costIfUsed, Math.round(lock.strike * lock.gpuHours * 100) / 100);
   assert.equal(lock.breakEven, null);
   assert.equal(lock.inputs.lockMargin, 0.02);

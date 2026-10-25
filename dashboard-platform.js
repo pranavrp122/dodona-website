@@ -77,11 +77,11 @@ export async function renderStatements(box) {
   box.innerHTML = '<p class="d-muted p-pad">Loading statements…</p>';
   try {
     const { months = [] } = await api('/api/statements');
-    const rows = months.map(m => `<tr><th scope="row">${esc(v.monthLabel(m.month))}</th>${cell(m.premiums)}${cell(m.bookingFees)}${cell(m.computeBills)}${cell(m.payoutsIn)}<td class="r d-num"><b class="${v.tone(m.net)}">${esc(money(m.net))}</b></td></tr>`).join('');
+    const rows = months.map(m => `<tr><th scope="row">${esc(v.monthLabel(m.month))}</th>${cell(m.premiums)}${cell(m.computeBills)}${cell(m.payoutsIn)}<td class="r d-num"><b class="${v.tone(m.net)}">${esc(money(m.net))}</b></td></tr>`).join('');
     box.innerHTML = `<div class="d-scroll"><table class="d-table"><caption class="visually-hidden">Monthly statement</caption>
-      <thead><tr><th scope="col">Month</th><th scope="col" class="r">Premiums</th><th scope="col" class="r">Booking fees</th><th scope="col" class="r">Compute bills</th><th scope="col" class="r">Payouts in</th><th scope="col" class="r">Net</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="6" class="d-muted">No activity yet.</td></tr>'}</tbody></table></div>
-      <p class="c-note">Net is payouts in less premiums, booking fees and compute bills. Every amount moves through the escrow agent.</p>`;
+      <thead><tr><th scope="col">Month</th><th scope="col" class="r">Premiums</th><th scope="col" class="r">Compute bills</th><th scope="col" class="r">Payouts in</th><th scope="col" class="r">Net</th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="5" class="d-muted">No activity yet.</td></tr>'}</tbody></table></div>
+      <p class="c-note">Net is payouts in less premiums and compute bills. A fixed price has no premium, so it shows up only when its compute bill settles. Every amount moves through the escrow agent.</p>`;
   } catch (error) {
     box.innerHTML = `<p class="d-muted p-pad">${esc(error.message)}</p>`;
   }

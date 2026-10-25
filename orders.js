@@ -1,6 +1,6 @@
 /** Orders list: every order for the signed-in account, newest first, with a status filter. */
 import { escapeHtml as esc, icon, windowLabel } from '/dashboard-view.js';
-import { api, startPage, toast, money, rate, kindPill, statusPill, isLock } from '/platform-shell.js';
+import { api, startPage, toast, money, rate, kindPill, statusPill } from '/platform-shell.js';
 
 const $ = id => document.getElementById(id);
 const FILTERS = {
@@ -15,7 +15,7 @@ let filter = 'all';
 function row(o) {
   const href = `/orders/${encodeURIComponent(o.ref)}`;
   const b = o.breakdown || o;
-  const paid = o.status === 'pending_payment' || o.status === 'cancelled' ? '<span class="d-muted">not paid</span>' : esc(money(isLock(o.kind) ? b.bookingFee : b.payNow));
+  const paid = o.status === 'pending_payment' || o.status === 'cancelled' ? '<span class="d-muted">not paid</span>' : (b.payNow > 0 ? esc(money(b.payNow)) : '<span class="d-muted">nothing to pay</span>');
   return `<tr data-href="${esc(href)}">
     <td><a class="p-mono" href="${esc(href)}">${esc(o.ref)}</a><span class="d-sub">${esc(o.neocloud?.name || '')}</span></td>
     <td><span class="d-pos-l">${esc(Number(o.count).toLocaleString('en-US'))} × ${esc(o.gpu)}</span><span class="d-sub">${esc(o.region || '')}</span></td>

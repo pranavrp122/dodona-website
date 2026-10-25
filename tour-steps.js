@@ -11,10 +11,10 @@ export const homeTour = [
   { target: '#co-tabs', title: 'Pick a GPU', body: 'Start here. Each tab is a GPU model, and the chart shows what it has cost to rent over the last 90 days. Step 1, just below the chart, sets how many you need and where.' },
   { target: '[data-tour="window"]', title: 'Pick your window', body: 'Set when your run starts and ends. The shortcuts fill in a day, a week, two weeks or a month from the start date, and the times are shown in UTC as well.' },
   { target: '[data-tour="protection"]', title: 'Fixed price or a cap', body: 'A fixed price is one rate per GPU-hour, whatever the market does. A cap means you pay at most this, and can walk away if prices fall.' },
-  { target: '[data-tour="quote"]', title: 'Your quote', body: 'The fee pays for the protection and the booking fee is a flat $2. Pay now is the two added up. Underneath is the most you would pay for the compute if you use it.', placement: 'left' },
+  { target: '[data-tour="quote"]', title: 'Your quote', body: 'The fee pays for the protection, and it is all you pay now. A fixed price has no fee, so there is nothing to pay up front. Underneath is the most you would pay for the compute if you use it.', placement: 'left' },
   { target: '#co-buy', title: 'Buy protection', body: 'When it looks right, press Buy protection. You get a short review to confirm, then a receipt with a link to your dashboard. No money moves on this page.' },
   { target: '[data-tour="preview"]', title: 'The dashboard', body: 'A short recording of the dashboard you get after booking. It shows what each contract is worth today, the details of one position and how checkout looks. The link under it opens a sample account to try yourself.' },
-  { target: '[data-tour="costs"]', title: 'What it costs in practice', body: 'Two worked examples for the same booking. If the price rises to $4 an hour, you save $78. If it falls to $2, you rent elsewhere and are only out the $22 you paid upfront.' },
+  { target: '[data-tour="costs"]', title: 'What it costs in practice', body: 'Two worked examples for the same contract. If the price rises to $4 an hour, you save $80. If it falls to $2, you rent elsewhere and are only out the $20 you paid upfront.' },
   { target: '[data-tour="renters"]', title: 'If you rent GPUs', body: 'A cap puts a ceiling on your GPU bill and holds the capacity for you. You pay one fee up front, and if prices fall you rent somewhere cheaper instead.' },
   { target: '[data-tour="providers"]', title: 'If you run a neocloud', body: 'Providers sell caps on hours that might sit idle and keep the fee whatever prices do. Each cap books a block ahead of time, so you can see demand months out.' },
   { target: '[data-tour="resale"]', title: 'If plans change', body: 'Do not need the hours any more? List them for another user to buy. You set the asking price and see exactly what you would get after the fee before you accept.' },
@@ -151,7 +151,7 @@ export const offersTour = [
 
 export const checkoutTour = [
   { target: sec('co-qty-h'), title: 'How many', body: 'Choose how many GPUs you want from this block. The summary updates as you type.', before: async () => { await pageReady(); await waitFor('#co-body', 4000); } },
-  { target: sec('co-sum-h'), title: 'Order summary', body: 'Before you pay you see the premium, the booking fee and what you pay today. For a cap, it also shows the break-even price.', placement: 'left' },
+  { target: sec('co-sum-h'), title: 'Order summary', body: 'Before you pay you see the premium, the Dodona share inside it and what you pay today. A fixed price has nothing to pay now. For a cap, it also shows the break-even price.', placement: 'left' },
   { target: '[data-tour="test-cards"]', title: 'Test cards', body: 'Use a test card here. 4242 4242 4242 4242 goes through, and the other two show what a decline looks like.' },
   { target: '#co-pay', title: 'Pay', body: 'Paying takes you straight to your new order, where you can follow it from reservation to settlement.' },
 ];

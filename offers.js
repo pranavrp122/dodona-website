@@ -20,7 +20,7 @@ function offerRow(o) {
     <td><span class="p-kind">${kindPill(o.kind)}${floorNote}</span></td>
     <td><span class="d-pos-l">${esc(windowLabel(o.start, o.end))}</span><span class="d-sub">${w} week${w === 1 ? '' : 's'}</span></td>
     <td class="r d-num">${esc(rate(o.strike))}<span class="d-sub">per GPU-hour</span></td>
-    <td class="r d-num">${isLock(o.kind) ? '<span class="d-muted">none</span><span class="d-sub">$2 booking fee</span>' : `${esc(rate(o.premiumPerGpuHour))}<span class="d-sub">per GPU-hour</span>`}</td>
+    <td class="r d-num">${isLock(o.kind) ? '<span class="d-muted">none</span><span class="d-sub">nothing to pay now</span>' : `${esc(rate(o.premiumPerGpuHour))}<span class="d-sub">per GPU-hour</span>`}</td>
     <td class="r d-num">${esc(be.text)}</td>
     <td class="r d-num">${esc(Number(o.availableGpus).toLocaleString('en-US'))}<span class="d-sub">GPUs</span></td>
     <td class="p-act"><a class="btn btn-sm${isFloor(o.kind) ? '' : ' btn-primary'}" href="/checkout?offer=${encodeURIComponent(o.id)}">${icon('arrow-right')}<span>Take this offer</span></a></td>
@@ -69,14 +69,13 @@ function quoteHtml(input, q) {
     [lock ? 'Fixed price' : isFloor(input.kind) ? 'Floor' : 'Cap', `${rate(q.strike)} per GPU-hour`],
     ['GPU-hours', Math.round(q.gpuHours).toLocaleString('en-US')],
     ...(lock ? [] : [['Premium', `${rate(q.premiumPerGpuHour)} × GPU-hours = ${money(q.premiumTotal)}`], ['of which Dodona platform fee (15%)', money(q.platformFee), 'is-sub']]),
-    ['Booking fee', money(q.bookingFee)],
     [lock ? 'Compute bill at the fixed price' : isFloor(input.kind) ? 'Floor revenue if the average ends below it' : 'Compute bill if you use the hours at the cap', money(q.costIfUsed)],
     ['Break-even', be.text],
-    ['Pay now', money(lock ? q.bookingFee : q.payNow), 'is-total'],
+    ['Pay now', lock ? 'Nothing' : money(q.payNow), 'is-total'],
   ];
   return `<dl class="p-lines">${rows.map(([t, d, cls]) => `<div${cls ? ` class="${cls}"` : ''}><dt>${esc(t)}</dt><dd>${esc(d)}</dd></div>`).join('')}</dl>
     <div class="p-form"><p class="fine">Index as of ${esc(q.asOf || '—')} · method ${esc(q.method || 'black76-asian-v0')}. Premiums go 85% to the neocloud and 15% to Dodona, through the escrow agent.</p>
-      <div class="c-acts"><button type="button" class="btn btn-primary" id="cu-go">${icon('credit-card')}<span>Continue to payment</span></button></div>
+      <div class="c-acts"><button type="button" class="btn btn-primary" id="cu-go">${icon('credit-card')}<span>${lock ? 'Continue to confirm' : 'Continue to payment'}</span></button></div>
       <p class="p-err" id="cu-go-err" role="alert"></p></div>`;
 }
 

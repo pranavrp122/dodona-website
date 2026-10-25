@@ -213,7 +213,6 @@ export function positionSummary(portfolio) {
 
 /* ---------- console panels: coverage, savings, upcoming dates, billing ---------- */
 export const PLANNED_GPUS = 300;
-export const BOOKING_FEE = 2;
 export const PLATFORM_SHARE = 0.15;
 const HOUR_MS = 3600000;
 const noonOf = asOf => Date.parse(asOf.slice(0, 10) + 'T12:00:00Z');
@@ -264,17 +263,17 @@ export function upcomingEvents(positions, asOf, days = 30) {
   return events.filter(e => Date.parse(e.at) >= from && Date.parse(e.at) <= to).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
 }
 
-// Premiums and fees by month of purchase. Fixed prices carry no Dodona fee; price caps carry a booking fee, and the platform share sits inside the premium.
+// Premiums by month of purchase. Fixed prices carry no premium and nothing to pay up front; the platform share sits inside a cap's premium.
 export function billingMonths(positions, asOf) {
   const months = new Map();
   for (const p of positions.filter(x => x.kind === 'call' && x.boughtOn)) {
     const month = p.boughtOn.slice(0, 7);
-    const row = months.get(month) || { month, premiums: 0, bookingFees: 0, positions: [] };
-    months.set(month, { ...row, premiums: row.premiums + p.valuation.premiumPaid, bookingFees: row.bookingFees + BOOKING_FEE, positions: [...row.positions, p.id] });
+    const row = months.get(month) || { month, premiums: 0, positions: [] };
+    months.set(month, { ...row, premiums: row.premiums + p.valuation.premiumPaid, positions: [...row.positions, p.id] });
   }
   const current = asOf.slice(0, 7);
   return [...months.values()].sort((a, b) => b.month.localeCompare(a.month)).map(row => ({
-    ...row, id: `INV-${row.month.replace('-', '')}`, platformFee: row.premiums * PLATFORM_SHARE, total: row.premiums + row.bookingFees,
+    ...row, id: `INV-${row.month.replace('-', '')}`, platformFee: row.premiums * PLATFORM_SHARE, total: row.premiums,
     status: row.month < current ? 'paid' : 'due',
   }));
 }
@@ -330,14 +329,14 @@ export function billingPanel(positions, asOf) {
   const byMonth = new Map(invoices.map(row => [row.month, row]));
   const top = Math.max(1, ...invoices.map(row => row.total));
   const bars = months.map(m => { const total = byMonth.get(m)?.total || 0; return `<div><span>${total ? escapeHtml(short(total)) : ''}</span><i data-h="${(total / top * 100).toFixed(1)}"></i></div>`; }).join('');
-  const rows = invoices.map(row => `<tr><th scope="row">${escapeHtml(row.id)}</th><td>${escapeHtml(monthLabel(row.month))}</td><td class="r d-num">${escapeHtml(dollars(row.premiums))}</td><td class="r d-num">${escapeHtml(dollars(row.platformFee))}</td><td class="r d-num">${escapeHtml(dollars(row.bookingFees))}</td><td class="r d-num">${escapeHtml(dollars(row.total))}</td>
+  const rows = invoices.map(row => `<tr><th scope="row">${escapeHtml(row.id)}</th><td>${escapeHtml(monthLabel(row.month))}</td><td class="r d-num">${escapeHtml(dollars(row.premiums))}</td><td class="r d-num">${escapeHtml(dollars(row.platformFee))}</td><td class="r d-num">${escapeHtml(dollars(row.total))}</td>
     <td>${row.status === 'paid' ? pill('circle-check', 'success', 'Paid') : pill('clock', 'warning', 'Due')}</td>
     <td><button type="button" class="btn btn-sm btn-icon" data-toast="Invoice ${escapeHtml(row.id)} is on its way to your inbox." aria-label="${escapeHtml(`Download ${row.id}`)}">${icon('download')}</button></td></tr>`).join('');
-  return `<div class="c-billing"><div><p class="eyebrow">Premiums and fees by month</p><div class="c-bars" role="img" aria-label="Monthly totals for the last six months">${bars}</div>
+  return `<div class="c-billing"><div><p class="eyebrow">Premiums by month</p><div class="c-bars" role="img" aria-label="Monthly totals for the last six months">${bars}</div>
       <div class="c-bars-x">${months.map(m => `<span>${MONTHS[Number(m.slice(5, 7)) - 1]}</span>`).join('')}</div></div>
-    <div class="d-scroll"><table class="d-table"><caption class="visually-hidden">Invoices</caption><thead><tr><th scope="col">Invoice</th><th scope="col">Month</th><th scope="col" class="r">Premiums</th><th scope="col" class="r">of which platform fee</th><th scope="col" class="r">Booking fees</th><th scope="col" class="r">Total</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="8" class="d-muted">No premiums or fees yet.</td></tr>'}</tbody></table></div></div>
-    <p class="c-note">${tag('demo')} Price caps carry a ${dollars(BOOKING_FEE)} booking fee, and Dodona's platform fee is ${Math.round(PLATFORM_SHARE * 100)}% of the cap premium, shown inside it. Fixed prices carry no Dodona fee. Paid by ACH, no card fees; Dodona never holds funds.</p>`;
+    <div class="d-scroll"><table class="d-table"><caption class="visually-hidden">Invoices</caption><thead><tr><th scope="col">Invoice</th><th scope="col">Month</th><th scope="col" class="r">Premiums</th><th scope="col" class="r">of which platform fee</th><th scope="col" class="r">Total</th><th scope="col">Status</th><th scope="col"><span class="visually-hidden">Download</span></th></tr></thead>
+      <tbody>${rows || '<tr><td colspan="7" class="d-muted">No premiums yet.</td></tr>'}</tbody></table></div></div>
+    <p class="c-note">${tag('demo')} Dodona's platform fee is ${Math.round(PLATFORM_SHARE * 100)}% of the cap premium, shown inside it. Fixed prices carry no premium and nothing to pay up front. Paid by ACH, no card fees; Dodona never holds funds.</p>`;
 }
 
 // Severity icon per alert: move arrow, deadline clock, offer, warning triangle, error, info circle.

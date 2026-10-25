@@ -38,8 +38,7 @@ Check value: F = K = $2.80, σ = 40%, t_eff = t_end = 1/12 gives C ≈ $0.128 pe
 |---|---|
 | `premiumPerGpuHour`, `premiumTotal` | The fee, per GPU-hour and for the block |
 | `platformFee` | 15% of `premiumTotal`, shown as "of which Dodona fee" |
-| `bookingFee` | $2.00 per booking |
-| `payNow` | `premiumTotal` + booking fee |
+| `payNow` | Equal to `premiumTotal`. A cap or floor pays the fee up front and nothing else; a lock has nothing to pay up front |
 | `costIfUsed` | Strike × GPU-hours (lock: fixed price × GPU-hours; floor: the floor revenue) |
 | `breakEven` | Call: strike + fee ("pays off above"). Put: strike − fee. Lock: none |
 | `forward`, `spot`, `vol`, `volSampling`, `tYears`, `tEffYears`, `asOf`, `inputs` | Everything needed to reproduce the number |

@@ -46,11 +46,13 @@ create table if not exists public.demo_orders (
   premium_per_gpu_hour numeric(12, 4),
   premium_total numeric(14, 2),
   platform_fee numeric(14, 2),
-  booking_fee numeric(14, 2),
   pay_now numeric(14, 2),
   created_at timestamptz not null,
   updated_at timestamptz not null
 );
+
+-- Orders no longer carry a flat per-order fee. Re-running this file drops the old column from an existing project.
+alter table public.demo_orders drop column if exists booking_fee;
 
 -- A payment summary: amount and outcome only. The card brand, last four digits and every other card detail stay out.
 create table if not exists public.demo_payments (

@@ -80,7 +80,7 @@
     </div></section>
 
     <section class="sec" id="how-it-works" aria-labelledby="how-title"><div class="wrap">
-      <div class="sec-head" data-tour="how"><div><p class="eyebrow">How it works</p><h2 id="how-title">Book a price for<br>your next GPU run.</h2></div><p>Pay for the price protection and a separate booking fee upfront. Pay for the compute itself only if you use it.</p></div>
+      <div class="sec-head" data-tour="how"><div><p class="eyebrow">How it works</p><h2 id="how-title">Book a price for<br>your next GPU run.</h2></div><p>Pay for the price protection upfront. Pay for the compute itself only if you use it.</p></div>
       <div class="paper-order" id="paper-order" aria-labelledby="co-title">
         <link rel="stylesheet" href="/checkout.css">
         <div class="co-head"><div><p class="eyebrow">Try it here</p><h3 id="co-title">Book GPU compute</h3></div><span class="co-badge">Demo · no real money</span></div>
@@ -135,7 +135,6 @@
               <div><dt id="co-q-price-l">Fixed price</dt><dd id="co-q-price"></dd></div>
               <div><dt>Fee <span class="co-tag" id="co-fee-tag" hidden>model · v0</span><small id="co-q-per"></small></dt><dd id="co-q-fee"></dd></div>
               <div class="co-sub"><dt>of which Dodona fee (15%)</dt><dd id="co-q-platform"></dd></div>
-              <div><dt>Booking fee</dt><dd>$2.00</dd></div>
               <div class="co-upfront"><dt>Pay now</dt><dd id="co-q-upfront"></dd></div>
               <div><dt id="co-q-compute-l">You’ll pay if you use it</dt><dd id="co-q-compute"></dd></div>
               <div id="co-q-be-row" hidden><dt>Pays off above</dt><dd id="co-q-be"></dd></div>
@@ -159,7 +158,7 @@
               <li><b>Window starts</b><span id="co-t-start"></span></li>
               <li><b>Window ends</b><span id="co-t-end"></span></li>
             </ol>
-            <p class="co-note">Not claimed by the deadline? It expires and the upfront fee is kept.</p>
+            <p class="co-note">Not claimed by the deadline? It expires, and any upfront fee is kept.</p>
             <button class="btn co-buy" id="co-buy" type="button">Buy protection <span aria-hidden="true">→</span></button>
           </aside>
         </div>
@@ -184,7 +183,7 @@
       </div>
       <ol class="flow">
         <li class="stage"><span class="step-number">01 <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></span><h3>Choose your compute</h3><p>Choose the GPU, hours, provider, and usage window. Check the price and the deadline to request access.</p></li>
-        <li class="stage"><span class="step-number">02 <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></span><h3>Secure your price</h3><p>Pay for protection and booking. The agreed rental price stays fixed even if GPU prices rise.</p></li>
+        <li class="stage"><span class="step-number">02 <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></span><h3>Secure your price</h3><p>Pay for the protection upfront. The agreed rental price stays fixed even if GPU prices rise.</p></li>
         <li class="stage"><span class="step-number">03 <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5 5 19M5 5v14h14"/></svg></span></span><h3>Use it when you need it</h3><p>Request access by the deadline, pay the agreed price, and receive usable compute access. You can also leave it unused or try to sell it.</p></li>
       </ol>
       <div class="clarification"><span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v11h14m-5-5 5 5-5 5"/></svg></span><p><strong>The supplier would provide the compute.</strong> The plan is to back each agreement with reserved capacity or a binding provider commitment. Supplier arrangements and checks are still being developed.</p></div>
@@ -207,7 +206,7 @@
     </div></section>
 
     <section class="sec example-section" id="example" aria-labelledby="example-title"><div class="wrap">
-      <div class="sec-head"><div><p class="eyebrow">Example</p><h2 id="example-title">What would it cost?</h2></div><p>In this example, $22 upfront locks in 100 H100 GPU-hours at $3 an hour. Using the compute costs another $300.</p></div>
+      <div class="sec-head"><div><p class="eyebrow">Example</p><h2 id="example-title">What would it cost?</h2></div><p>In this example, $20 upfront locks in 100 H100 GPU-hours at $3 an hour. Using the compute costs another $300.</p></div>
       <article class="example-card" aria-labelledby="contract-title">
         <div class="example-terms">
           <p class="example-label">Example only — not an offer</p>
@@ -216,7 +215,6 @@
             <div><dt>Compute covered</dt><dd>100 <span>GPU-hours</span></dd></div>
             <div><dt>Secured rental price</dt><dd>$3.00 <span>/ GPU-hour</span></dd></div>
             <div><dt>Protection payment</dt><dd>$20 <span>paid upfront</span></dd></div>
-            <div><dt>Dodona booking fee</dt><dd>$2 <span>paid upfront</span></dd></div>
             <div><dt>GPU setup</dt><dd>1 H100 <span>× 100 hours</span></dd></div>
             <div><dt>Request access by</dt><dd class="term-text">Before the <span>agreed usage window</span></dd></div>
           </dl>
@@ -224,14 +222,14 @@
         </div>
         <div class="example-results">
           <div class="result-card"><p>Pay for compute when you use it</p><strong>$300</strong><span class="formula">100 GPU-hours × $3.00 = $300</span></div>
-          <div class="result-card result-lime"><p>Compute access</p><strong>100 <small>GPU-hours</small></strong><span>$300 compute + $20 protection + $2 booking = $322 total</span></div>
-          <div class="downside"><span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span><p><strong>If it expires unused,</strong> the $20 protection payment and $2 booking fee are not refunded. You receive no compute.</p></div>
+          <div class="result-card result-lime"><p>Compute access</p><strong>100 <small>GPU-hours</small></strong><span>$300 compute + $20 protection = $320 total</span></div>
+          <div class="downside"><span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span><p><strong>If it expires unused,</strong> the $20 protection payment is not refunded. You receive no compute.</p></div>
         </div>
       </article>
-      <div class="decision-head"><h3>If rental prices change</h3><p>Same GPU and usage window. The rental price here is the average of the daily index over that window. Both examples include the $22 upfront payment and exclude taxes or other charges.</p></div>
+      <div class="decision-head"><h3>If rental prices change</h3><p>Same GPU and usage window. The rental price here is the average of the daily index over that window. Both examples include the $20 upfront payment and exclude taxes or other charges.</p></div>
       <div class="decision-grid" data-tour="costs">
-        <article><p class="scenario-label">Rental price rises to $4 an hour</p><h4>Use the price you booked.</h4><p>Renting separately would cost $400. Use your secured price and pay $300, plus $20 protection and $2 booking, for <strong>$322 total, or $78 less</strong>.</p></article>
-        <article><p class="scenario-label">Rental price falls to $2 an hour</p><h4>Rent elsewhere for less.</h4><p>If comparable compute is available for $200, you can rent it elsewhere. With the $22 already paid, that’s <strong>$222 total</strong>. Using your booked price would cost $322.</p></article>
+        <article><p class="scenario-label">Rental price rises to $4 an hour</p><h4>Use the price you booked.</h4><p>Renting separately would cost $400. Use your secured price and pay $300, plus $20 protection, for <strong>$320 total, or $80 less</strong>.</p></article>
+        <article><p class="scenario-label">Rental price falls to $2 an hour</p><h4>Rent elsewhere for less.</h4><p>If comparable compute is available for $200, you can rent it elsewhere. With the $20 already paid, that’s <strong>$220 total</strong>. Using your booked price would cost $320.</p></article>
       </div>
       <p class="scenario-note">A cheaper rental may not be available. Selling your protection would change these totals.</p>
       <p class="scenario-note"><a class="text-link" href="#flexibility">Read about selling your protection <span aria-hidden="true">↓</span></a></p>
@@ -260,16 +258,15 @@
           </ul>
           <a class="text-link" href="/sign-in">Open a provider account <span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a></article>
       </div>
-      <div class="fee-note who-earns"><p class="eyebrow">How Dodona earns</p><p>Dodona keeps 15% of each cap fee and a $2 booking fee per order, and earns nothing on the compute itself. Money moves through the escrow agent, and Dodona never holds funds or takes the other side.</p></div>
+      <div class="fee-note who-earns"><p class="eyebrow">How Dodona earns</p><p>Dodona keeps 15% of each cap fee. Under the proposed model it also takes 1% of each compute bill delivered through Dodona, paid from the neocloud’s side. Money moves through the escrow agent, and Dodona never holds funds or takes the other side.</p></div>
     </div></section>
 
     <section class="sec flexibility-section" id="flexibility" aria-labelledby="flexibility-title"><div class="wrap">
-      <div class="sec-head"><div><p class="eyebrow">Selling your protection</p><h2 id="flexibility-title">If you no longer<br>need the compute</h2></div><p>The plan is to offer two ways to sell before the access deadline. You’d see your payout before accepting. The original booking fee stays paid.</p></div>
+      <div class="sec-head"><div><p class="eyebrow">Selling your protection</p><h2 id="flexibility-title">If you no longer<br>need the compute</h2></div><p>The plan is to offer two ways to sell before the access deadline. You’d see your payout before accepting.</p></div>
       <div class="exit-grid">
         <article class="exit-card" data-tour="resale"><p class="eyebrow">Sell to another user</p><h3>List it on Dodona.</h3><p>Choose an asking price, including what you originally paid. You need a buyer willing to pay it. Dodona takes a fee when the sale completes.</p><dl class="payout"><div><dt>Example sale price</dt><dd>$20.00</dd></div><div><dt>Resale transaction fee · 5%</dt><dd>−$1.00</dd></div><div class="payout-total"><dt>You receive</dt><dd>$19.00</dd></div></dl><p class="exit-note">The buyer gets the remaining compute access on the same terms.</p></article>
         <article class="exit-card exit-card-buyback"><p class="eyebrow">Accept a buyback quote</p><h3>Request a buyback quote.</h3><p>Dodona would arrange a buyback when a supplier commits funds to buy your protection. The quote uses its value today, less the deduction shown below.</p><dl class="payout"><div><dt>Supplier’s funded offer</dt><dd>$20.00</dd></div><div><dt>Buyback deduction · 7.5%</dt><dd>−$1.50</dd></div><div class="payout-total"><dt>You receive</dt><dd>$18.50</dd></div></dl><p class="exit-note">The deduction covers processing and Dodona’s margin. No extra resale fee applies in this example. Quotes depend on supplier funding.</p></article>
       </div>
-      <div class="fee-note"><h3>What happens to the booking fee?</h3><p>It pays for arranging your agreement. It stays paid whether you use the compute, sell the protection, accept a buyback, or let it expire, subject to required refund rights.</p></div>
       <p class="scenario-note">Example fees only. A buyback’s value can rise or fall; it isn’t a fixed percentage of your original payment. Selling and buybacks aren’t available yet.</p>
     </div></section>
 
@@ -310,10 +307,9 @@
         <details id="faq-purpose"><summary>Is this insurance?<span aria-hidden="true">+</span></summary><p>It serves a similar purpose and protects your budget from rising costs. It’s a compute pricing agreement, not an insurance policy. You’d get the choice to rent the agreed compute at a fixed price, rather than an expense reimbursement.</p></details>
         <details id="faq-access"><summary>How would I get the compute?<span aria-hidden="true">+</span></summary><p>Request access by the agreed deadline and pay the booked rental price. The provider would give you GPU access for the agreed window. You’re renting compute, not buying hardware.</p></details>
         <details id="faq-backing"><summary>Who backs the compute?<span aria-hidden="true">+</span></summary><p>The plan is to use reserved capacity or binding provider commitments. Supplier agreements, capacity checks, and terms for failed delivery are still being developed.</p></details>
-        <details id="faq-selling"><summary>Can I sell it for what I paid?<span aria-hidden="true">+</span></summary><p>You could ask that price, but a buyer has to agree. A resale fee applies when the sale completes. The buyer gets your remaining compute access; your booking fee stays paid.</p></details>
+        <details id="faq-selling"><summary>Can I sell it for what I paid?<span aria-hidden="true">+</span></summary><p>You could ask that price, but a buyer has to agree. A resale fee applies when the sale completes. The buyer gets your remaining compute access.</p></details>
         <details id="faq-buyback"><summary>How would a buyback work?<span aria-hidden="true">+</span></summary><p>A supplier would commit funds to buy the protection. Dodona would show you a payout based on its current value, less processing and a service margin. You could accept or try selling to another user. A quote isn’t guaranteed.</p></details>
-        <details id="faq-fees"><summary>What fees would I pay?<span aria-hidden="true">+</span></summary><p>Protection and booking are paid upfront. Compute is paid for if you use it. Selling to another user adds a transaction fee; a buyback includes the deduction shown in its quote. You’d see the fees before confirming.</p></details>
-        <details id="faq-refunds"><summary>Is the booking fee refundable?<span aria-hidden="true">+</span></summary><p>The plan is to keep the booking fee whether you use, sell, accept a buyback, or let the protection expire, subject to required refund rights. Supplier failures and refunds of the protection payment need separate terms; those aren’t final yet.</p></details>
+        <details id="faq-fees"><summary>What fees would I pay?<span aria-hidden="true">+</span></summary><p>Protection is paid upfront. Compute is paid for if you use it. Selling to another user adds a transaction fee; a buyback includes the deduction shown in its quote. You’d see the fees before confirming.</p></details>
         <details id="faq-data"><summary>What happens to my email?<span aria-hidden="true">+</span></summary><p>We use it for product updates and possible early access. We keep signup details until you ask us to remove them. Read our <a href="/privacy">signup policy</a> or email us to unsubscribe.</p></details>
       </div>
     </div></section>

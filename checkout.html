@@ -55,8 +55,9 @@
             </section>
 
             <section class="c-ctr" aria-labelledby="co-pay-h">
-              <div class="c-ctr-h"><div><h2 id="co-pay-h">2 · Pay by card <span class="tag d-tag-demo">demo data</span></h2><p>The card number is never stored; only the brand and last four digits are kept.</p></div></div>
+              <div class="c-ctr-h"><div><h2 id="co-pay-h"><span id="co-pay-t">2 · Pay by card</span> <span class="tag d-tag-demo">demo data</span></h2><p id="co-pay-p">The card number is never stored; only the brand and last four digits are kept.</p></div></div>
               <form class="p-form" id="co-form" method="post" action="/checkout" novalidate autocomplete="on">
+                <div id="co-card">
                 <div class="field"><label for="co-name">Name on card</label><input id="co-name" type="text" autocomplete="cc-name" required maxlength="80"></div>
                 <div class="p-card-row">
                   <div class="field"><label for="co-number">Card number</label><input id="co-number" type="text" inputmode="numeric" autocomplete="cc-number" required maxlength="23" spellcheck="false" placeholder="4242 4242 4242 4242"></div>
@@ -72,9 +73,11 @@
                   </ul>
                   <p class="fine">Any future expiry and any three-digit CVC. Any other number that passes the Luhn check also succeeds.</p>
                 </aside>
+                </div>
+                <p class="p-none" id="co-none" hidden>Nothing to pay now. A fixed price has no premium, so there is no card to enter. The compute bill comes at settlement, at the fixed price.</p>
                 <p class="p-err" id="co-err" role="alert"></p>
                 <button type="submit" class="btn btn-primary p-pay" id="co-pay"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg><span id="co-pay-lbl">Pay</span></button>
-                <p class="fine">Paid through the escrow agent. Dodona never holds funds. The premium goes 85% to the neocloud and 15% to Dodona.</p>
+                <p class="fine" id="co-pay-fine">Paid through the escrow agent. Dodona never holds funds. The premium goes 85% to the neocloud and 15% to Dodona.</p>
               </form>
             </section>
           </div>

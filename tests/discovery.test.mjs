@@ -92,7 +92,8 @@ test('machine figures match the visible totals and payout examples', async t => 
   t.after(() => f.cleanup());
   const { example } = await (await fetch(f.origin + '/api/site')).json();
   const html = await (await fetch(f.origin + '/')).text();
-  assert.equal(example.protectionPayment + example.bookingFee, example.upfrontTotal);
+  assert.equal(example.protectionPayment, example.upfrontTotal);
+  assert.ok(!('bookingFee' in example), 'no flat per-order fee');
   assert.equal(example.gpuHours * example.rentalPricePerGpuHour, example.computePayment);
   assert.equal(example.computePayment + example.upfrontTotal, example.totalIfUsed);
   assert.equal(example.resale.salePrice - example.resale.fee, example.resale.sellerPayout);

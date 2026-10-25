@@ -55,7 +55,7 @@ try {
   check(price === apiLock.strike && cents(price, Math.round(apiLock.forward * 1.02 * 100) / 100), 'fixed price is the pricing engine forward plus 2%');
   check((await page.locator('#co-q-source').innerText()).includes('pricing v0'), 'quote is labelled as priced by the engine');
   const fee = await money(page, 'co-q-fee'), upfront = await money(page, 'co-q-upfront'), compute = await money(page, 'co-q-compute');
-  check(fee === 0 && upfront === 2, 'a lock has no fee and pays only the $2 booking fee now');
+  check(fee === 0 && upfront === 0, 'a lock has no fee and nothing to pay now');
   check(cents(compute, price * 1344), 'cost if used is the fixed price times GPU-hours');
   check(cents(await money(page, 'co-q-total'), upfront + compute), 'all-in adds pay now and cost if used');
   check((await page.locator('#co-q-per').innerText()) === 'included in the fixed price', 'lock fee explains the margin is in the price');

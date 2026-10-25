@@ -15,7 +15,7 @@ async function connect(t, origin) {
   t.after(() => client.close());
   return client;
 }
-const details = time => ({ gpuType: 'H100', gpuCount: 1, gpuHours: 100, region: 'US East', usageStartsAt: new Date(time + 86400000).toISOString(), usageEndsAt: new Date(time + 6 * 86400000).toISOString(), maxUpfrontUsd: 22, maxTotalIfUsedUsd: 322 });
+const details = time => ({ gpuType: 'H100', gpuCount: 1, gpuHours: 100, region: 'US East', usageStartsAt: new Date(time + 86400000).toISOString(), usageEndsAt: new Date(time + 6 * 86400000).toISOString(), maxUpfrontUsd: 20, maxTotalIfUsedUsd: 320 });
 
 test('real MCP client discovers tools, resources, questions, and a booking prompt', async t => {
   const server = createApp({ store: null });
@@ -49,9 +49,9 @@ test('MCP quote and confirmed receipt remain simulated, repeatable, and do not w
   assert.equal(quote.isError, false);
   const data = quote.structuredContent;
   assert.equal(data.mode, 'demo');
-  assert.equal(data.prices.upfrontTotalCents, 2200);
+  assert.equal(data.prices.upfrontTotalCents, 2000);
   assert.equal(data.prices.computePaymentIfUsedCents, 30000);
-  assert.equal(data.prices.totalIfUsedCents, 32200);
+  assert.equal(data.prices.totalIfUsedCents, 32000);
   assert.match(data.disclaimer, /DEMO ONLY/);
   const withoutConfirmation = await client.callTool({ name: 'confirm_demo_reservation', arguments: { quoteToken: data.quoteToken, userConfirmed: false } });
   assert.equal(withoutConfirmation.isError, true);
@@ -86,8 +86,8 @@ test('signed quotes reject altered terms, wrong secrets, invalid windows, unsupp
     { usageStartsAt: 'tomorrow' }, { usageStartsAt: '2027-02-30T00:00:00Z' },
     { usageStartsAt: '2027-01-01T00:00:00' }, { region: 'bad\nregion' }, { mode: 'live' },
   ]) assert.throws(() => demos.quote({ ...request, ...patch }), { code: 'INVALID_DETAILS' });
-  assert.throws(() => demos.quote({ ...request, maxUpfrontUsd: 21.99 }), { code: 'BUDGET_EXCEEDED' });
-  assert.throws(() => demos.quote({ ...request, maxTotalIfUsedUsd: 321.99 }), { code: 'BUDGET_EXCEEDED' });
+  assert.throws(() => demos.quote({ ...request, maxUpfrontUsd: 19.99 }), { code: 'BUDGET_EXCEEDED' });
+  assert.throws(() => demos.quote({ ...request, maxTotalIfUsedUsd: 319.99 }), { code: 'BUDGET_EXCEEDED' });
   assert.throws(() => demos.quote({ ...request, usageEndsAt: request.usageStartsAt }), { code: 'INVALID_WINDOW' });
   assert.throws(() => demos.quote({ ...request, usageEndsAt: new Date(time + 2 * 86400000).toISOString() }), { code: 'WINDOW_TOO_SHORT' });
   const parallel = demos.quote({ ...request, gpuCount: 2, usageEndsAt: new Date(time + 4 * 86400000).toISOString() });
@@ -177,7 +177,7 @@ test('quote_cap prices a cap from the injected index and returns text plus struc
   assert.equal(quote.isError, false);
   assert.equal(quote.structuredContent.method, 'black76-asian-v0');
   assert.equal(quote.structuredContent.gpuHours, 64 * 168);
-  assert.equal(quote.structuredContent.payNow, quote.structuredContent.premiumTotal + 2);
+  assert.equal(quote.structuredContent.payNow, quote.structuredContent.premiumTotal);
   assert.match(quote.content[0].text, /Pays off above \$2\.\d\d per GPU-hour/);
   assert.match(quote.content[0].text, /demonstration only/);
   assert.doesNotMatch(quote.content[0].text, /buyback|book-out|cash settlement|sell back|rating|offshore/i);

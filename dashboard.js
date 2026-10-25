@@ -454,9 +454,9 @@ function positionsCsv() {
 }
 
 function billingCsv() {
-  const lines = [['Invoice', 'Month', 'Premiums USD', 'Of which platform fee USD', 'Booking fees USD', 'Total USD', 'Status', 'Positions']];
+  const lines = [['Invoice', 'Month', 'Premiums USD', 'Of which platform fee USD', 'Total USD', 'Status', 'Positions']];
   for (const row of v.billingMonths(positions(), state.data.asOf)) {
-    lines.push([row.id, row.month, row.premiums.toFixed(2), row.platformFee.toFixed(2), row.bookingFees.toFixed(2), row.total.toFixed(2), row.status, row.positions.join(' ')]);
+    lines.push([row.id, row.month, row.premiums.toFixed(2), row.platformFee.toFixed(2), row.total.toFixed(2), row.status, row.positions.join(' ')]);
   }
   saveCsv(lines, `dodona-billing-${state.data.asOf}.csv`, 'Billing CSV downloaded.');
 }
@@ -479,7 +479,7 @@ function renderSettings() {
         <tr><td>${esc(s.email)}</td><td>Admin</td></tr><tr><td>finance@${esc(domain)}</td><td>Finance</td></tr></tbody></table></div></section>
     <section class="c-ctr c-s12" aria-labelledby="d-set-bill">${head('d-set-bill', `${v.icon('receipt', 'c-h-ic')}Billing ${v.tag('demo')}`, `Next invoice ${esc(v.shortDate(nextInvoice))} · paid through the escrow agent · Dodona never holds funds.`, smallBtn('data-act="billing-csv"', 'download', 'Export CSV'))}
       <div class="c-ctr-b">${v.billingPanel(positions(), state.data.asOf)}</div></section>
-    <section class="c-ctr c-s12" aria-labelledby="d-set-stmt">${head('d-set-stmt', `${v.icon('file-text', 'c-h-ic')}Statements ${v.tag('demo')}`, 'Premiums, booking fees, compute bills and payouts by month.', `<a class="btn btn-sm" href="/api/statements.csv" download>${v.icon('download')}<span>Download CSV</span></a>`)}
+    <section class="c-ctr c-s12" aria-labelledby="d-set-stmt">${head('d-set-stmt', `${v.icon('file-text', 'c-h-ic')}Statements ${v.tag('demo')}`, 'Premiums, compute bills and payouts by month.', `<a class="btn btn-sm" href="/api/statements.csv" download>${v.icon('download')}<span>Download CSV</span></a>`)}
       <div id="d-statements"></div></section>
     <section class="c-ctr c-s6" aria-labelledby="d-set-note">${head('d-set-note', 'Notifications', 'Email alerts for this account. They land in the Emails screen.')}<div class="d-toggles">
       <label class="d-toggle">Index moves over 3% on my GPUs<input type="checkbox" checked></label>

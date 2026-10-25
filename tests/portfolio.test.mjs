@@ -5,7 +5,7 @@ import { fallbackHistory } from '../lib/prices.mjs';
 import { getPortfolio, valueCall, valuePut } from '../lib/portfolio.mjs';
 import {
   exerciseQuote, intrinsicAt, providerScenarios, fleetUnderShock, FOOTER_LINE,
-  coverage, savingsToDate, upcomingEvents, billingMonths, PLANNED_GPUS, BOOKING_FEE,
+  coverage, savingsToDate, upcomingEvents, billingMonths, PLANNED_GPUS,
 } from '../dashboard-view.js';
 import { listen, close } from './fixture.mjs';
 
@@ -209,6 +209,6 @@ test('console panels: coverage, savings, upcoming dates and billing come from th
   const invoices = billingMonths(p.positions, TODAY);
   assert.deepEqual(invoices.map(i => [i.id, i.status]), [['INV-202610', 'due'], ['INV-202609', 'paid']]);
   close6(invoices[1].premiums, 0.12 * 256 * 62 * 24, 'H2 premium billed in September');
-  close6(invoices[0].total, 0.25 * 64 * 7 * 24 + BOOKING_FEE, 'H7 premium plus a booking fee in October');
+  close6(invoices[0].total, 0.25 * 64 * 7 * 24, 'the H7 premium alone in October');
   close6(invoices[0].platformFee, invoices[0].premiums * 0.15, 'platform share sits inside the premium');
 });

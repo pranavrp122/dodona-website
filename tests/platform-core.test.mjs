@@ -4,6 +4,8 @@ import { platformFixture } from './fixture.mjs';
 import { openDatabase, all } from '../lib/db.mjs';
 import { verifyPassword } from '../lib/auth.mjs';
 import { luhn, brandOf } from '../lib/payments.mjs';
+import { applySchema, SCHEMA_VERSION } from '../lib/schema.mjs';
+import { DatabaseSync } from 'node:sqlite';
 
 const BUYER = 'demo@dodona.markets';
 const card = (number = '4242 4242 4242 4242') => ({ number, expMonth: 12, expYear: 2030, cvc: '123', name: 'Sam Sample' });
@@ -133,7 +135,7 @@ test('the offer board lists caps, floors and locks from both neoclouds with filt
   assert.equal((await f.anonymous.get('/api/offers/of_missing')).status, 404);
 });
 
-test('an order from an offer carries the full breakdown; a lock has only the booking fee', async t => {
+test('an order from an offer carries the full breakdown; a cap pays its premium now and a lock pays nothing now', async t => {
   const f = await setup(t);
   const buyer = await f.as(BUYER);
   const offer = await firstOffer(buyer, 'cap');
@@ -145,13 +147,13 @@ test('an order from an offer carries the full breakdown; a lock has only the boo
   assert.equal(order.gpuHours, hours);
   assert.equal(order.breakdown.premiumTotal, Math.round(offer.premiumPerGpuHour * hours * 100) / 100);
   assert.equal(order.breakdown.platformFee, Math.round(order.breakdown.premiumTotal * 0.15 * 100) / 100);
-  assert.equal(order.breakdown.bookingFee, 2);
-  assert.equal(order.breakdown.payNow, Math.round((order.breakdown.premiumTotal + 2) * 100) / 100);
+  assert.ok(!('bookingFee' in order.breakdown), 'no flat per-order fee');
+  assert.equal(order.breakdown.payNow, order.breakdown.premiumTotal, 'a cap pays the premium up front and nothing else');
   assert.equal(order.breakdown.breakEven, Math.round((offer.strike + offer.premiumPerGpuHour) * 100) / 100);
   assert.equal(order.payNow, order.breakdown.payNow, 'flat copy of the breakdown');
   const lock = await buyer.post('/api/orders', { offerId: (await firstOffer(buyer, 'lock')).id, count: 8 });
   assert.equal(lock.data.order.premiumTotal, 0);
-  assert.equal(lock.data.order.payNow, 2);
+  assert.equal(lock.data.order.payNow, 0);
   assert.equal(lock.data.order.breakEven, null);
   for (const [body, status] of [[{ offerId: offer.id, count: 4 }, 400], [{ offerId: offer.id, count: 129 }, 400], [{ offerId: 'of_nope', count: 8 }, 404], [{ offerId: offer.id, count: 8, extra: 1 }, 400]]) {
     assert.equal((await buyer.post('/api/orders', body)).status, status, JSON.stringify(body));
@@ -192,7 +194,7 @@ test('mock payment: success reserves capacity, declines answer 402 and leave the
   const paid = await buyer.post(`/api/orders/${order.ref}/pay`, { card: card() });
   assert.equal(paid.status, 200);
   assert.equal(paid.data.order.status, 'reserving');
-  assert.deepEqual(paid.data.order.payment, { brand: 'Visa', last4: '4242' });
+  assert.deepEqual(paid.data.order.payment, { method: 'card', brand: 'Visa', last4: '4242' });
   assert.equal((await buyer.post(`/api/orders/${order.ref}/pay`, { card: card() })).status, 409, 'cannot pay twice');
   const detail = (await buyer.get(`/api/orders/${order.ref}`)).data;
   assert.deepEqual(detail.events.map(e => [e.type, e.direction]), [['reservation.requested', 'dodona_to_neocloud']]);
@@ -203,6 +205,29 @@ test('mock payment: success reserves capacity, declines answer 402 and leave the
   const other = await f.as('credit@meridian.example');
   assert.equal((await other.get(`/api/orders/${order.ref}`)).status, 404, 'other accounts cannot see it');
   assert.equal((await other.post(`/api/orders/${order.ref}/pay`, { card: card() })).status, 404);
+});
+
+test('a lock confirms with nothing to pay and moves on exactly like a paid cap', async t => {
+  const f = await setup(t);
+  const buyer = await f.as(BUYER);
+  const cap = (await buyer.post('/api/orders', { offerId: (await firstOffer(buyer, 'cap')).id, count: 8 })).data.order;
+  const capPaid = await buyer.post(`/api/orders/${cap.ref}/pay`, { card: card() });
+  const lock = (await buyer.post('/api/orders', { offerId: (await firstOffer(buyer, 'lock')).id, count: 8 })).data.order;
+  assert.equal(lock.payNow, 0);
+  const confirmed = await buyer.post(`/api/orders/${lock.ref}/pay`, {});
+  assert.equal(confirmed.status, 200, 'no card is needed when nothing is due');
+  assert.equal(confirmed.data.order.status, capPaid.data.order.status, 'same post-payment status as a paid cap');
+  assert.equal(confirmed.data.order.status, 'reserving');
+  assert.deepEqual(confirmed.data.order.payment, { method: 'none', brand: null, last4: null });
+  assert.equal((await buyer.post(`/api/orders/${lock.ref}/pay`, {})).status, 409, 'cannot confirm twice');
+  const detail = (await buyer.get(`/api/orders/${lock.ref}`)).data;
+  assert.deepEqual(detail.events.map(e => [e.type, e.direction]), [['reservation.requested', 'dodona_to_neocloud']]);
+  assert.deepEqual(detail.payouts, [], 'no premium to split');
+  const receipt = detail.emails.find(e => e.subject === `Receipt for ${lock.ref}`);
+  assert.ok(receipt.body.includes('Nothing was charged now') && receipt.body.includes('compute bill comes at settlement'));
+  assert.ok(!/payment of \$/.test(receipt.body));
+  const still = (await buyer.post('/api/orders', { offerId: (await firstOffer(buyer, 'cap')).id, count: 8 })).data.order;
+  assert.equal((await buyer.post(`/api/orders/${still.ref}/pay`, {})).data.error.code, 'invalid_card', 'a cap still needs a card');
 });
 
 test('no card number or CVC is stored or logged anywhere', async t => {
@@ -286,4 +311,27 @@ test('the platform is on by default outside production and needs DEMO_PLATFORM=1
   assert.equal(platformEnabled({ production: true, environment: {} }), false);
   assert.equal(platformEnabled({ production: true, environment: { DEMO_PLATFORM: '1' } }), true);
   assert.equal(platformEnabled({ production: false, environment: { DEMO_PLATFORM: '0' } }), false);
+});
+
+test('an older database loses the flat fee column once, keeps its rows and amounts, and a second run changes nothing', () => {
+  const db = new DatabaseSync(':memory:');
+  applySchema(db, '2026-10-01T00:00:00.000Z');
+  db.exec("ALTER TABLE orders ADD COLUMN booking_fee REAL NOT NULL DEFAULT 2");
+  db.exec("UPDATE schema_version SET version = 2");
+  db.exec('PRAGMA foreign_keys = OFF');
+  db.prepare(`INSERT INTO orders (ref, account_id, neocloud_id, gpu, config, region, kind, count, start, end, strike, premium_per_gpu_hour, premium_total, platform_fee, pay_now, gpu_hours, status, ordered_at, created_at, updated_at)
+    VALUES ('DOD-OLD', 'acc_1', 'nc_1', 'H100', 'SXM-IB', 'US East', 'cap', 8, '2026-11-01', '2026-11-08', 2.5, 0.1, 134.4, 20.16, 136.4, 1344, 'paid', '2026-10-01', '2026-10-01', '2026-10-01')`).run();
+  db.prepare("INSERT INTO payments (id, order_ref, account_id, amount, brand, last4, status, at, created_at, updated_at) VALUES ('pay_old', 'DOD-OLD', 'acc_1', 136.4, 'Visa', '4242', 'succeeded', '2026-10-01', '2026-10-01', '2026-10-01')").run();
+  db.exec('PRAGMA foreign_keys = ON');
+  const columns = () => db.prepare('PRAGMA table_info(orders)').all().map(c => c.name);
+  assert.ok(columns().includes('booking_fee'));
+  applySchema(db, '2026-10-24T00:00:00.000Z');
+  assert.ok(!columns().includes('booking_fee'), 'the column is dropped');
+  assert.equal(db.prepare('SELECT version FROM schema_version').get().version, SCHEMA_VERSION);
+  assert.equal(SCHEMA_VERSION, 3);
+  assert.equal(db.prepare("SELECT pay_now FROM orders WHERE ref = 'DOD-OLD'").get().pay_now, 136.4, 'recorded amounts stay as they were');
+  assert.equal(db.prepare("SELECT amount FROM payments WHERE id = 'pay_old'").get().amount, 136.4);
+  applySchema(db, '2026-10-25T00:00:00.000Z');
+  assert.deepEqual(columns().filter(c => c === 'booking_fee'), [], 'running again is a no-op');
+  db.close();
 });

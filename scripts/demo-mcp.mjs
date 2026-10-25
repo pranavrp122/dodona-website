@@ -22,9 +22,9 @@ try {
   const quote = await call('quote_demo_reservation', {
     gpuType: 'H100', gpuCount: 1, gpuHours: 100, region: 'US East (demo preference)',
     usageStartsAt: new Date(starts).toISOString(), usageEndsAt: new Date(starts + 5 * 86400000).toISOString(),
-    maxUpfrontUsd: 22, maxTotalIfUsedUsd: 322,
+    maxUpfrontUsd: 20, maxTotalIfUsedUsd: 320,
   });
-  console.log('DEMO ONLY: $22 upfront ($20 protection + $2 booking); $300 for compute if used; $322 total before taxes or other charges.');
+  console.log('DEMO ONLY: $20 upfront for protection; $300 for compute if used; $320 total before taxes or other charges.');
   // This scripted demo intentionally simulates confirmation. It never joins the
   // real waitlist, takes a payment, reserves capacity, or creates a stored booking.
   const receipt = await call('confirm_demo_reservation', { quoteToken: quote.quoteToken, userConfirmed: true });

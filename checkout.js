@@ -11,7 +11,7 @@ const QTY = [1, 2, 4, 8, 16, 32, 64, 128, 256];
 const RFQ = "rfq";
 const HOUR = 3600000, DAY = 24 * HOUR, YEAR = 365 * DAY;
 const MIN_LEAD = 48 * HOUR, MAX_LEAD = YEAR, MIN_WINDOW = 4 * HOUR, CLAIM_BEFORE = 24 * HOUR;
-const BOOKING_FEE = 2, FEE_FACTOR = 0.4, CAP_FEE_FACTOR = 0.6, PLATFORM_FEE_SHARE = 0.15;
+const FEE_FACTOR = 0.4, CAP_FEE_FACTOR = 0.6, PLATFORM_FEE_SHARE = 0.15;
 const DRIFT_CLAMP = 0.3, WEEK_POINTS = 7, MIN_WEEKLY_POINTS = 8, MAX_STRIKE = 1000;
 const CONFIG = "SXM-IB";
 const PRICE_TIMEOUT = 3000, QUOTE_TIMEOUT = 3000, QUOTE_DEBOUNCE = 250;
@@ -211,7 +211,7 @@ function offlineQuote(q) {
   const premiumTotal = round2(per * q.gpuHours);
   return {
     gpuHours: q.gpuHours, type: cap ? "call" : "lock", strike, premiumPerGpuHour: per, premiumTotal,
-    platformFee: round2(premiumTotal * PLATFORM_FEE_SHARE), bookingFee: BOOKING_FEE, payNow: round2(premiumTotal + BOOKING_FEE),
+    platformFee: round2(premiumTotal * PLATFORM_FEE_SHARE), payNow: premiumTotal,
     costIfUsed: round2(strike * q.gpuHours), breakEven: cap ? round2(strike + per) : null,
     forward: forwardFor(q.g, q.w), spot: s.today, vol: s.vol, volSampling: "daily", tYears: years, tEffYears: years,
     method: "indicative (offline)", asOf: m.asOf,
@@ -421,10 +421,10 @@ function summaryRows({ q, result }) {
     ["Compute", `${q.g} · ${qtyLabel(q.n)}`, q.region + " (preference)"],
     ["Window", `${fmtLong(q.w.start, q.w.tz)} → ${fmtLong(q.w.end, q.w.tz)}`, `${q.w.hours} h · ${q.gpuHours.toLocaleString("en-US")} GPU-hours`],
     ["UTC", fmtUtcRange(q.w.start, q.w.end)],
-    ["Claim by", fmtLong(q.claim, q.w.tz), "Unclaimed bookings expire; the upfront fee is kept."],
+    ["Claim by", fmtLong(q.claim, q.w.tz), "Unclaimed hours expire, and any upfront fee is kept."],
     cap ? ["Protection", `Price cap at ${perHour(d.strike)}`, `Hours billed at the lower of the window’s average index price and the cap. Pays off above ${perHour(d.breakEven)}`]
       : ["Protection", `Fixed price ${perHour(d.strike)}`, "The forward price plus a 2% provider margin"],
-    ["Pay now", usd2(d.payNow), `Fee ${usd2(d.premiumTotal)} (of which Dodona fee ${usd2(d.platformFee)}) + booking ${usd2(BOOKING_FEE)}`, true],
+    d.payNow > 0 ? ["Pay now", usd2(d.payNow), `The fee, of which Dodona keeps ${usd2(d.platformFee)}`, true] : ["Pay now", usd2(0), "Nothing to pay now. A fixed price has no fee.", true],
     [cap ? "Most you’ll pay if you use it" : "You’ll pay if you use it", usd2(d.costIfUsed)],
     [cap ? "All-in, at most" : "All-in, if used", usd2(round2(d.payNow + d.costIfUsed)), null, true],
     ["Pricing", result.offline ? "Indicative (offline)" : `${d.method} · index as of ${fmtDay(d.asOf)}`],

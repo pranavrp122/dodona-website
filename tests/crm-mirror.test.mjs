@@ -14,7 +14,7 @@ function demoDb() {
     CREATE TABLE accounts (id TEXT PRIMARY KEY, email TEXT, company TEXT, role TEXT, kyb TEXT, stage TEXT, phone TEXT, neocloud_id TEXT, demo_now TEXT, scenario TEXT, last_active_at TEXT, password_hash TEXT, salt TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE sessions (token TEXT PRIMARY KEY, account_id TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE notes (id TEXT PRIMARY KEY, account_id TEXT, author TEXT, text TEXT, created_at TEXT, updated_at TEXT);
-    CREATE TABLE orders (ref TEXT PRIMARY KEY, account_id TEXT, offer_id TEXT, neocloud_id TEXT, gpu TEXT, count INTEGER, region TEXT, kind TEXT, strike REAL, start TEXT, "end" TEXT, status TEXT, delivery_choice TEXT, premium_per_gpu_hour REAL, premium_total REAL, platform_fee REAL, booking_fee REAL, pay_now REAL, settlement_json TEXT, created_at TEXT, updated_at TEXT);
+    CREATE TABLE orders (ref TEXT PRIMARY KEY, account_id TEXT, offer_id TEXT, neocloud_id TEXT, gpu TEXT, count INTEGER, region TEXT, kind TEXT, strike REAL, start TEXT, "end" TEXT, status TEXT, delivery_choice TEXT, premium_per_gpu_hour REAL, premium_total REAL, platform_fee REAL, pay_now REAL, settlement_json TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE payments (id TEXT PRIMARY KEY, order_ref TEXT, account_id TEXT, amount REAL, brand TEXT, last4 TEXT, status TEXT, code TEXT, created_at TEXT, updated_at TEXT);
     CREATE TABLE activity (id INTEGER PRIMARY KEY AUTOINCREMENT, account_id TEXT, session_id TEXT, at TEXT, kind TEXT, page TEXT, target TEXT, detail TEXT, ok INTEGER, created_at TEXT);
   `);
@@ -25,10 +25,10 @@ function demoDb() {
   db.prepare('INSERT INTO sessions VALUES (?,?,?,?)').run('a'.repeat(64), 'acc_1', T1, T1);
   db.prepare('INSERT INTO notes VALUES (?,?,?,?,?,?)').run('note_1', 'acc_1', 'admin@dodona.markets', 'Walked through caps.', T1, T1);
   const settlement = { windowAvg: 2.7, strike: 2.5, hours: 1344, kind: 'cap', computeBill: 3360, saving: 268.8, resaleProceeds: 0, premiumPaid: 1000, netResult: -731.2, computedAt: T2 };
-  const order = db.prepare('INSERT INTO orders VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-  order.run('DOD-1', 'acc_1', 'off_1', 'nc_1', 'H100', 8, 'US East', 'cap', 2.5, T1, T2, 'settled', 'deliver', 0.1234, 1000, 150, 2, 1002, JSON.stringify(settlement), T1, T1);
-  order.run('DOD-2', 'acc_1', 'off_2', 'nc_1', 'H200', 4, 'US West', 'lock', 3.1, T1, T2, 'paid', 'deliver', 0, 0, 0, 2, 2, null, T1, T1);
-  db.prepare('INSERT INTO payments VALUES (?,?,?,?,?,?,?,?,?,?)').run('pay_1', 'DOD-1', 'acc_1', 1002, 'Visa', '4242', 'succeeded', null, T1, T1);
+  const order = db.prepare('INSERT INTO orders VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+  order.run('DOD-1', 'acc_1', 'off_1', 'nc_1', 'H100', 8, 'US East', 'cap', 2.5, T1, T2, 'settled', 'deliver', 0.1234, 1000, 150, 1000, JSON.stringify(settlement), T1, T1);
+  order.run('DOD-2', 'acc_1', 'off_2', 'nc_1', 'H200', 4, 'US West', 'lock', 3.1, T1, T2, 'paid', 'deliver', 0, 0, 0, 0, null, T1, T1);
+  db.prepare('INSERT INTO payments VALUES (?,?,?,?,?,?,?,?,?,?)').run('pay_1', 'DOD-1', 'acc_1', 1000, 'Visa', '4242', 'succeeded', null, T1, T1);
   return db;
 }
 
@@ -74,9 +74,11 @@ test('a sync upserts every table with merge-duplicates and never sends secrets o
   const sent = JSON.stringify(fake.calls.map(c => c.body));
   for (const secret of ['secret-hash', 'secret-salt', 'scrypt', 'a'.repeat(64), '4242', 'Visa', 'password', 'last4', 'brand', 'token', 'cvc']) assert.equal(sent.includes(secret), false, secret);
   assert.deepEqual(fake.calls[0].body[0], { id: 'acc_1', email: 'demo@dodona.markets', company: 'Sample Labs', role: 'buyer', kyb: 'verified', stage: 'demo', phone: null, neocloud_id: null, demo_now: T1, scenario: 'market', last_active_at: T1, created_at: T1, updated_at: T1 });
-  assert.deepEqual(fake.calls[3].body[0], { id: 'pay_1', order_ref: 'DOD-1', account_id: 'acc_1', amount: 1002, status: 'succeeded', outcome: null, created_at: T1, updated_at: T1 });
+  assert.deepEqual(fake.calls[3].body[0], { id: 'pay_1', order_ref: 'DOD-1', account_id: 'acc_1', amount: 1000, status: 'succeeded', outcome: null, created_at: T1, updated_at: T1 });
   assert.deepEqual(fake.calls[4].body, [{ order_ref: 'DOD-1', account_id: 'acc_1', kind: 'cap', window_avg: 2.7, strike: 2.5, hours: 1344, compute_bill: 3360, saving: 268.8, payout: null, resale_proceeds: 0, premium_paid: 1000, net_result: -731.2, computed_at: T2, updated_at: T1 }]);
   assert.equal(fake.calls[2].body[0].window_end, T2);
+  assert.equal(fake.calls[2].body[0].pay_now, 1000);
+  assert.ok(!('booking_fee' in fake.calls[2].body[0]), 'no flat per-order fee is mirrored');
   // Only the failed call goes to Supabase; the click stays local.
   assert.deepEqual(fake.calls[5].body, [{ id: 1, account_id: 'acc_1', session_id: 'ab12cd34', at: T1, kind: 'api', page: '/api/orders/DOD-1/pay', target: null, detail: { method: 'POST', path: '/api/orders/DOD-1/pay', status: 402, ms: 9, code: 'card_declined', message: 'The card was declined.' }, created_at: T1 }]);
 });
