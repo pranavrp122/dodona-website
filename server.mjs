@@ -288,7 +288,9 @@ export function createApp({
           if (!/^application\/json(?:\s*;|$)/i.test(request.headers['content-type'] || '')) throw new RequestError(415, 'Content-Type must be application/json.');
           const body = await readJson(request);
           response.setHeader('Cache-Control', 'no-store');
-          return await handleMcp(request, response, body, { settings: siteSettings, origin, contractValues, secret: tokenSecret, now, address, getWaitlistStatus, joinWaitlist, logger });
+          // the agent kernel tools let an outside agent hand its goal to a hosted brain the kernel schedules and gates
+          const kernel = demo.enabled ? { boot: demo.boot, prices, now, logger } : null;
+          return await handleMcp(request, response, body, { settings: siteSettings, origin, contractValues, secret: tokenSecret, now, address, getWaitlistStatus, joinWaitlist, logger, kernel });
         } catch (error) {
           if (error instanceof RequestError) return json(response, error.status, { jsonrpc: '2.0', id: null, error: { code: -32000, message: error.message, data: error.details } }, error.status === 429 ? { 'Retry-After': String(error.details.retryAfter || 60) } : {});
           throw error;

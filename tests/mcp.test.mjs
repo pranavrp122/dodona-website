@@ -24,7 +24,7 @@ test('real MCP client discovers tools, resources, questions, and a booking promp
   const client = await connect(t, origin);
   assert.match(client.getInstructions(), /No|unavailable/);
   const { tools } = await client.listTools();
-  assert.deepEqual(tools.map(tool => tool.name).sort(), ['confirm_demo_reservation', 'get_product', 'get_reservation_requirements', 'get_waitlist_status', 'join_waitlist', 'quote_cap', 'quote_demo_reservation']);
+  assert.deepEqual(tools.map(tool => tool.name).sort(), ['agent_status', 'confirm_demo_reservation', 'get_product', 'get_reservation_requirements', 'get_waitlist_status', 'join_waitlist', 'quote_cap', 'quote_demo_reservation', 'run_agents', 'submit_intent']);
   assert.equal(tools.find(tool => tool.name === 'join_waitlist').annotations.readOnlyHint, false);
   const product = await client.callTool({ name: 'get_product', arguments: {} });
   assert.equal(product.structuredContent.capabilities.purchaseProtection, false);

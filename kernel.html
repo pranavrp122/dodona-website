@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent Kernel · Dodona</title>
+  <meta name="description" content="The process table of the agents trading on Dodona: who runs next, what they see, what the kernel let through.">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/kernel.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><a href="/dashboard">Dodona</a><span class="sep">/</span><h1>Agent Kernel</h1></div>
+    <div class="meta" id="meta">
+      <span class="chip" id="model-chip">model …</span>
+      <span class="chip" id="clock-chip">clock …</span>
+      <span class="chip chip-live" id="live-chip">connecting</span>
+    </div>
+    <nav class="actions" aria-label="Kernel controls">
+      <button type="button" data-spawn="hedger">+ cost-hedger</button>
+      <button type="button" data-spawn="floor">+ revenue-floor</button>
+      <button type="button" data-spawn="scout">+ basis-scout</button>
+      <span class="gap"></span>
+      <button type="button" data-tick="1">tick +1d</button>
+      <button type="button" data-tick="7">tick +7d</button>
+      <button type="button" class="primary" data-run="6">run 6 turns</button>
+      <button type="button" id="autopilot">autopilot off</button>
+    </nav>
+  </header>
+
+  <main class="grid">
+    <section class="panel panel-procs" aria-labelledby="procs-h">
+      <div class="panel-head"><h2 id="procs-h">Process table</h2><span class="hint">one row per agent, the kernel owns every number</span></div>
+      <div class="scroll">
+        <table class="procs" id="procs">
+          <thead>
+            <tr>
+              <th>pid</th><th>tenant</th><th>agent</th><th>state</th><th title="scheduler weight">w</th><th title="virtual runtime, lower runs sooner">vruntime</th>
+              <th>turns</th><th>context / budget</th><th>tokens in / out</th><th>model cost</th><th>premium spent</th><th>gpu-h</th><th title="delta-weighted gpu-hours, negative when short">Δ gpu-h</th><th>orders</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <p class="empty" id="procs-empty">No agents yet. Spawn one above, then tick the clock and run.</p>
+      </div>
+    </section>
+
+    <section class="panel panel-latency" aria-labelledby="lat-h">
+      <div class="panel-head"><h2 id="lat-h">Where a turn spends its time</h2><span class="hint">log scale, every tick is 10×</span></div>
+      <ol class="scale" id="scale">
+        <li data-key="risk"><span class="label">risk gate</span><span class="bar"><i></i></span><span class="value">–</span></li>
+        <li data-key="schedule"><span class="label">schedule + assemble</span><span class="bar"><i></i></span><span class="value">–</span></li>
+        <li data-key="submit"><span class="label">submit + gate</span><span class="bar"><i></i></span><span class="value">–</span></li>
+        <li data-key="pipe"><span class="label">node ↔ kernel pipe</span><span class="bar"><i></i></span><span class="value">–</span></li>
+        <li data-key="model" class="model"><span class="label">model call</span><span class="bar"><i></i></span><span class="value">–</span></li>
+      </ol>
+      <dl class="kpis" id="kpis">
+        <div><dt>turns</dt><dd data-kpi="turns">0</dd></div>
+        <div><dt>orders booked</dt><dd data-kpi="orders">0</dd></div>
+        <div><dt>rejected by gate</dt><dd data-kpi="rejected">0</dd></div>
+        <div><dt>model spend</dt><dd data-kpi="spend">0.000¢</dd></div>
+        <div><dt>reasoning share</dt><dd data-kpi="reasoning">–</dd></div>
+        <div><dt>cached prompt</dt><dd data-kpi="cached">–</dd></div>
+      </dl>
+    </section>
+
+    <section class="panel panel-turns" aria-labelledby="turns-h">
+      <div class="panel-head"><h2 id="turns-h">Turn feed</h2><span class="hint">newest first · what the model asked for and what the kernel allowed</span></div>
+      <ol class="turns" id="turns"></ol>
+      <p class="empty" id="turns-empty">No turns yet.</p>
+    </section>
+
+    <section class="panel panel-replay" aria-labelledby="replay-h">
+      <div class="panel-head"><h2 id="replay-h">Replay log</h2><span class="hint">every state change the kernel recorded, with its own timing</span></div>
+      <ol class="replay" id="replay"></ol>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="/theme.js" defer></script>
+  <script src="/kernel.js" defer></script>
+</body>
+</html>
