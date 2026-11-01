@@ -62,6 +62,11 @@ const staticFiles = new Map([
   ['/tour.js', ['tour.js', 'text/javascript; charset=utf-8']],
   ['/tour-steps.js', ['tour-steps.js', 'text/javascript; charset=utf-8']],
   ['/tour.css', ['tour.css', 'text/css; charset=utf-8']],
+  // --- agent kernel console (feature/agent-kernel) ---
+  ['/kernel', ['kernel.html', 'text/html; charset=utf-8']],
+  ['/kernel.js', ['kernel.js', 'text/javascript; charset=utf-8']],
+  ['/kernel.css', ['kernel.css', 'text/css; charset=utf-8']],
+  // --- end agent kernel console ---
   ['/privacy', ['privacy.html', 'text/html; charset=utf-8']],
   ['/privacy.html', ['privacy.html', 'text/html; charset=utf-8']],
   ['/agents', ['agents.html', 'text/html; charset=utf-8']],
@@ -408,7 +413,7 @@ export function createApp({
           response.writeHead(200, { 'Content-Type': type, 'Content-Length': content.length, 'Accept-Ranges': type.startsWith('video/') ? 'bytes' : 'none', 'Cache-Control': mediaCache });
           return response.end(request.method === 'HEAD' ? undefined : content);
         }
-        if (type.startsWith('text/html')) content = Buffer.from(renderPage(content.toString('utf8'), { settings: siteSettings, origin, path: path === 'privacy.html' ? '/privacy' : path === 'agents.html' ? '/agents' : '/' }));
+        if (type.startsWith('text/html')) content = Buffer.from(renderPage(content.toString('utf8'), { settings: siteSettings, origin, path: path === 'privacy.html' ? '/privacy' : path === 'agents.html' ? '/agents' : path === 'kernel.html' ? '/kernel' : '/' }));
         response.writeHead(200, { 'Content-Type': type, 'Content-Length': content.length, 'Cache-Control': 'no-cache' });
         return response.end(request.method === 'HEAD' ? undefined : content);
       }

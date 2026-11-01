@@ -17,6 +17,9 @@
     "preview:html": "node scripts/build-preview.mjs",
     "social:build": "node scripts/build-social-card.mjs",
     "demo:mcp": "node --use-env-proxy --env-file-if-exists=.env scripts/demo-mcp.mjs",
+    "demo:kernel": "node --use-env-proxy --env-file-if-exists=.env scripts/kernel-demo.mjs",
+    "eval:models": "node --use-env-proxy --env-file-if-exists=.env scripts/model-eval.mjs",
+    "test:kernel": "node --env-file-if-exists=.env --test tests/agent-kernel.test.mjs",
     "check:deployment": "node --use-env-proxy --env-file-if-exists=.env scripts/check-deployment.mjs",
     "waitlist:export": "node --use-env-proxy --env-file-if-exists=.env scripts/export-waitlist.mjs",
     "verify:storage": "node --use-env-proxy --env-file-if-exists=.env scripts/verify-storage.mjs"
