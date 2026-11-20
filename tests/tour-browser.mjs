@@ -170,6 +170,52 @@ async function keyboardCheck(tour) {
   await ctx.close();
 }
 
+// Motion on: Next moves the spotlight within three frames while the page is still scrolling, it lands on the new target,
+// and each step settles within the scroll cap plus a frame.
+async function trackingCheck(tour) {
+  const ctx = await browser.newContext({ viewport: SIZES[0][1], colorScheme: 'light', reducedMotion: 'no-preference' });
+  const page = await ctx.newPage();
+  page.on('pageerror', e => errors.push(`tracking: ${e.message}`));
+  await page.goto(origin + tour.path);
+  await page.waitForSelector(tour.ready, { timeout: 15000 });
+  await openTour(page, tour.name);
+  await page.waitForSelector('.tour.is-on:not([aria-busy])', { timeout: 20000 });
+  let scrolled = 0;
+  let slowest = 0;
+  for (let guard = 0; guard < 40 && await page.locator('.tour-next').textContent() !== 'Done'; guard++) {
+    const r = await page.evaluate(async () => {
+      const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
+      const root = document.querySelector('.tour');
+      const rect = () => { const b = document.querySelector('.tour-spot').getBoundingClientRect(); return [b.top, b.left, b.width, b.height]; };
+      const before = rect();
+      const y = scrollY;
+      const start = performance.now();
+      document.querySelector('.tour-next').click();
+      for (let i = 0; i < 3; i++) await frame();
+      const early = rect();
+      const busy = root.hasAttribute('aria-busy');
+      while (root.hasAttribute('aria-busy')) await frame();
+      return { before, early, busy, moved: Math.abs(scrollY - y), took: performance.now() - start };
+    });
+    const s = await stepState(page, tour.list);
+    const label = `tracking · ${s.title}`;
+    slowest = Math.max(slowest, r.took);
+    check(r.took <= 700 + 50, `${label}: the step settles within the scroll cap plus a frame (${Math.round(r.took)} ms)`);
+    if (s.target) {
+      const covers = s.spot && s.spot.left <= s.target.left + 3 && s.spot.right >= s.target.right - 3 && s.spot.top <= s.target.top + 3 && s.spot.bottom >= s.target.bottom - 3;
+      check(covers, `${label}: the settled spotlight covers the target ${JSON.stringify({ spot: s.spot, target: s.target })}`);
+    }
+    if (r.moved > 100) {
+      scrolled++;
+      check(r.busy, `${label}: the step is still busy three frames after Next`);
+      check(r.early.some((v, i) => Math.abs(v - r.before[i]) > 1), `${label}: the spotlight changes within three frames of Next ${JSON.stringify(r)}`);
+    }
+  }
+  check(scrolled >= 3, `tracking: ${scrolled} steps scrolled the page`);
+  console.log(`tracking: ${scrolled} scrolling steps moved the spotlight early, slowest step ${Math.round(slowest)} ms`);
+  await ctx.close();
+}
+
 try {
   const paths = await seededPaths();
   const TOURS = [
@@ -193,6 +239,7 @@ try {
     }
   }
   if (!only || only.includes('dashboard')) await keyboardCheck(TOURS[1]);
+  if (!only || only.includes('home')) await trackingCheck(TOURS[0]);
   assert.deepEqual(errors, [], 'no console, CSP or script errors');
   console.log(`tour browser checks passed: ${checks}`);
 } finally {

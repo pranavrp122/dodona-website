@@ -11,12 +11,14 @@ const EDGE = 12;
 const FIND_MS = 800;
 const SETTLE_MS = 700;
 const RECHECK_MS = 400;
+const MORPH_MS = 200;
 
 let active = null;
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const frame = () => new Promise(resolve => requestAnimationFrame(() => resolve()));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const easeOut = t => 1 - (1 - t) ** 3;
 
 /** True once the tour has been finished or skipped in this browser. */
 export function seenTour(key) {
@@ -126,13 +128,16 @@ function visibleRect(target) {
 }
 
 // The spotlight: the visible part of the target plus padding, clipped to the viewport so a tall section still shows a usable frame.
+// A target still off screen gives an empty box pinned to the viewport edge it will scroll in from.
 function spotRect(target) {
   const r = visibleRect(target);
-  const top = Math.max(r.top - PAD, 2);
-  const left = Math.max(r.left - PAD, 2);
-  const bottom = Math.min(r.bottom + PAD, window.innerHeight - 2);
-  const right = Math.min(r.right + PAD, document.documentElement.clientWidth - 2);
-  return { top, left, width: Math.max(right - left, 0), height: Math.max(bottom - top, 0), bottom, right };
+  const vh = window.innerHeight;
+  const vw = document.documentElement.clientWidth;
+  const top = Math.min(Math.max(r.top - PAD, 2), vh - 2);
+  const left = Math.min(Math.max(r.left - PAD, 2), vw - 2);
+  const bottom = Math.max(Math.min(r.bottom + PAD, vh - 2), top);
+  const right = Math.max(Math.min(r.right + PAD, vw - 2), left);
+  return { top, left, width: right - left, height: bottom - top, bottom, right };
 }
 
 const ORDER = {
@@ -190,6 +195,47 @@ async function settleScroll(target) {
   }
 }
 
+// While the page scrolls to a new target, morph the spotlight from where it was onto the target, then keep it on the target each frame.
+async function track(tour, target) {
+  const { ui, step } = tour;
+  const phone = window.matchMedia(PHONE).matches;
+  const from = ui.spot.hidden ? null : ui.spot.getBoundingClientRect();
+  ui.root.classList.add('is-tracking');
+  ui.root.classList.remove('is-plain');
+  ui.spot.hidden = false;
+  ui.card.classList.toggle('is-sheet', phone);
+  if (phone) { ui.card.style.removeProperty('top'); ui.card.style.removeProperty('left'); }
+  if (from) setBox(ui.spot, from);
+  target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+  const start = performance.now();
+  let last = null;
+  let settled = false;
+  while (active === tour) {
+    await frame();
+    const elapsed = performance.now() - start;
+    const now = target.getBoundingClientRect().top;
+    const live = spotRect(target);
+    const t = from ? easeOut(Math.min(1, elapsed / MORPH_MS)) : 1;
+    let box = live;
+    if (t < 1) {
+      const top = from.top + (live.top - from.top) * t;
+      const left = from.left + (live.left - from.left) * t;
+      const width = from.width + (live.width - from.width) * t;
+      const height = from.height + (live.height - from.height) * t;
+      box = { top, left, width, height, bottom: top + height, right: left + width };
+    }
+    // The card is placed before the spotlight is written so each frame costs a single layout.
+    if (!phone) placeCard(ui.card, box, step.placement || 'auto');
+    setBox(ui.spot, box);
+    settled = t === 1 && last !== null && Math.abs(now - last) < 0.5;
+    if (settled || elapsed >= SETTLE_MS) break;
+    last = now;
+  }
+  // A scroll longer than the cap keeps transitions off so the scroll listener holds the spotlight on the target until it ends.
+  if (settled) ui.root.classList.remove('is-tracking');
+  else window.addEventListener('scrollend', () => { if (!tour.busy) ui.root.classList.remove('is-tracking'); }, { once: true, capture: true });
+}
+
 function layout(tour, { adjust = false } = {}) {
   // A page that re-renders (a refresh, a clock move) swaps the element out; follow the step's selector to the new one.
   if (tour.target && !isShown(tour.target)) tour.target = [...document.querySelectorAll(tour.step.target)].find(isShown) || tour.target;
@@ -239,7 +285,8 @@ async function reveal(tour, index, target) {
   tour.step = tour.steps[index];
   tour.root.dataset.step = String(index);
   render(tour, index);
-  if (target) {
+  if (target && tour.root.classList.contains('is-on') && !reducedMotion()) await track(tour, target);
+  else if (target) {
     target.scrollIntoView({ block: 'center', inline: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
     await settleScroll(target);
   }

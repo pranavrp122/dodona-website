@@ -9,6 +9,7 @@
 .tour-shield{position:fixed;inset:0}
 .tour.is-plain .tour-shield{background:var(--tour-dim)}
 .tour-spot{position:fixed;border-radius:10px;pointer-events:none;box-shadow:0 0 0 2px var(--c-accent,var(--violet,#614efa)),0 0 0 9999px var(--tour-dim);transition:top .2s ease-out,left .2s ease-out,width .2s ease-out,height .2s ease-out}
+.tour.is-tracking .tour-spot{transition:none}
 
 .tour-card{position:fixed;top:0;left:0;z-index:2;width:min(360px,calc(100vw - 24px));padding:16px 18px 14px;background:var(--c-surface,#fffefb);color:var(--c-text,var(--ink,#052b42));border:1px solid var(--c-border-strong,var(--border,#052b4224));border-radius:12px;box-shadow:var(--tour-shadow);font:500 14px/1.5 var(--body,system-ui,sans-serif);text-align:left}
 .tour .tour-count{margin:0 0 4px;font:600 11.5px/1.2 var(--body,system-ui,sans-serif);letter-spacing:.07em;text-transform:uppercase;color:var(--c-muted,var(--muted,#4f6676))}
