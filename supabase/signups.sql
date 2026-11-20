@@ -8,9 +8,13 @@ create table if not exists public.signups (
   role text not null check (role in ('buyer', 'provider', 'lender', 'other')),
   use_case text check (char_length(use_case) <= 280),
   website text check (char_length(website) <= 200),
+  monthly_gpu_hours text check (monthly_gpu_hours in ('under_1k', '1k_10k', '10k_100k', 'over_100k', 'not_sure')),
   kyb_status text not null default 'pending' check (kyb_status in ('pending', 'verified')),
   created_at timestamptz not null default now()
 );
+
+-- Adds the column to a table created before it existed.
+alter table public.signups add column if not exists monthly_gpu_hours text check (monthly_gpu_hours in ('under_1k', '1k_10k', '10k_100k', 'over_100k', 'not_sure'));
 
 alter table public.signups enable row level security;
 -- No public policies: browser users cannot read or write signups.

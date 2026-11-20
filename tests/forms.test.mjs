@@ -71,6 +71,8 @@ test('shared validation names the failing field', () => {
     ['signup', { ...signup, business: false }, 'business'],
     ['signup', { ...signup, website: 'not a site' }, 'website'],
     ['signup', { ...signup, useCase: 'x'.repeat(281) }, 'useCase'],
+    ['signup', { ...signup, monthlyGpuHours: 'lots' }, 'monthlyGpuHours'],
+    ['signup', { ...signup, monthlyGpuHours: 5000 }, 'monthlyGpuHours'],
     ['contact', { ...contact, message: '' }, 'message'],
     ['contact', { ...contact, name: 'x'.repeat(81) }, 'name'],
     ['rfq', { ...rfq, gpu: 'RTX 5090' }, 'gpu'],
@@ -125,6 +127,21 @@ test('with a store, each form saves one row with the mapped columns', async t =>
   assert.deepEqual(store.tables.get('signups'), [{ email: 'ops@example.com', company: 'Sample Labs', role: 'buyer', use_case: 'Cap H100 cost for a run.', website: 'samplelabs.example.com' }]);
   assert.deepEqual(store.tables.get('contact_messages'), [{ name: 'Ada', email: 'ada@example.com', company: null, message: 'Tell me about caps.' }]);
   assert.deepEqual(store.tables.get('rfq_requests'), [{ email: 'buyer@example.com', company: 'Sample Labs', gpu: 'H100', gpu_count: 512, start_at: '2026-12-01T00:00:00.000Z', end_at: '2027-01-31T00:00:00.000Z', type: 'cap', strike: 2.5, notes: null }]);
+});
+
+test('a chosen GPU-hours range is stored and an empty one leaves the row unchanged', async t => {
+  const store = fakeStore();
+  const f = await setup(t, { formStore: store });
+  const base = { company: 'Sample Labs', role: 'buyer', use_case: 'Cap H100 cost for a run.', website: 'samplelabs.example.com' };
+  for (const [email, monthlyGpuHours] of [['chosen@example.com', '10k_100k'], ['empty@example.com', '']]) {
+    const response = await f.post('/api/signups', { ...signup, email, monthlyGpuHours, token: await f.token('signup') });
+    assert.equal(response.status, 200, email);
+  }
+  assert.deepEqual(store.tables.get('signups'), [
+    { email: 'chosen@example.com', ...base, monthly_gpu_hours: '10k_100k' },
+    { email: 'empty@example.com', ...base },
+  ]);
+  assert.equal(validateForm('signup', { ...signup, monthlyGpuHours: null }, NOW).value.monthlyGpuHours, '');
 });
 
 test('a repeat signup is reported as a duplicate and not stored twice', async t => {

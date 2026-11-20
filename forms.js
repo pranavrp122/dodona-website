@@ -2,6 +2,7 @@
 // The server imports validateForm from this file, so both sides apply the same checks.
 
 export const ROLES = Object.freeze(['buyer', 'provider', 'lender', 'other']);
+export const MONTHLY_GPU_HOURS = Object.freeze(['under_1k', '1k_10k', '10k_100k', 'over_100k', 'not_sure']);
 export const RFQ_GPUS = Object.freeze(['H100', 'H200', 'B200', 'A100']);
 export const RFQ_TYPES = Object.freeze(['cap', 'lock', 'floor']);
 const MAX_GPU_COUNT = 100000;
@@ -69,6 +70,7 @@ const validators = {
       email: email(body),
       company: text(body, 'company', { max: 120, required: true, label: 'Your company' }),
       role: choice(body, 'role', ROLES, 'Choose your role.'),
+      monthlyGpuHours: body.monthlyGpuHours == null || body.monthlyGpuHours === '' ? '' : choice(body, 'monthlyGpuHours', MONTHLY_GPU_HOURS, 'Choose a GPU-hours range from the list.'),
       useCase: text(body, 'useCase', { max: 280, label: 'What you want to do' }),
       website: text(body, 'website', { max: 200, label: 'Website' }),
     };

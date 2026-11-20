@@ -30,6 +30,7 @@
 
 .field select[aria-invalid=true],.field textarea[aria-invalid=true]{border-color:#a32433}
 .field input:focus-visible,.field select:focus-visible,.field textarea:focus-visible{outline:3px solid var(--violet);outline-offset:1px;border-color:var(--violet)}
+.field-hint{font-size:12px;line-height:1.5;color:var(--muted)}
 .field-pair{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
 
 .check-field{grid-template-columns:auto 1fr;align-items:start;column-gap:12px;padding:14px;border-radius:10px;background:var(--panel)}

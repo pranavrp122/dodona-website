@@ -19,10 +19,10 @@
     <div class="form-intro">
       <p class="eyebrow">Business account</p>
       <h1>Open an account.</h1>
-      <p class="form-lede">Price a cap on GPU-hours, lock a fixed price, or sell caps on hours you might not fill. Every contract is backed by reserved GPUs at a partner neocloud.</p>
+      <p class="form-lede">Price a cap on GPU-hours, lock a fixed price, or sell caps on capacity you reserve. Every contract is backed by reserved GPUs at a partner neocloud.</p>
       <ol class="next-steps" aria-label="What happens next">
         <li><span>1</span><div><strong>Tell us who you are</strong><p>Your work email, company and what you do with compute.</p></div></li>
-        <li><span>2</span><div><strong>Business check</strong><p>Accounts are for businesses. We verify the company before any live contract; until then your account shows as pending.</p></div></li>
+        <li><span>2</span><div><strong>Business check</strong><p>Accounts are for businesses. We verify the company before any live contract, and until then your account shows as pending.</p></div></li>
         <li><span>3</span><div><strong>Open your dashboard</strong><p>See sample positions, price a cap and try the board in demo mode.</p></div></li>
       </ol>
       <p class="form-fine">Demo build: nothing here is a live price, order or account. Dodona never holds funds and never takes the other side of a contract.</p>
@@ -36,6 +36,7 @@
           <div class="field"><label for="email">Work email <span class="required">(required)</span></label><input id="email" name="email" type="email" autocomplete="email" placeholder="you@company.com" maxlength="254" required aria-describedby="email-error"><span id="email-error" class="field-error" hidden></span></div>
           <div class="field"><label for="company">Company <span class="required">(required)</span></label><input id="company" name="company" type="text" autocomplete="organization" maxlength="120" required aria-describedby="company-error"><span id="company-error" class="field-error" hidden></span></div>
           <div class="field"><label for="role">Your role <span class="required">(required)</span></label><select id="role" name="role" required aria-describedby="role-error"><option value="">Choose one</option><option value="buyer">I buy compute</option><option value="provider">I provide compute</option><option value="lender">I lend or insure</option><option value="other">Other</option></select><span id="role-error" class="field-error" hidden></span></div>
+          <div class="field"><label for="monthly-gpu-hours">GPU-hours you expect to use each month <span class="optional">(optional)</span></label><select id="monthly-gpu-hours" name="monthlyGpuHours" aria-describedby="monthlyGpuHours-hint monthlyGpuHours-error"><option value="">Choose one</option><option value="under_1k">Under 1,000</option><option value="1k_10k">1,000 to 10,000</option><option value="10k_100k">10,000 to 100,000</option><option value="over_100k">Over 100,000</option><option value="not_sure">Not sure yet</option></select><span id="monthlyGpuHours-hint" class="field-hint">One GPU running for one hour is one GPU-hour. A rough average is fine.</span><span id="monthlyGpuHours-error" class="field-error" hidden></span></div>
           <div class="field"><label for="use-case">What you want to do <span class="optional">(optional)</span></label><textarea id="use-case" name="useCase" rows="3" maxlength="280" placeholder="For example: cap our H100 cost for a training run in Q1." aria-describedby="useCase-error"></textarea><span id="useCase-error" class="field-error" hidden></span></div>
         </fieldset>
         <fieldset class="form-step">
