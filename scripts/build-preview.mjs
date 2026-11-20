@@ -19,6 +19,7 @@ const licenses = await Promise.all(['bricolage-grotesque', 'albert-sans'].map(na
 const favicon = await readFile(new URL('assets/favicon.svg', root));
 html = html.replace('/assets/favicon.svg', `data:image/svg+xml;base64,${favicon.toString('base64')}`);
 html = html.replace(/\s*<link rel="preload"[^>]+>/, '');
+html = html.replace('<link rel="stylesheet" href="/checkout.css">', `<style>${await readFile(new URL('checkout.css', root), 'utf8')}</style>`);
 html = html.replace('<link rel="stylesheet" href="/styles.css">', `<!-- Bundled typeface licenses:\n${licenses.join('\n').replaceAll('--', '—')}\n-->\n<style>${css}</style>`);
 // Standalone review has no backend. Disable only availability, never fake a write.
 let client = await readFile(new URL('waitlist.js', root), 'utf8');

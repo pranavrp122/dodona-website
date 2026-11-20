@@ -10,10 +10,10 @@ export function demoPrices(gpuHours) {
   }
   return {
     currency: 'USD', illustrative: true, rentalPricePerGpuHourCents: 300,
-    protectionPaymentCents: gpuHours * 20, bookingFeeCents: 200,
-    upfrontTotalCents: gpuHours * 20 + 200,
+    protectionPaymentCents: gpuHours * 20,
+    upfrontTotalCents: gpuHours * 20,
     computePaymentIfUsedCents: gpuHours * 300,
-    totalIfUsedCents: gpuHours * 320 + 200,
+    totalIfUsedCents: gpuHours * 320,
     excludes: 'Taxes and any other charges. Demo prices are not live offers or final pricing.',
   };
 }

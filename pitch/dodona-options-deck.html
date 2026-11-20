@@ -1,0 +1,895 @@
+<meta charset="utf-8">
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Dodona Options Deck</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=Albert+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: vertical stack of snap-aligned slides; each centres a 1200px frame of headline, example, source line. */
+:root{
+  color-scheme:light;
+  --ground:#f8f7f2;
+  --panel:#efefe9;
+  --ink:#052b42;
+  --muted:#4f6676;
+  --lime:#e0ff4f;
+  --violet:#614efa;
+  --lavender:#e0e4ff;
+  --rule:rgba(5,43,66,.16);
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"Albert Sans","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --step-h1:clamp(56px,9vw,128px);
+  --step-h2:clamp(28px,3.4vw,48px);
+  --step-big:clamp(28px,3vw,42px);
+  --step-body:clamp(15px,1.15vw,18px);
+  --step-small:13px;
+  --bar-h:64px;
+}
+*{box-sizing:border-box}
+html{scroll-snap-type:y proximity;background:var(--ground)}
+body{margin:0;background:var(--ground);color:var(--ink);font:400 var(--step-body)/1.5 var(--body);-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,ol,dl,dd,figure{margin:0}
+ul,ol{padding-left:1.1em}
+::selection{background:var(--lime);color:var(--ink)}
+:focus-visible{outline:3px solid var(--violet);outline-offset:3px;border-radius:4px}
+svg{display:block;max-width:100%;height:auto}
+
+.slide{min-height:100svh;display:flex;align-items:center;justify-content:center;padding-top:56px;padding-bottom:calc(var(--bar-h) + 28px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));scroll-snap-align:start;border-bottom:1px solid var(--rule)}
+.frame{width:100%;max-width:1200px;display:grid;gap:clamp(18px,2.4vw,30px)}
+.eyebrow{font:600 12px/1.4 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;gap:12px;align-items:center}
+.eyebrow b{font-weight:600;color:var(--violet)}
+h2{font:650 var(--step-h2)/1.08 var(--display);letter-spacing:-.005em;text-wrap:balance;max-width:30ch}
+h3{font:600 17px/1.3 var(--display);margin-bottom:8px}
+p{max-width:65ch}
+.lede{font-size:clamp(16px,1.3vw,20px);color:var(--muted);max-width:60ch}
+.hl{background:linear-gradient(transparent 52%,var(--lime) 52%);padding-inline:2px}
+.cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(20px,3.5vw,48px);align-items:start}
+.cols.even{grid-template-columns:repeat(2,minmax(0,1fr))}
+.stack{display:grid;gap:14px;align-content:start}
+.src{font-size:var(--step-small);color:var(--muted);border-top:1px solid var(--rule);padding-top:10px;max-width:none}
+.tag{font-size:13px;color:var(--muted);font-weight:500}
+.box{background:var(--panel);border-radius:10px;padding:16px 18px}
+.box.lav{background:var(--lavender)}
+.box.ink{background:var(--ink);color:var(--ground)}
+.box.ink .tag{color:#c9d6de}
+.big{font:650 var(--step-big)/1.05 var(--display);font-variant-numeric:tabular-nums}
+.list{display:grid;gap:10px;padding:0;list-style:none}
+.list li{padding-left:16px;position:relative}
+.list li::before{content:"";position:absolute;left:0;top:.62em;width:7px;height:7px;background:var(--violet);border-radius:2px}
+
+.tbl{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:15px}
+th,td{text-align:left;padding:9px 12px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font:600 11px/1.3 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+td.n,th.n{text-align:right}
+tr.win td{font-weight:600}
+td .tag{display:block}
+.yes{color:var(--violet);font-weight:600}
+tr.us td{background:var(--lavender);font-weight:600}
+tr.us td:first-child{padding-left:10px;border-radius:6px 0 0 6px}
+
+.chart text{font-family:var(--body);font-size:12px;fill:var(--muted)}
+.chart .lbl{fill:var(--ink);font-weight:600}
+.chart .grid{stroke:var(--rule);stroke-width:1}
+.chart .axis{stroke:var(--ink);stroke-width:1}
+.chart.lg text{font-size:16px}
+
+.title{background:var(--ink);color:var(--ground)}
+.title .eyebrow{color:#c9d6de}
+.title h1{font:700 var(--step-h1)/.92 var(--display);letter-spacing:-.02em}
+.title .one{font:500 clamp(24px,3vw,40px)/1.15 var(--display);max-width:24ch;text-wrap:balance}
+.title .one span{background:var(--lime);color:var(--ink);padding:0 6px;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.title p{color:#dfe6ea}
+.title .src{color:#b9c8d1;border-color:rgba(248,247,242,.2)}
+.title .chart text{fill:#b9c8d1}
+.title .chart .lbl{fill:var(--ground)}
+.title .chart .grid{stroke:rgba(248,247,242,.18)}
+.title .chart .axis{stroke:rgba(248,247,242,.6)}
+.box.ink .chart text{fill:#c9d6de}
+.box.ink .chart .lbl{fill:var(--ground)}
+.box.ink .chart .grid{stroke:rgba(248,247,242,.18)}
+.box.ink .chart .axis{stroke:rgba(248,247,242,.6)}
+
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.facts .box{display:grid;gap:6px;align-content:start}
+.screens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.screen{background:#fff;border:1px solid var(--rule);border-radius:12px;box-shadow:0 14px 30px -18px rgba(5,43,66,.35);overflow:hidden;font-size:14px}
+.screen header{background:var(--panel);padding:8px 12px;font:600 12px/1.3 var(--body);display:flex;justify-content:space-between;gap:8px;color:var(--muted)}
+.screen .body{padding:12px;display:grid;gap:10px}
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule);border-radius:8px;overflow:hidden;font-weight:600;text-align:center}
+.seg span{padding:6px}
+.seg .on{background:var(--ink);color:var(--ground)}
+.row{display:flex;justify-content:space-between;gap:10px;font-variant-numeric:tabular-nums;border-bottom:1px dashed var(--rule);padding-bottom:6px}
+.row b{font-weight:600}
+.pill{display:inline-block;border-radius:99px;padding:1px 9px;font-size:12px;font-weight:600;background:var(--lavender);color:var(--ink)}
+.pill.ok{background:#dff3e4;color:#14532d}
+.pill.watch{background:#fff1c7;color:#6b4b00}
+.pill.itm{background:var(--lime);color:var(--ink)}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.btns span{border-radius:8px;padding:7px;text-align:center;font-weight:600;font-size:13px;border:1px solid var(--ink)}
+.btns span:first-child{background:var(--ink);color:var(--ground)}
+.sample{font:600 11px/1.3 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--violet)}
+.steps{counter-reset:s;list-style:none;padding:0;display:grid;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:28px 1fr;gap:10px}
+.steps li::before{content:counter(s);font:650 15px/26px var(--display);text-align:center;background:var(--lime);border-radius:50%;width:26px;height:26px}
+.ask{display:grid;gap:8px}
+.ask div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid rgba(248,247,242,.2);padding-bottom:6px}
+.qa{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 32px}
+.qa dt{font:600 16px/1.3 var(--display);margin-bottom:4px}
+.qa dd{color:var(--muted);font-size:15px}
+.srcs{columns:2;column-gap:36px;font-size:13px;padding:0;list-style:none}
+.srcs li{break-inside:avoid;padding-bottom:6px;color:var(--muted)}
+.srcs b{color:var(--ink);font-weight:600}
+
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.panel{background:var(--panel);border-radius:12px;padding:20px 22px;display:grid;gap:10px;align-content:start}
+.panel p{font-size:18px;max-width:none}
+.panel.ink{background:var(--ink);color:var(--ground)}
+.panel.lav{background:var(--lavender)}
+.panel .k{font:600 13px/1.3 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--violet)}
+.split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.split p{font-size:16px}
+.icon{width:40px;height:40px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{background:var(--panel);border-radius:99px;padding:5px 12px;font-size:14px}
+.chip.on{background:var(--ink);color:var(--ground);font-weight:600}
+table.vs td:first-child{font-weight:600;white-space:nowrap}
+table.vs{font-size:17px}
+.chart.md text{font-size:14px}
+@media (max-width:900px){.strip,.split{grid-template-columns:minmax(0,1fr)}}
+.notes{display:none;background:var(--lavender);border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.5;color:var(--ink);overflow-wrap:anywhere}
+.notes::before{content:"Speaker notes";display:block;font:600 11px/1.3 var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin-bottom:6px}
+.notes-on .notes{display:block}
+.notes p+p{margin-top:6px}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;min-height:calc(var(--bar-h) - 8px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(248,247,242,.94);border-top:1px solid var(--rule);font-size:13px;color:var(--muted)}
+.bar .ctl{display:flex;align-items:center;gap:8px}
+.bar button{font:600 13px/1 var(--body);color:var(--ink);background:var(--ground);border:1px solid var(--rule);border-radius:8px;padding:8px 12px;cursor:pointer;transition:background .15s}
+.bar button:hover{background:var(--lavender)}
+.bar button:active{background:var(--lime)}
+.bar button[aria-pressed="true"]{background:var(--ink);color:var(--ground)}
+#count{font-variant-numeric:tabular-nums;min-width:4.5em;text-align:center;color:var(--ink);font-weight:600}
+
+@media (max-width:900px){
+  .cols,.cols.even,.screens,.qa{grid-template-columns:minmax(0,1fr)}
+  .srcs{columns:1}
+}
+@media (max-width:640px){
+  .slide{min-height:auto;padding-top:44px;padding-bottom:calc(var(--bar-h) + 20px + env(safe-area-inset-bottom,0px))}
+  table{font-size:14px}
+  .bar .hint{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none!important}
+}
+</style>
+
+<main id="deck">
+
+<!-- 1 -->
+<section class="slide title" id="s1" aria-label="Slide 1: Title">
+  <div class="frame">
+    <div class="eyebrow">Dodona Markets · follow-up call · October 2026</div>
+    <div class="cols">
+      <div class="stack" style="gap:22px">
+        <h1>Dodona</h1>
+        <p class="one"><span>Rent GPUs with a price cap,</span> so a price spike can't wreck your budget.</p>
+        <p>A business pays a small cap fee now. Its GPU rent later can't go above an agreed level. Neoclouds earn that fee on hours they might not sell.</p>
+        <p>Sourabh Velaga, CEO · Pranav Patlola, CTO</p>
+      </div>
+      <figure class="stack" aria-label="What you pay with a cap at $2.50 at any market price">
+        <svg class="chart" viewBox="-24 0 464 300" role="img" aria-labelledby="t1">
+          <title id="t1">Total cost per GPU-hour when capped at $2.50 for a $0.25 cap fee, which never goes above $2.75</title>
+          <line class="grid" x1="50" y1="202.5" x2="420" y2="202.5"/><line class="grid" x1="50" y1="145" x2="420" y2="145"/><line class="grid" x1="50" y1="87.5" x2="420" y2="87.5"/><line class="grid" x1="50" y1="30" x2="420" y2="30"/>
+          <line class="axis" x1="50" y1="260" x2="420" y2="260"/><line class="axis" x1="50" y1="30" x2="50" y2="260"/>
+          <text x="42" y="264" text-anchor="end">$2.00</text><text x="42" y="206" text-anchor="end">$2.50</text><text x="42" y="149" text-anchor="end">$3.00</text><text x="42" y="91" text-anchor="end">$3.50</text><text x="42" y="34" text-anchor="end">$4.00</text>
+          <text x="-12" y="145" text-anchor="middle" transform="rotate(-90 -12 145)">You pay per GPU-hour</text>
+          <text x="50" y="280" text-anchor="middle">$2.00</text><text x="142.5" y="280" text-anchor="middle">$2.50</text><text x="235" y="280" text-anchor="middle">$3.00</text><text x="327.5" y="280" text-anchor="middle">$3.50</text><text x="420" y="280" text-anchor="middle">$4.00</text>
+          <text x="235" y="297" text-anchor="middle">Market price per GPU-hour</text>
+          <line x1="50" y1="260" x2="420" y2="30" stroke="#b9c8d1" stroke-width="2" stroke-dasharray="5 5" fill="none"/>
+          <polyline points="50,231.25 142.5,173.75 420,173.75" fill="none" stroke="#e0ff4f" stroke-width="4"/>
+          <text class="lbl" x="345" y="122">Rent at market</text>
+          <text class="lbl" x="414" y="164" text-anchor="end">With the cap, never above $2.75</text>
+        </svg>
+      </figure>
+    </div>
+    <p class="src">The $2.75 is the $2.50 cap level plus the $0.25 cap fee, per GPU-hour. Slide 7 walks through it. Our own worked example.</p>
+    <aside class="notes"><p>Open with the one-liner. Last time we talked about the problem. Today we show how we make money, how we enter the market and why both sides want this, then the demo. Every contract will be backed by GPUs reserved at a partner neocloud. No partner is signed yet, which is why we say "will be". We're never on the other side of a trade, and we never hold anyone's money.</p><p>The analogy for Picus. Dodona is to GPU capacity what terralayr's capacity tolls are to battery capacity. A buyer pays for guaranteed access over a term, backed by reserved physical assets, without owning the hardware https://www.trlyr.com/news/vattenfall-and-terralayr-close-a-multi-asset-capacity-tolling-deal/ . terralayr and Axle Energy are Picus companies, and both sell flexible capacity to data centres.</p><p>The chart. The dashed line is renting at the market price. The lime line is what you pay in total if you capped at $2.50 for a $0.25 cap fee. Below $2.50 you pay the market price plus the cap fee. Above $2.50 you never pay more than $2.75.</p></aside>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide" id="s2" aria-label="Slide 2: GPU rent is rising again">
+  <div class="frame">
+    <div class="eyebrow"><b>The problem</b> Prices swing</div>
+    <h2>GPU rent is rising again, and the big clouds keep raising prices.</h2>
+    <div class="cols">
+      <figure class="stack">
+        <svg class="chart lg" viewBox="0 0 770 300" role="img" aria-labelledby="t2">
+          <title id="t2">Ornn's daily H100 index from 18 July to 17 October 2026. It ended August at $2.97, ended September at $2.71 and was $3.02 on 24 October. Silicon Data's H100 index was $2.88 on 24 October.</title>
+          <line class="grid" x1="56" y1="189" x2="620" y2="189"/><line class="grid" x1="56" y1="134" x2="620" y2="134"/><line class="grid" x1="56" y1="79" x2="620" y2="79"/><line class="grid" x1="56" y1="24" x2="620" y2="24"/>
+          <line class="axis" x1="56" y1="244" x2="620" y2="244"/><line class="axis" x1="56" y1="24" x2="56" y2="244"/>
+          <text x="48" y="249" text-anchor="end">$2.25</text><text x="48" y="194" text-anchor="end">$2.50</text><text x="48" y="139" text-anchor="end">$2.75</text><text x="48" y="84" text-anchor="end">$3.00</text><text x="48" y="29" text-anchor="end">$3.25</text>
+          <text x="56" y="266" text-anchor="middle">15 Jul</text><text x="144" y="266" text-anchor="middle">1 Aug</text><text x="304.4" y="266" text-anchor="middle">1 Sep</text><text x="459.6" y="266" text-anchor="middle">1 Oct</text><text x="620" y="266" text-anchor="middle">1 Nov</text>
+          <text x="338" y="292" text-anchor="middle">2026, H100 rent in $ per GPU-hour</text>
+          <polyline fill="none" stroke="#614efa" stroke-width="2" points="71.5,151.6 76.7,142.8 81.9,149.4 87.0,138.5 92.2,145.0 97.4,145.0 102.6,138.5 107.7,149.4 112.9,167.0 118.1,140.7 123.3,127.4 128.4,147.2 133.6,134.0 138.8,131.8 144.0,147.2 149.1,167.0 154.3,158.3 159.5,149.4 164.7,145.0 169.8,140.7 175.0,149.4 180.2,153.8 185.4,182.4 190.5,175.8 195.7,151.6 200.9,140.7 206.1,138.5 211.2,125.2 216.4,153.8 221.6,158.3 226.8,136.3 231.9,70.2 237.1,94.4 242.3,101.1 247.4,105.4 252.6,149.4 257.8,107.6 263.0,79.1 268.1,85.6 273.3,149.4 278.5,131.8 283.7,94.4 288.8,107.6 294.0,76.9 299.2,85.6 304.4,116.5 309.5,116.5 314.7,96.7 319.9,103.2 325.1,65.8 330.2,63.6 335.4,41.7 340.6,61.5 345.8,87.8 350.9,114.2 356.1,107.6 361.3,120.9 366.5,127.4 371.6,134.0 376.8,182.4 382.0,162.6 387.2,112.0 392.3,74.7 397.5,112.0 402.7,156.0 407.9,125.2 413.0,112.0 418.2,68.0 423.4,96.7 428.6,112.0 433.7,180.3 438.9,191.2 444.1,175.8 449.2,136.3 454.4,142.8 459.6,96.7 464.8,125.2 469.9,158.3 475.1,169.2 480.3,184.6 485.5,109.8 490.6,112.0 495.8,114.2 501.0,125.2 506.2,151.6 511.3,156.0 516.5,96.7 521.7,41.7 526.9,32.8 532.0,50.4 537.2,136.3 542.4,127.4"/>
+          <line x1="542.4" y1="127.4" x2="578.6" y2="74.6" stroke="#614efa" stroke-width="2" stroke-dasharray="3 3"/>
+          <circle cx="299.2" cy="85.6" r="6" fill="#052b42"/><circle cx="454.4" cy="142.8" r="6" fill="#052b42"/>
+          <circle cx="578.6" cy="105.4" r="6" fill="#4f6676"/>
+          <circle cx="578.6" cy="74.6" r="6.5" fill="#e0ff4f" stroke="#052b42" stroke-width="2"/>
+          <text class="lbl" x="299.2" y="64" text-anchor="middle" style="paint-order:stroke;stroke:#f8f7f2;stroke-width:5px">$2.97 end of Aug</text>
+          <text class="lbl" x="454.4" y="230" text-anchor="middle" style="paint-order:stroke;stroke:#f8f7f2;stroke-width:5px">$2.71 end of Sep</text>
+          <line x1="454.4" y1="149" x2="454.4" y2="214" stroke="#052b42" stroke-width="1"/>
+          <text class="lbl" x="592" y="79">$3.02 Ornn, 24 Oct</text>
+          <text class="lbl" x="592" y="110">$2.88 Silicon Data</text>
+        </svg>
+        <figcaption class="tag">Violet, Ornn's daily H100 index. Grey dot, Silicon Data's index on 24 Oct.</figcaption>
+      </figure>
+      <div class="facts" style="grid-template-columns:minmax(0,1fr);gap:12px">
+        <div class="box"><span class="big">+3.4%</span><p>Ornn's H100 index in the 30 days to 24 Oct.</p></div>
+        <div class="box"><span class="big">+17%</span><p>Nebius's H100 list price on 1 Oct.</p></div>
+        <div class="box"><span class="big">$5.97</span><p>What AWS charges per H100-hour for short blocks, after two rises this year.</p></div>
+      </div>
+    </div>
+    <p class="lede">Rent fell from $7.76 in 2023 to $1.96 in 2025. Now it's climbing.</p>
+    <p class="src">Sources. Ornn and Silicon Data H100 indices, read 24 Oct 2026; Nebius price list, 1 Oct 2026; AWS Capacity Blocks pricing; DCD and Spheron; Silicon Data and BCG for 2023 to 2025.</p>
+    <aside class="notes"><p>The story. Prices fell for two years, and now they're climbing again. Nobody knows which way the next six months go, so buyers want a ceiling and sellers want a floor.</p><p>Points on the chart. Ornn H100 $3.02 on 24 Oct, up 3.4% in 30 days, with month-end $2.97 in August and $2.71 in September https://data.ornn.com/markets/h100-sxm . Silicon Data H100 index $2.88 on 24 Oct https://www.silicondata.com/products/silicon-index/h100 . The violet line is Ornn's daily settle from 18 Jul to 17 Oct, used for demonstration only. The dotted step joins 17 Oct to the 24 Oct reading. Silicon Data's index is reported to have launched near $2.37 in May. We couldn't verify that, so it stays off the slide.</p><p>Nebius list prices, H100 $3.85 to $4.50, H200 $4.50 to $5.40, 1 Oct 2026 https://nebius.com/prices . 4.50 ÷ 3.85 is a 16.9% rise. AWS Capacity Blocks P5 $47.757 per instance-hour, which is $5.97 per H100-hour, fixed until January 2027 https://aws.amazon.com/ec2/capacityblocks/pricing/ . Rises of about 15% in January https://www.datacenterdynamics.com/en/news/aws-quietly-increases-prices-for-h200-ec2-instances-by-15/ and about 20% on 1 July https://www.spheron.network/blog/aws-capacity-blocks-pricing-2026-b200-b300-hike/ . A third rise of 15% on 7 Oct is reported by one source only.</p><p>Long run. $7.76 was the median spot rent from August to December 2023, per Silicon Data https://www.silicondata.com/blog/h100-rental-price-over-time , and $1.96 the late 2025 level, per BCG https://www.bcg.com/publications/2026/understanding-the-new-economics-of-ai-compute-markets .</p><p>Why now, if asked. Deutsche Börse launched a cloud capacity exchange in 2015 and closed it in 2016, when cloud prices only fell. Now contracts name a real chip, two indices publish daily prices, Ornn's B200 index rose 82% in the 90 days to 26 Sep, and CME and ICE have filed compute futures. https://www.heise.de/news/Deutsche-Boerse-Cloud-Exchange-macht-dicht-3098846.html</p></aside>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" id="s3" aria-label="Slide 3: Who is protected today">
+  <div class="frame">
+    <div class="eyebrow"><b>The gap</b> Who is protected today</div>
+    <h2>The biggest neoclouds have a giant that buys their unsold GPUs. The rest have no public backstop.</h2>
+    <div class="cols even" style="align-items:stretch;gap:24px">
+      <div class="box ink stack" style="gap:18px;padding:26px 30px">
+        <h3 style="margin:0;color:#ffffff">The biggest players already sign floors privately</h3>
+        <div><div class="big" style="color:#e0ff4f;font-size:clamp(34px,3.2vw,52px);line-height:1">$36B</div><p style="margin:6px 0 0">Nvidia has promised to buy this much capacity from AI clouds, usually over six years.</p></div>
+        <div><div class="big" style="color:#ffffff;font-size:clamp(34px,3.2vw,52px);line-height:1">$6.3B</div><p style="margin:6px 0 0">Nvidia must buy CoreWeave's unsold capacity through April 2032.</p></div>
+        <div><div class="big" style="color:#e0ff4f;font-size:clamp(34px,3.2vw,52px);line-height:1">up to $15B</div><p style="margin:6px 0 0">Meta must buy Nebius's unsold capacity on set clusters for five years.</p></div>
+      </div>
+      <figure class="box" style="margin:0;padding:26px 30px;display:flex">
+        <svg class="chart" viewBox="0 0 560 330" role="img" aria-labelledby="t3" style="width:100%;height:auto">
+          <title id="t3">Everyone else. A grid of grey tiles stands for the long tail of smaller and regional neoclouds. No public backstop found. Loans without strong customers cost SOFR plus 4.75%, against 2.375% with them.</title>
+          <defs><pattern id="tail" x="0" y="52" width="24" height="24" patternUnits="userSpaceOnUse"><rect width="17" height="17" rx="3" fill="#b9c8d1"/></pattern></defs>
+          <text x="0" y="28" style="font-size:24px;font-weight:600;fill:#052b42">Everyone else</text>
+          <rect x="0" y="52" width="545" height="113" fill="url(#tail)"/>
+          <text x="0" y="222" style="font-size:28px;font-weight:700;fill:#052b42;font-family:var(--display)">Smaller and regional neoclouds</text>
+          <text x="0" y="258" style="font-size:20px;fill:#4f6676">No public backstop found.</text>
+          <text x="0" y="292" style="font-size:20px;fill:#4f6676">Loans without strong customers cost</text>
+          <text x="0" y="320" style="font-size:20px;fill:#4f6676">SOFR plus 4.75%, against 2.375% with them.</text>
+        </svg>
+      </figure>
+    </div>
+    <p class="lede" style="color:var(--ink);font-weight:600">Dodona gives the long tail the same protection as a standard contract.</p>
+    <p class="src">Sources. Nvidia 10-Q, Jul 2026; CoreWeave 8-K, Sep 2025; Nebius 6-K, Mar 2026; AC Research on GPU loan spreads, 16 Oct 2026.</p>
+    <aside class="notes"><p>This is the gap we fill. The two largest neoclouds negotiated private floors with a giant. Nvidia must buy CoreWeave's "residual unsold capacity" through 13 Apr 2032 on an initial $6.3B order https://www.sec.gov/Archives/edgar/data/1769628/000176962825000047/crwv-20250909.htm . Meta must buy Nebius's unsold capacity on set clusters, up to $15B over five years, inside a deal worth up to about $27B https://www.sec.gov/Archives/edgar/data/1513845/000110465926027886/tm268879d1_6k.htm . Nvidia commits $36B, typically over six years, to buy capacity from AI clouds https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000075/nvda-20260726.htm .</p><p>A floor, or put option, is a promise to pay at least a set price. Here the giant promises to buy capacity that would otherwise go unsold. The left tile shows the private floors the largest players signed, one deal at a time.</p><p>For everyone else we found no public backstop. Say "no public backstop found", not "unprotected", because private deals may exist. The cost shows up in borrowing. AC Research finds a median of SOFR plus 237.5 bp across five GPU loans with investment-grade customers and plus 475 bp across six without https://www.amcompute.com/blog/nvidia-gpu-financing-backstop . We left Lambda out of the bottom tier on purpose. Its 6.78% fixed loan rests on two hyperscale customers, and it also has an Nvidia-backed loan at SOFR plus 300 bp, so it isn't an example of having no backstop. The tiles in the bottom row stand for the long tail, not a count.</p></aside>
+  </div>
+</section>
+
+<!-- 4 -->
+<section class="slide" id="s4" aria-label="Slide 4: What we sell">
+  <div class="frame">
+    <div class="eyebrow"><b>The product</b> What we sell</div>
+    <h2>A cap protects the buyer from spikes. A floor protects the neocloud from slumps.</h2>
+    <figure class="stack" style="gap:8px">
+      <svg class="chart lg" viewBox="0 0 950 300" role="img" aria-labelledby="t4">
+        <title id="t4">Ornn's daily H100 index from 18 July to 17 October 2026 in grey. August averaged $2.77, below an illustrative $2.85 floor, so the floor covers the 8 cent gap. September averaged $2.83, above an illustrative $2.75 cap, so the cap covers the 8 cent gap. Each settles once, on its window's average.</title>
+        <line class="grid" x1="70" y1="208.9" x2="690" y2="208.9"/><line class="grid" x1="70" y1="157.8" x2="690" y2="157.8"/><line class="grid" x1="70" y1="106.7" x2="690" y2="106.7"/><line class="grid" x1="70" y1="55.6" x2="690" y2="55.6"/>
+        <line class="axis" x1="70" y1="260" x2="690" y2="260"/><line class="axis" x1="70" y1="30" x2="70" y2="260"/>
+        <text x="62" y="265" text-anchor="end">$2.40</text><text x="62" y="214" text-anchor="end">$2.60</text><text x="62" y="163" text-anchor="end">$2.80</text><text x="62" y="112" text-anchor="end">$3.00</text><text x="62" y="61" text-anchor="end">$3.20</text>
+        <text x="165.4" y="282" text-anchor="middle">1 Aug</text><text x="376.6" y="282" text-anchor="middle">1 Sep</text><text x="581" y="282" text-anchor="middle">1 Oct</text>
+        <polyline fill="none" stroke="#b9c8d1" stroke-width="1.5" points="70.0,191.0 76.8,180.7 83.6,188.5 90.4,175.7 97.3,183.3 104.1,183.3 110.9,175.7 117.7,188.5 124.5,208.9 131.3,178.3 138.1,162.9 144.9,185.9 151.8,170.6 158.6,168.0 165.4,185.9 172.2,208.9 179.0,198.7 185.8,188.5 192.6,183.3 199.5,178.3 206.3,188.5 213.1,193.6 219.9,226.7 226.7,219.2 233.5,191.0 240.3,178.3 247.1,175.7 254.0,160.3 260.8,193.6 267.6,198.7 274.4,173.2 281.2,96.5 288.0,124.6 294.8,132.3 301.6,137.3 308.5,188.5 315.3,139.9 322.1,106.8 328.9,114.3 335.7,188.5 342.5,168.0 349.3,124.6 356.2,139.9 363.0,104.2 369.8,114.3 376.6,150.2 383.4,150.2 390.2,127.2 397.0,134.8 403.8,91.3 410.7,88.8 417.5,63.3 424.3,86.3 431.1,116.9 437.9,147.6 444.7,139.9 451.5,155.3 458.4,162.9 465.2,170.6 472.0,226.7 478.8,203.7 485.6,145.0 492.4,101.6 499.2,145.0 506.0,196.2 512.9,160.3 519.7,145.0 526.5,93.9 533.3,127.2 540.1,145.0 546.9,224.3 553.7,237.0 560.5,219.2 567.4,173.2 574.2,180.7 581.0,127.2 587.8,160.3 594.6,198.7 601.4,211.4 608.2,229.3 615.1,142.5 621.9,145.0 628.7,147.6 635.5,160.3 642.3,191.0 649.1,196.2 655.9,127.2 662.7,63.3 669.6,53.1 676.4,73.5 683.2,173.2 690.0,162.9"/>
+        <text class="lbl" x="267.6" y="40" text-anchor="middle">August window</text><text class="lbl" x="475.4" y="40" text-anchor="middle">September window</text>
+        <rect x="165.4" y="145" width="204.4" height="20.2" fill="#e0e4ff"/>
+        <line x1="165.4" y1="145" x2="369.8" y2="145" stroke="#052b42" stroke-width="2.5" stroke-dasharray="7 5"/>
+        <line x1="165.4" y1="165.2" x2="369.8" y2="165.2" stroke="#614efa" stroke-width="3"/>
+        <text class="lbl" x="267.6" y="136" text-anchor="middle" style="paint-order:stroke;stroke:#f8f7f2;stroke-width:5px">Floor $2.85</text>
+        <text x="267.6" y="184" text-anchor="middle" style="paint-order:stroke;stroke:#f8f7f2;stroke-width:5px;fill:#614efa;font-weight:600">Average $2.77</text>
+        <rect x="376.6" y="150.3" width="197.6" height="20.3" fill="#e0ff4f"/>
+        <line x1="376.6" y1="170.6" x2="574.2" y2="170.6" stroke="#052b42" stroke-width="2.5"/>
+        <line x1="376.6" y1="150.3" x2="574.2" y2="150.3" stroke="#614efa" stroke-width="3"/>
+        <text x="475.4" y="141" text-anchor="middle" style="paint-order:stroke;stroke:#f8f7f2;stroke-width:5px;fill:#614efa;font-weight:600">Average $2.83</text>
+        <text class="lbl" x="475.4" y="190" text-anchor="middle" style="paint-order:stroke;stroke:#f8f7f2;stroke-width:5px">Cap $2.75</text>
+        <rect x="706" y="120" width="14" height="14" fill="#e0e4ff" stroke="#052b42" stroke-width="1"/><text x="728" y="132">What the floor saves</text><text x="728" y="150">the neocloud</text>
+        <rect x="706" y="172" width="14" height="14" fill="#e0ff4f" stroke="#052b42" stroke-width="1"/><text x="728" y="184">What the cap saves</text><text x="728" y="202">the buyer</text>
+      </svg>
+      <figcaption class="tag">Settles once, on the window's average. Grey is Ornn's daily H100 index, 18 Jul to 17 Oct 2026. The levels are illustrations.</figcaption>
+    </figure>
+    <p class="lede">A cap or floor settles once, on the average over its window, so no single day decides it. Real GPU-hours change hands.</p>
+    <p class="src">Price data from Ornn's index, for demonstration only. The cap and floor levels are our own illustration.</p>
+    <aside class="notes"><p>One picture for the whole product. A cap gives a buyer the right to rent a reserved block in a set window at no more than the cap level, for a cap fee paid up front. A floor gives a neocloud the right to rent its hours to a floor buyer at no less than the floor level. Both are options, not obligations, and both settle on the average over the window, so one spiky day can't trigger them or dodge them.</p><p>Both end in delivery. If a buyer doesn't need the hours, it resells them to another business. A floor buyer is a large GPU user that wants cheap capacity in a weak market. A cap and a floor together are called a collar. Slide 9 covers floors for lenders.</p><p>The chart. Each contract settles once, on the average over its window. August's daily prices averaged $2.77 and September's $2.83, our computation from Ornn's daily settles. An illustrative $2.85 floor on August covers the 8 cent gap below it, and an illustrative $2.75 cap on September covers the 8 cent gap above it. The daily spikes in grey don't trigger anything on their own. The levels are chosen to show both cases on real data. In the demo and on slide 7 the example cap is $2.50 for a week about a month out.</p><p>One sequence is still open. The window's average is known only after the hours have elapsed, so the term sheet must fix when the buyer exercises, when the hours are delivered and when the invoice is sent. Appendix B sets out that open decision.</p></aside>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" id="s5" aria-label="Slide 5: Futures versus options">
+  <div class="frame">
+    <div class="eyebrow"><b>The product</b> Futures or options</div>
+    <h2>Futures lock both sides into a price. Our options give a ceiling or a floor with a way out.</h2>
+    <div class="tbl"><table class="vs">
+      <thead><tr><th></th><th>Futures (CME in review, ICE planned)</th><th>Dodona caps and floors</th></tr></thead>
+      <tbody>
+        <tr><td>What you get</td><td>A cash difference on a monthly-average index</td><td>A GPU block at a price ceiling, delivered</td></tr>
+        <tr><td>Capacity</td><td>None, it settles in cash</td><td>A reserved block, confirmed by the neocloud</td></tr>
+        <tr><td>If prices fall</td><td>You still pay the locked price</td><td>You rent cheaper and lose only the cap fee</td></tr>
+        <tr><td>Cash needed</td><td>Margin, topped up daily through a futures broker</td><td>The cap fee up front, nothing after</td></tr>
+        <tr><td>Built for</td><td>Traders and treasury desks</td><td>Operators, meaning AI labs, neoclouds and lenders</td></tr>
+        <tr><td>Rules</td><td>Exchange listing and clearing, CFTC review</td><td>Delivered options between businesses, designed for the CFTC's trade option exemption</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols even">
+      <p><b>Why options.</b> Operators need the GPUs, not a cash difference, and a CFO can budget one fee but not margin calls.</p>
+      <p><b>They work together.</b> Ornn, CME and ICE are building the benchmark. When futures list, neoclouds and buyers can hedge their contracts on them, and the price they settle on is the one we use.</p>
+    </div>
+    <p class="src">Sources. CFTC filing for CME; ICE notice, 29 Sep 2026; 17 CFR 32.3. Counsel has to confirm the exemption before launch.</p>
+    <aside class="notes"><p>Why options are what operators need. A buyer wants a ceiling with an exit, the way they buy insurance. A future removes the upside and adds margin calls. Non-financial companies don't run margin accounts, and a CFO can budget a fee. Capacity is the real risk, and a future can't deliver GPUs, while our cap is tied to a reservation. The supply side has idle hours and expensive debt. Selling caps earns money on the hours, and floors protect the debt.</p><p>Complementary, not rivals. Futures give the index price discovery. Options are what operators buy. When CME or ICE list, neoclouds and buyers can hedge their contracts on them. Dodona itself never takes a side. Ornn is building the benchmark, we build the product that uses it, and we need their data licence to do it.</p><p>Status. CME's Silicon Data H100 and B200 futures await CFTC approval, with review extended to 9 Nov 2026 https://www.cftc.gov/filings/ptc/ptc08112615405.pdf . ICE's Ornn futures have "no listing date or timeline" https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_Exchange_Notice_ORNN_Compute_4Q2026_20260929.pdf . The trade option exemption covers options between commercial parties that are intended to end in real delivery https://www.law.cornell.edu/cfr/text/17/32.3 . Any later swap of delivery for cash has to be a separate deal, which is why our contracts resell hours instead. Counsel has to confirm all of this before launch.</p></aside>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide" id="s6" aria-label="Slide 6: Why now">
+  <div class="frame">
+    <div class="eyebrow"><b>Why now</b> What changed</div>
+    <h2>Someone tried this for cloud computing in 2015. It was too early. Now it isn't.</h2>
+    <div class="cols even">
+      <div class="panel">
+        <span class="big" style="color:var(--muted)">2015</span>
+        <ul class="list">
+          <li>Contracts traded a mixed unit that matched nobody's bill.</li>
+          <li>Cloud prices only fell.</li>
+          <li>Too few buyers came, and the exchange closed in 2016.</li>
+        </ul>
+      </div>
+      <div class="panel lav">
+        <span class="big" style="color:var(--violet)">2026</span>
+        <ul class="list">
+          <li>Contracts name a real chip, like the H100.</li>
+          <li>Prices swing both ways. Ornn's B200 index rose 82% in 90 days.</li>
+          <li>CME and ICE filed compute futures, and the CFTC asked for comment.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src">Sources. heise.de on Deutsche Börse Cloud Exchange; CME release on 6fusion, 2014; Ornn's index data; CFTC filing for CME; ICE notice, 29 Sep 2026; CFTC release 9286-26.</p>
+    <aside class="notes"><p>Deutsche Börse Cloud Exchange launched in May 2015 with five providers and closed in March 2016 because too few buyers showed up https://www.heise.de/news/Deutsche-Boerse-Cloud-Exchange-macht-dicht-3098846.html . 6fusion signed with CME in 2014 on a mixed unit of CPU, memory and I/O that didn't match anyone's real bill, and no volume was ever made public https://www.cmegroup.com/media-room/press-releases/2014/7/03/6fusion_cme_groupsigndefinitiveagreementtodevelopiaascommodityex.html . Back then cloud prices only went down, so nobody needed a cap.</p><p>Now contracts name a real chip and two indices, Ornn and Silicon Data, publish prices every day. Ornn's B200 index rose 82%, from $4.42 on 27 Jun to $8.04 on 26 Sep 2026, our computation from its free 90-day history. More than $20B of loans are backed by GPUs https://newsletter.semianalysis.com/p/nvidia-gpu-debt-backstop-unleashes . CME's futures await CFTC approval, with review to 9 Nov 2026 https://www.cftc.gov/filings/ptc/ptc08112615405.pdf , ICE has no listing date https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_Exchange_Notice_ORNN_Compute_4Q2026_20260929.pdf , and the CFTC asked for public comment in August 2026 https://www.cftc.gov/PressRoom/PressReleases/9286-26 .</p></aside>
+  </div>
+</section>
+
+<!-- 7 -->
+<section class="slide" id="s7" aria-label="Slide 7: Why compute buyers join">
+  <div class="frame">
+    <div class="eyebrow"><b>Buyers</b> Why they join</div>
+    <h2>Buyers get a worst case they can budget, and they can still walk away.</h2>
+    <div class="panel ink">
+      <span class="k" style="color:#e0ff4f">The setup</span>
+      <p style="font-size:20px">A startup needs 64 H100s for one week in November, about a month from now. It caps them at $2.50 for a $0.25 cap fee.</p>
+    </div>
+    <div class="strip">
+      <div class="panel">
+        <svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><polyline points="4,32 14,24 22,28 36,8" fill="none" stroke="#614efa" stroke-width="4"/><circle cx="36" cy="8" r="4" fill="#614efa"/></svg>
+        <span class="k">Prices spike to $3.80</span>
+        <span class="big">$2.75 an hour</span>
+        <p>all in. Saves $11,290.</p>
+      </div>
+      <div class="panel">
+        <svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><polyline points="4,8 14,16 22,12 36,32" fill="none" stroke="#052b42" stroke-width="4"/><circle cx="36" cy="32" r="4" fill="#052b42"/></svg>
+        <span class="k">Prices fall to $2.30</span>
+        <span class="big">$2.55 an hour</span>
+        <p>all in. It loses only the $2,688 cap fee.</p>
+      </div>
+      <div class="panel lav">
+        <svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 20a12 12 0 0 1 21-8" fill="none" stroke="#614efa" stroke-width="4"/><path d="M32 20a12 12 0 0 1-21 8" fill="none" stroke="#614efa" stroke-width="4"/><polygon points="30,4 33,14 23,13" fill="#614efa"/><polygon points="10,36 7,26 17,27" fill="#614efa"/></svg>
+        <span class="k">Plans change</span>
+        <span class="big">Resell the hours</span>
+        <p>to another business on Dodona.</p>
+      </div>
+    </div>
+    <p class="src">Our own worked example. The $0.25 cap fee assumes a $2.70 forward price for that week, a month ahead, at 40% volatility. The buyer pays the cap fee and the capped rent, nothing else. Sources for the reasons are in the notes.</p>
+    <aside class="notes"><p>Tell it as a story. A startup needs 64 H100s for a week in November, which is 10,752 GPU-hours. It caps them at $2.50 for a $0.25 cap fee, so $2,688 up front.</p><p>If the week averages $3.80, it pays $2,688 plus $2.50 × 10,752 = $26,880, so $29,568 in total, or $2.75 an hour. At the market it would pay $3.80 × 10,752 = $40,857.60, so it saves $11,290. If the week averages $2.30, it walks away from the cap, rents at $2.30 for $24,729.60 and pays $27,417.60 in total, or $2.55 an hour. A fixed $2.80 would have cost $30,105.60, so it pays $2,688 less. If plans change, it resells the hours. With a resale bid of $3.70 in the spike case, it gets 10,752 × $1.20 = $12,902 more than the capped price, or $10,214 after the cap fee. In the pilot the first resale bidders are the partner neocloud's own spot customers.</p><p>A caveat to say before they do. We assume a forward price of $2.70 for a week about a month out, and at 40% volatility our model values the $2.50 cap at $0.25. With an assumed forward of $2.80 for that week, the cap would be worth about $0.33. If the delivery-window forward were $3.02, a $2.50 cap would have a lower bound of about $0.52 before discounting. Our $0.25 example instead assumes a $2.70 forward for that week. Today's Ornn spot of $3.02 alone does not set that bound, and the assumed forward is neither a forecast nor a market quote. The example teaches the shape, not a live quote.</p><p>Why buyers join, with evidence. A ceiling without lock-in, because Google says you "can't cancel" a commitment and Azure caps refunds at $50,000 a year https://docs.cloud.google.com/compute/docs/instances/signing-up-committed-use-discounts https://learn.microsoft.com/en-us/azure/cost-management-billing/reservations/reservation-exchange-policy-changes . Capacity comes with the cap, while AWS charges $5.97 per H100-hour for short blocks https://aws.amazon.com/ec2/capacityblocks/pricing/ . One cap fee to budget with no margin calls, and 92% of AI builders find AI costs hard to predict, ICONIQ via SaaStr https://www.saastr.com/the-builders-economy-10-metrics-from-iconiqs-newest-2026-state-of-ai-report/ . Resell what you won't use, since inference companies won't sign for more than a year, SemiAnalysis https://newsletter.semianalysis.com/p/nvidia-gpu-debt-backstop-unleashes . Compute is 57–70% of spending at three labs, Epoch AI https://epoch.ai/data-insights/company-spending-breakdown , and running models is 23% of AI product cost at scale, ICONIQ January 2026.</p><p>Two-month comparison, if asked. 64 H100s for two months is 93,440 GPU-hours. Reserved at Together's $3.19 https://www.together.ai/gpu-clusters it costs $298,074. A cap at $3.02 with cap fees of $0.1611 and $0.2131 for windows starting next month and the month after costs $17,483 in fees. Flat prices give $299,671, about the same. If the need ends after one month, the cap costs $158,577, saving $139,497. AWS short blocks would cost $557,837.</p><p>Basis risk. The index is an average, and 64 H100s in one cluster might not be for rent at that price. Buyers who take the real GPUs from us don't face it.</p></aside>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide" id="s8" aria-label="Slide 8: Why neoclouds join">
+  <div class="frame">
+    <div class="eyebrow"><b>Supply</b> Why neoclouds join</div>
+    <h2>Neoclouds earn money now on GPUs that would sit idle.</h2>
+    <div class="strip">
+      <div class="panel">
+        <span class="k">Idle GPUs</span>
+        <svg viewBox="0 0 200 44" aria-hidden="true" style="width:100%;max-width:240px"><g fill="#052b42"><rect x="0" y="0" width="16" height="40" rx="3"/><rect x="20" y="0" width="16" height="40" rx="3"/><rect x="40" y="0" width="16" height="40" rx="3"/><rect x="60" y="0" width="16" height="40" rx="3"/><rect x="80" y="0" width="16" height="40" rx="3"/><rect x="100" y="0" width="16" height="40" rx="3"/><rect x="120" y="0" width="16" height="40" rx="3"/></g><g fill="#e0ff4f" stroke="#052b42" stroke-width="1.5"><rect x="141" y="1" width="15" height="38" rx="3"/><rect x="161" y="1" width="15" height="38" rx="3"/><rect x="181" y="1" width="15" height="38" rx="3"/></g></svg>
+        <p>Northwind has 1,000 H100s. It expects 300 to go unsold next month.</p>
+      </div>
+      <div class="panel ink">
+        <span class="k" style="color:#e0ff4f">Sell a cap</span>
+        <span class="big" style="color:#e0ff4f;font-size:32px;white-space:nowrap">$23,000 to $35,000</span>
+        <p>a month in cap fees.</p><p class="tag" style="color:#c9d6de;font-size:15px">Gross, at 26% to 40% volatility. Northwind keeps about $19,600 to $30,000 after our 15%, then pays 1% on compute it delivers.</p>
+      </div>
+      <div class="panel">
+        <span class="k">Outcomes</span>
+        <div class="split">
+          <div><svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><polyline points="4,32 14,24 22,28 36,8" fill="none" stroke="#614efa" stroke-width="4"/></svg><p><b>Prices spike.</b> The buyer takes them at $3.02.</p></div>
+          <div><svg class="icon" viewBox="0 0 40 40" aria-hidden="true"><polyline points="4,8 14,16 22,12 36,32" fill="none" stroke="#052b42" stroke-width="4"/></svg><p><b>Prices fall.</b> Northwind keeps the fee and rents the GPUs spot.</p></div>
+        </div>
+        <p style="font-size:15px;color:var(--muted)">Northwind gives up rent above $3.02 on that block and ties the block up for the window.</p>
+      </div>
+    </div>
+    <p class="lede">Floors could cut loans from SOFR plus 4.75% toward 2.4%.</p>
+    <p class="src">Northwind is an example. The 30% idle share is our assumption, because no neocloud publishes how full it is. Spreads from AC Research, 16 Oct 2026.</p>
+    <aside class="notes"><p>Tell it as a story. Northwind, an example neocloud, has 1,000 H100s, and expects about 300 of them to go unsold next month. The cap needs those GPUs free for the whole window. GPUs that sit idle only on nights and weekends would back shorter windows instead, such as a weekend cap. That's 300 × 730 = 219,000 GPU-hours a month. It sells a one-month cap on those hours at $3.02, today's Ornn level, for a window starting next month. The cap fee is about 0.4 × volatility × square root of time × price, with time = 4/36 of a year, so the square root is 0.333. At 26.2% volatility, Silicon Data's H100 history and the low-swing case, that's 0.4 × 0.262 × 0.333 × 3.02 = $0.1055 a GPU-hour, so 219,000 × $0.1055 = $23,105. Our 15% cut is $3,466, so Northwind keeps $19,639. At 40%, our base case, the cap fee is $0.1611 and the month earns $35,281. Both cap fees use the rule of thumb, about 0.4 × volatility × √time × price, rounded to $0.1055 and $0.1611. A moment-matched average-price calculation gives about $23,037 to $35,159, a gap of about 0.3% that doesn't change the example.</p><p>Gross versus net. At 26.2% the gross cap fee is $23,104.50, our 15% is $3,465.68 and Northwind keeps $19,638.83. At 40% the gross is $35,280.90, our 15% is $5,292.14 and Northwind keeps $29,988.77. If half the capped hours are delivered, our 1% takes another $3,306.90, which leaves Northwind $16,331.93 and $26,681.87 of cap fee after both fees. That is not Northwind's total revenue, since it is also paid for the compute it delivers.</p><p>What Northwind takes on. It earns an upfront cap fee and accepts a ceiling on the selling price of the reserved block. Its benefit depends on the fee, its delivery costs and other demand for those hours. If prices spike, another customer might have paid more than $3.02. If the buyer walks away late, there may be little time to re-let the hours. Northwind holds the capacity, and the 85% of the cap fee it keeps pays it for that commitment. Our 15% pays for our own services, which are origination, buyer sourcing, standard contracts, capacity verification, reporting and delivery coordination. When hours are delivered, our proposed 1% of the compute bill comes from Northwind's side, at most 219,000 × $3.02 × 1% = $6,614 a month at full delivery, or $3,306.90 if half are delivered.</p><p>Be honest about size. $23,105 to $35,281 a month is about 1% to 1.6% of that fleet's revenue at $3.02 an hour, 730,000 × $3.02 = $2,204,600 a month. The fee alone won't win a neocloud. The booked block and the lender story will. Demand for short deals is real. Nebius says a recent auction cleared 15% above its last Blackwell high https://www.investing.com/news/transcripts/earnings-call-transcript-nebius-beats-q2-2026-forecasts-shares-jump-165-93CH-4855076 . Setup is one webhook, a reserved block and a deposit with the escrow agent.</p><p>The 30% is an assumption. No 2026 disclosure of utilisation exists from CoreWeave, Nebius, Lambda, Crusoe or Together https://investors.coreweave.com/news/news-details/2026/CoreWeave-Continues-to-Contract-New-Compute-Capacity-at-Higher-Prices/default.aspx . The debt point is our view. Median SOFR plus 237.5 bp across five deals with investment-grade customers and plus 475 bp across six others https://www.amcompute.com/blog/nvidia-gpu-financing-backstop . Those customers guarantee volume and credit, not a price floor, and no lender has publicly asked for a price floor yet. Volatility https://www.silicondata.com/blog/cash-settled-compute-futures .</p></aside>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="slide" id="s9" aria-label="Slide 9: Floors give lenders a number to lend against">
+  <div class="frame">
+    <div class="eyebrow"><b>Lenders</b> Floors and debt</div>
+    <h2>A floor gives a neocloud's lender a minimum revenue number to lend against.</h2>
+    <div class="cols">
+      <figure class="stack" style="gap:6px">
+        <svg class="chart" viewBox="0 0 470 172" role="img" aria-labelledby="t8">
+          <title id="t8">Interest above SOFR on GPU loans. Customers with strong credit, median 2.375 points. Nebius bridge from Citi, 2.75 points rising to 3.50. Other borrowers, median 4.75 points. CoreWeave in 2023, 8.75 points.</title>
+          <line class="grid" x1="262.9" y1="4" x2="262.9" y2="126"/><line class="grid" x1="317.7" y1="4" x2="317.7" y2="126"/><line class="grid" x1="372.6" y1="4" x2="372.6" y2="126"/><line class="grid" x1="427.4" y1="4" x2="427.4" y2="126"/>
+          <text x="200" y="24" text-anchor="end">Customers with strong credit</text><rect x="208" y="10" width="65.1" height="20" fill="#614efa"/><text class="lbl" x="279" y="24">+2.375</text>
+          <text x="200" y="54" text-anchor="end">Nebius bridge from Citi</text><rect x="208" y="40" width="75.4" height="20" fill="#614efa"/><text class="lbl" x="289" y="54">+2.75, rising to 3.50</text>
+          <text x="200" y="84" text-anchor="end">Other borrowers</text><rect x="208" y="70" width="130.3" height="20" fill="#052b42"/><text class="lbl" x="344" y="84">+4.75</text>
+          <text x="200" y="114" text-anchor="end">CoreWeave in 2023</text><rect x="208" y="100" width="240" height="20" fill="#4f6676"/><text x="440" y="114" text-anchor="end" style="fill:#ffffff;font-weight:600">+8.75</text>
+          <line class="axis" x1="208" y1="126" x2="448" y2="126"/>
+          <text x="208" y="142" text-anchor="middle">0</text><text x="262.9" y="142" text-anchor="middle">2</text><text x="317.7" y="142" text-anchor="middle">4</text><text x="372.6" y="142" text-anchor="middle">6</text><text x="427.4" y="142" text-anchor="middle">8</text>
+          <text x="328" y="164" text-anchor="middle">Interest above SOFR, the benchmark rate, in points</text>
+        </svg>
+        <figcaption class="tag">What GPU loans cost in 2026. Strong customers make debt much cheaper.</figcaption>
+      </figure>
+      <div class="box ink stack" style="gap:8px;padding:24px">
+        <p class="tag">Example, 1,024 H100s with a $2.00 floor</p>
+        <div class="big" style="color:#e0ff4f">$1.5M a month</div>
+        <p>in any month that averages below $2.00, because the floor buyer then takes every hour at $2.00.</p>
+      </div>
+    </div>
+    <p class="lede">Oil lenders already ask producers to lock in prices. We want GPU lenders to do the same with floors.</p>
+    <p class="src">Our own worked example. Sources. AC Research, 16 Oct 2026; Lambda via Business Wire, 1 Oct 2026; DCD on Nebius, 22 Oct 2026; CCIR on CoreWeave; CoreWeave 8-Ks; Oil &amp; Gas Journal.</p>
+    <aside class="notes"><p>How the floor works. It's physical, like the cap. The neocloud buys the right to rent its hours to a floor buyer at $2.00. When a month averages below $2.00, the neocloud delivers to the floor buyer at $2.00 instead of selling at the market. The floor buyer is a large GPU user that wants cheap capacity in a weak market. No cash payout replaces delivery, which matches slide 15.</p><p>The example. 1,024 H100s that aren't on long contracts make 747,520 GPU-hours a month. For six months the neocloud buys a $2.00 floor and pays for it by selling a $3.00 cap, a pair called a collar. Below $2.00 it earns 747,520 × $2.00 = $1,495,040 a month. In a $1.70 month that's $224,256 more than the market. In a $3.40 month the cap buyer takes the hours at $3.00, $299,008 less than the market. This exact pair isn't free. If the market expects $2.80 for six months at 40% volatility, selling the $3.00 cap pays for a floor near $2.64. The $2.00 and $3.00 pair costs about nothing only if the market expects around $2.45.</p><p>Loan maths, if asked. With running costs of $0.60 per GPU-hour, our assumption, a month below $2.00 leaves (2.00 − 0.60) × 747,520 = about $1.05M of income. At 1.35x coverage that supports about $775,000 a month of loan payments. A floor is only as good as its buyer, so a lender will check the floor buyer can take and pay for every hour.</p><p>Debt numbers. AC Research, 16 Oct 2026, median SOFR plus 237.5 bp across five GPU loans with investment-grade customers and plus 475 bp across six without https://www.amcompute.com/blog/nvidia-gpu-financing-backstop . Nebius took a $3.5B, 364-day bridge from Citi at SOFR plus 275 bp rising to 350 bp, and its shares fell up to 6.8% https://www.datacenterdynamics.com/en/news/neocloud-nebius-secures-35bn-in-financing-from-citi/ . Lambda closed $1.008B fixed at 6.78% to 2033, with a 1.20x minimum debt-service cover and two hyperscale customers https://www.financialcontent.com/article/bizwire-2026-10-1-lambda-closes-1-billion-senior-secured-fixed-rate-financing . CoreWeave's 2023 GPU loan was SOFR plus 875 bp, about 14%, and its March 2026 loan SOFR plus 225 bp https://ccir.io/research/coreweave-debt-by-entity . CoreWeave's loans require cash flow of 1.15x to 1.40x loan payments https://www.sec.gov/Archives/edgar/data/1769628/000176962825000033/crwv-20250728.htm https://www.sec.gov/Archives/edgar/data/1769628/000176962826000129/crwv-20260330.htm .</p><p>The oil precedent. Some oil loans require hedging 50% to 70% of output, often for 24 months, usually only when a producer carries a lot of debt https://www.ogj.com/home/article/17294812/hedging-in-todays-market .</p></aside>
+  </div>
+</section>
+
+<!-- 10 -->
+<section class="slide" id="s10" aria-label="Slide 10: How Dodona makes money">
+  <div class="frame">
+    <div class="eyebrow"><b>Business model</b> How we make money</div>
+    <h2>We earn 15% of each cap fee and 1% of each compute bill delivered through us.</h2>
+    <div class="cols">
+      <div class="stack" style="gap:14px">
+        <figure class="stack" style="gap:6px">
+          <h3 style="margin:0">Every $100 cap fee, when a neocloud sells a cap</h3>
+          <svg class="chart" viewBox="0 0 460 40" role="img" aria-labelledby="t9a"><title id="t9a">When a neocloud sells a cap, $85 of every $100 cap fee goes to the neocloud and $15 to Dodona.</title><rect x="0" y="2" width="391" height="36" fill="#052b42"/><rect x="391" y="2" width="69" height="36" fill="#e0ff4f"/><text x="14" y="26" style="fill:#f8f7f2;font-weight:600;font-size:15px">$85 to the neocloud</text><text class="lbl" x="425.5" y="26" text-anchor="middle" style="font-size:15px">$15 to us</text></svg>
+        </figure>
+        <figure class="stack" style="gap:6px">
+          <h3 style="margin:0">Every $100 compute bill delivered through us</h3>
+          <svg class="chart" viewBox="0 0 460 40" role="img" aria-labelledby="t9b"><title id="t9b">Of a $100 compute bill, $99 goes to the neocloud and $1 to Dodona.</title><rect x="0" y="2" width="455.4" height="36" fill="#052b42"/><rect x="455.4" y="2" width="4.6" height="36" fill="#e0ff4f"/><text x="14" y="26" style="fill:#f8f7f2;font-weight:600;font-size:15px">$99 to the neocloud</text><text class="lbl" x="448" y="26" text-anchor="end" style="font-size:15px;fill:#f8f7f2">$1 to us</text></svg>
+        </figure>
+        <p>Proposed pilot pricing, taken from the neocloud's side of each trade. We never take the other side, and the money passes through an escrow agent.</p>
+      </div>
+      <figure class="stack" style="gap:6px">
+        <h3 style="margin:0">Our revenue a year, by hours capped</h3>
+        <svg class="chart md" viewBox="0 0 600 210" role="img" aria-labelledby="t9c">
+          <title id="t9c">Revenue a year if half of capped hours are delivered. 100,000 capped GPU-hours a month gives $47,118, or $65,238 if all are delivered. One million gives $471,180, or $652,380. Ten million gives $4,711,800, or $6,523,800. Each bar splits into cap fees and compute bills.</title>
+          <line class="grid" x1="224.3" y1="4" x2="224.3" y2="118"/><line class="grid" x1="298.6" y1="4" x2="298.6" y2="118"/><line class="grid" x1="372.8" y1="4" x2="372.8" y2="118"/>
+          <text x="142" y="27" text-anchor="end">100k GPU-hours</text><rect x="150" y="10" width="1.1" height="26" fill="#614efa"/><rect x="151.1" y="10" width="0.7" height="26" fill="#052b42"/><rect x="151.8" y="10" width="0.7" height="26" fill="#e0e4ff" stroke="#052b42" stroke-width=".5" stroke-dasharray="2 2"/><text class="lbl" x="158" y="21">$47,118</text><text x="158" y="37">$65,238 if all delivered</text>
+          <text x="142" y="65" text-anchor="end">1M GPU-hours</text><rect x="150" y="48" width="10.8" height="26" fill="#614efa"/><rect x="160.8" y="48" width="6.7" height="26" fill="#052b42"/><rect x="167.5" y="48" width="6.7" height="26" fill="#e0e4ff" stroke="#052b42" stroke-width=".5" stroke-dasharray="2 2"/><text class="lbl" x="180" y="59">$471,180</text><text x="180" y="75">$652,380 if all delivered</text>
+          <text x="142" y="103" text-anchor="end">10M GPU-hours</text><rect x="150" y="86" width="107.7" height="26" fill="#614efa"/><rect x="257.7" y="86" width="67.3" height="26" fill="#052b42"/><rect x="325" y="86" width="67.3" height="26" fill="#e0e4ff" stroke="#052b42" stroke-width=".5" stroke-dasharray="2 2"/><text class="lbl" x="398" y="97">$4.71M</text><text x="398" y="113">$6.52M if all delivered</text>
+          <line class="axis" x1="150" y1="118" x2="400" y2="118"/>
+          <text x="150" y="134" text-anchor="middle">$0</text><text x="224.3" y="134" text-anchor="middle">$2M</text><text x="298.6" y="134" text-anchor="middle">$4M</text><text x="372.8" y="134" text-anchor="middle">$6M</text>
+          <rect x="150" y="148" width="12" height="12" fill="#614efa"/><text x="168" y="159">15% of cap fees</text><rect x="290" y="148" width="12" height="12" fill="#052b42"/><text x="308" y="159">1% of compute bills, half delivered</text>
+          <rect x="150" y="170" width="12" height="12" fill="#e0e4ff" stroke="#052b42" stroke-width=".5"/><text x="168" y="181">Extra if every capped hour is delivered</text>
+          <text x="150" y="202">Capped GPU-hours a month</text>
+        </svg>
+        <figcaption class="tag">At $3.02, 40% volatility and a $0.1611 cap fee. Half of capped hours delivered is our business assumption, the light end shows all of them. Before our operating and transaction costs.</figcaption>
+      </figure>
+    </div>
+    <p class="src">Proposed fee model and our own illustration, not a forecast. Comparables and the arithmetic are in the notes.</p>
+    <aside class="notes"><p>Say the model in one breath. 15% of each cap fee, and 1% of each compute bill delivered through us, paid out of the neocloud's side. Nothing else per trade. We never take the other side and never hold funds. These are proposed pilot rates, not validated market pricing, and counsel reviews any per-trade fee before launch.</p><p>The ladder, our arithmetic. The cap fee is $0.1611 per GPU-hour at 40% volatility for a one-month window starting next month at $3.02. That is a rounded rule-of-thumb value. The moment-matched average-price value is about $0.1605, an immaterial difference. Our 15% is $0.02417 per capped GPU-hour. The main case assumes half of capped hours are delivered through us, used or resold, at $3.02, so our 1% adds $0.0151 per capped hour. Half delivered is a business assumption, not a measured delivery rate. Under the model, the risk-neutral chance that this at-the-money cap on a month starting next month finishes in the money is about 47.3% at 40% volatility, so 50% is a reasonable round illustration. Buyers who walk away rent elsewhere, and none of that bill passes through us. At 100,000 capped GPU-hours a month, that's $2,416.50 plus $1,510 = $3,926.50 a month, or $47,118 a year. At 1M, $24,165 plus $15,100 = $39,265 a month, or $471,180 a year. At 10M, $241,650 plus $151,000 = $392,650 a month, or $4,711,800 a year. If every capped hour is delivered, the 1% line doubles. That gives $5,436.50, $54,365 and $543,650 a month, or $65,238, $652,380 and $6,523,800 a year. At 26.2% volatility the cap-fee line falls by about a third. 1M GPU-hours a month is about 1,370 GPUs running full time. Synergy's $25B of neocloud revenue at a blended $3 is about 694M GPU-hours a month, so 10M is about 1.4%. These are illustrative annual revenue figures at the stated fee, volume and delivery assumptions, before operating and transaction costs. They are not a forecast or contracted revenue.</p><p>Model value versus what the neocloud nets. If $0.1611 is the model value of the option, the neocloud nets 85% of it minus the 1% on delivered compute, about $0.1218 per capped hour at 50% delivery, 24.4% below the model value. That isn't a loss, since the neocloud is also paid for the compute it delivers. The pilot has two coherent choices. Either the buyer pays the model value and the neocloud accepts the lower net because Dodona brings it the buyer and the booking. Or the customer price is grossed up so the neocloud still nets the model value, about $0.207 at 50% delivery, $0.190 at none and $0.225 at full delivery, and buyers must accept that. The pilot tests which, and we haven't picked one.</p><p>More lines later. Floors for lenders cover far more hours than a weekly cap, and the slide 9 floor alone covers about 4.5 million GPU-hours. Premium flows depend on the product. A neocloud selling a cap receives the cap fee. A neocloud buying a floor pays the fee to the floor buyer, so $85 to the neocloud describes the cap flow only. A collar's net cap fee can be near zero, so collars may need their own fee, which we haven't set. Dodona Value subscriptions are planned at $9,900 per seat a year, our own target, with Silicon Data Pro at $998 a month as the comparable https://www.silicondata.com/pricing . Our 2027 illustration for that line is about $0.5M, with every input an assumption. CME licenses Silicon Data and ICE licenses Ornn, and those fees aren't public.</p><p>Comparables, and what they do and don't show. AWS charges sellers 12% of the upfront resale price of a Standard Reserved Instance https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ri-market-general.html . That is a precedent for a meaningful commission on transferring unused commitments, not a fee on compute spend. Deribit's standard option fee is 3 basis points of the underlying notional, capped at 12.5% of the premium https://support.deribit.com/hc/en-us/articles/25944746248989-Fees . At typical premiums that comes to about 0.3% to 1.5% of the premium, so the 12.5% cap does not validate our 15%. SF Compute's roughly 10% of each transaction is a figure reported by eWeek in Nov 2025, not a verified current fee https://www.eweek.com/news/sf-compute-ai-funding/ . Our 15% and 1% are hypotheses to test in the pilot. Acceptance means a buyer accepting the full price and a neocloud accepting its net proceeds after both fees.</p></aside>
+  </div>
+</section>
+
+<!-- 11 -->
+<section class="slide" id="s11" aria-label="Slide 11: Market">
+  <div class="frame">
+    <div class="eyebrow"><b>Market</b> Where the money is</div>
+    <h2>Neoclouds earned more than $25B in 2025, and most of it is locked into long contracts.</h2>
+    <figure class="stack" style="gap:6px">
+      <svg class="chart" viewBox="0 0 1000 290" role="img" aria-labelledby="t10">
+        <title id="t10">Left, neocloud revenue forecasts. Synergy Research, more than $25B in 2025 to near $400B in 2031. Mordor Intelligence, $35.22B in 2026 to $236.53B in 2031. Right, 2025's $25B split, with a short-term slice between 2% and 30%, $0.5B to $7.5B, our estimate.</title>
+        <line class="grid" x1="60" y1="175" x2="470" y2="175"/><line class="grid" x1="60" y1="130" x2="470" y2="130"/><line class="grid" x1="60" y1="85" x2="470" y2="85"/><line class="grid" x1="60" y1="40" x2="470" y2="40"/>
+        <line class="axis" x1="60" y1="220" x2="470" y2="220"/>
+        <text x="52" y="224" text-anchor="end">$0</text><text x="52" y="179" text-anchor="end">$100B</text><text x="52" y="134" text-anchor="end">$200B</text><text x="52" y="89" text-anchor="end">$300B</text><text x="52" y="44" text-anchor="end">$400B</text>
+        <rect x="90" y="208.75" width="56" height="11.25" fill="#614efa"/><rect x="156" y="40" width="56" height="180" fill="#052b42"/>
+        <rect x="300" y="204.2" width="56" height="15.8" fill="#614efa"/><rect x="366" y="113.6" width="56" height="106.4" fill="#052b42"/>
+        <text class="lbl" x="118" y="202" text-anchor="middle">$25B</text><text class="lbl" x="184" y="34" text-anchor="middle">~$400B</text>
+        <text class="lbl" x="328" y="198" text-anchor="middle">$35.2B</text><text class="lbl" x="394" y="107" text-anchor="middle">$236.5B</text>
+        <text x="118" y="238" text-anchor="middle">2025</text><text x="184" y="238" text-anchor="middle">2031</text><text x="328" y="238" text-anchor="middle">2026</text><text x="394" y="238" text-anchor="middle">2031</text>
+        <text class="lbl" x="151" y="258" text-anchor="middle">Synergy Research</text><text class="lbl" x="361" y="258" text-anchor="middle">Mordor Intelligence</text>
+        <text class="lbl" x="540" y="60">2025 neocloud revenue, $25B</text>
+        <rect x="540" y="76" width="420" height="44" fill="#052b42"/>
+        <rect x="540" y="76" width="126" height="44" fill="#e0ff4f"/>
+        <rect x="540" y="76" width="8.4" height="44" fill="#614efa"/>
+        <text x="556" y="104" style="font-weight:600;fill:#052b42">Short-term</text><text x="676" y="104" style="font-weight:600;fill:#f8f7f2">Long contracts</text>
+        <text x="540" y="146">Violet, CoreWeave's 2% uncommitted share, $0.5B</text>
+        <text x="540" y="166">Lime, Scaleway's 30% short-term share, $7.5B</text>
+        <text class="lbl" x="540" y="206">Plus more than $20B of GPU-backed loans</text>
+        <text class="lbl" x="540" y="226">that would value a floor.</text>
+      </svg>
+      <figcaption class="tag">The short-term range is our estimate from two providers. Nobody measures it across the market.</figcaption>
+    </figure>
+    <p class="lede">We sell into the short-term slice, roughly $0.5B to $7.5B a year by our estimate, and to the lenders behind it.</p>
+    <p class="src">Sources. Synergy Research, Apr 2026; Mordor Intelligence, 2026; CoreWeave 10-Q, Q2 2026; DCD on Scaleway; SemiAnalysis.</p>
+    <aside class="notes"><p>Lead with money. Neocloud revenue was more than $25B in 2025 and Synergy expects near $400B by 2031, about 58% a year https://www.srgresearch.com/articles/neocloud-market-forecast-to-approach-400b-by-2031-driven-by-surging-ai-infrastructure-demand . Mordor sizes the neocloud market at $35.22B in 2026 and $236.53B by 2031 https://www.mordorintelligence.com/industry-reports/neocloud-market . The Business Research Company has $42.17B for 2026, and ResearchAndMarkets has $10.5B for a narrow GPU-as-a-service definition. All are analyst estimates with different definitions, so treat them as a range.</p><p>The short-term slice, our estimate. No source measures it across the market. CoreWeave reports 98% of revenue from committed contracts, so 2% is uncommitted https://www.sec.gov/Archives/edgar/data/0001769628/000176962826000366/crwv-20260630.htm . Scaleway keeps about 30% of GPUs for short-term sales, a single source https://www.datacenterdynamics.com/en/analysis/chipping-away-at-the-economics-of-neoclouds/ . 2% of $25B is $0.5B and 30% is $7.5B. Committed contracts carry a fixed price, so they're already protected. That's why we sell into the short-term slice and to lenders.</p><p>Other money. CoreWeave's backlog was $104.2B at 30 June 2026 https://investors.coreweave.com/news/news-details/2026/CoreWeave-Reports-Strong-Second-Quarter-2026-Results/default.aspx . More than $20B of loans are backed by GPUs, at 50–70% of their value https://newsletter.semianalysis.com/p/nvidia-gpu-debt-backstop-unleashes . Kalshi's GPU markets traded $4.4M of contract size to 27 July 2026, one source https://www.benzinga.com/markets/prediction-markets/26/08/61411352/kalshi-nvidia-compute-markets .</p></aside>
+  </div>
+</section>
+
+<!-- 12 -->
+<section class="slide" id="s12" aria-label="Slide 12: How we enter the market">
+  <div class="frame">
+    <div class="eyebrow"><b>Go to market</b> How we enter</div>
+    <h2>Supply first, then buyers, then lenders.</h2>
+    <svg class="chart" viewBox="0 0 1200 60" aria-hidden="true">
+      <line x1="200" y1="30" x2="1000" y2="30" stroke="#052b42" stroke-width="3"/>
+      <circle cx="200" cy="30" r="24" fill="#e0ff4f" stroke="#052b42" stroke-width="2"/><text x="200" y="38" text-anchor="middle" style="font-size:22px;font-weight:700;fill:#052b42">1</text>
+      <circle cx="600" cy="30" r="24" fill="#e0ff4f" stroke="#052b42" stroke-width="2"/><text x="600" y="38" text-anchor="middle" style="font-size:22px;font-weight:700;fill:#052b42">2</text>
+      <circle cx="1000" cy="30" r="24" fill="#e0ff4f" stroke="#052b42" stroke-width="2"/><text x="1000" y="38" text-anchor="middle" style="font-size:22px;font-weight:700;fill:#052b42">3</text>
+    </svg>
+    <div class="strip">
+      <div class="panel"><span class="k">Supply</span><p>Small and mid neoclouds post caps on idle hours on our offers board. Two design partners first.</p></div>
+      <div class="panel"><span class="k">Demand</span><p>AI startups and labs find caps through our calculator and offers board. A resale board comes later.</p></div>
+      <div class="panel"><span class="k">Lenders</span><p>Floors go into loan terms, as oil lenders ask producers to hedge.</p></div>
+    </div>
+    <p class="lede">India's AI Mission has 38,000+ GPUs that may soon sell idle hours abroad.</p>
+    <p class="src">Sources. IndiaAI empanelment figures; Business Standard, about 11 Oct 2026, a report; Oil &amp; Gas Journal. Our plan.</p>
+    <aside class="notes"><p>Step 1, supply first. A market with no sellers is empty, and idle hours are where neoclouds feel the pain. Small and mid neoclouds post caps on idle hours on our offers board, starting with two design partners. Their own spot customers are the first resale bidders.</p><p>Step 2, demand. AI startups and labs come through the calculator, which compares a cap with a fixed price, and the offers board. The resale board gives them an exit once counsel confirms resale settlement. Until then we quote one to one.</p><p>Step 3, lenders. Floors get written into loan terms. Some oil loans require hedging 50% to 70% of output, often for 24 months https://www.ogj.com/home/article/17294812/hedging-in-todays-market . A GPU lender could ask for a floor the same way. No GPU lender has asked for one publicly yet.</p><p>India and Southeast Asia. The IndiaAI Mission has empanelled 38,000+ GPUs across 14 suppliers, but uptake is low https://www.impriindia.com/insights/policy-update/developing-indiaais-dream/ . Officials are reported to be planning to let empanelled suppliers sell idle capacity to global customers at commercial rates, per Business Standard around 11 Oct 2026. That's a report, not a policy yet.</p></aside>
+  </div>
+</section>
+
+<!-- 13 -->
+<section class="slide" id="s13" aria-label="Slide 13: Competition and precedents">
+  <div class="frame">
+    <div class="eyebrow"><b>Competition</b> And precedents</div>
+    <h2>Others sell futures, indices or GPU hours. Nobody offers standard caps on real GPUs.</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Who</th><th>What they offer</th><th>Caps and floors</th><th>Real GPUs</th><th>Independent daily value</th></tr></thead>
+      <tbody>
+        <tr><td><b>CME / Silicon Data</b></td><td>H100 and B200 futures, in CFTC review to 9 Nov 2026</td><td>No</td><td>No</td><td>No</td></tr>
+        <tr><td><b>ICE / Ornn</b></td><td>Futures on the monthly average price, no start date</td><td>No</td><td>No</td><td>No</td></tr>
+        <tr><td><b>Ornn</b></td><td>Price index, swaps, resale of delivered capacity</td><td>No</td><td class="yes">Yes, resale</td><td>No</td></tr>
+        <tr><td><b>Gammon Capital</b></td><td>Custom caps arranged one deal at a time</td><td class="yes">Yes, custom</td><td>Not stated</td><td>No</td></tr>
+        <tr><td><b>Kalshi / Robinhood</b></td><td>$1 yes-or-no contracts on Ornn's index, monthly ladders live</td><td>No</td><td>No</td><td>No</td></tr>
+        <tr><td><b>SF Compute</b></td><td>Reserved GPUs you can resell</td><td>No</td><td class="yes">Yes</td><td>No</td></tr>
+        <tr class="us"><td>Dodona</td><td>Caps, floors and collars on reserved GPUs</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+      </tbody>
+    </table></div>
+    <div class="chips"><span class="chip on">Worked before</span><span class="chip">EEX power options</span><span class="chip">Southwest fuel caps</span><span class="chip">Oil producer collars</span><span class="chip on">Too early in 2015</span><span class="chip">Deutsche Börse Cloud Exchange</span></div>
+    <p class="lede">Our edge is neutrality. We value every contract daily and never trade for ourselves.</p>
+    <p class="src">Sources. CFTC filing for CME; ICE notice, 29 Sep 2026; Axios, 22 Oct 2026; SF Compute; Ornn case study; Gammon Capital; EEX; AP; Doral 10-K; heise.de. "Not stated" means no public statement found.</p>
+    <aside class="notes"><p>Independent daily value means a daily value on each contract from a company that doesn't trade for itself. Ornn comes closest to us. It resold an AI company's weekend B200 servers the same Friday https://ornn.com/case-studies/terminal/ , ran its first compute swap in December 2025, and FalconX offers swaps on its index. But it trades and resells for itself. Gammon says compute caps today are "bespoke, bilateral" https://gammoncap.com/intelligence/compute-derivatives/ . Kalshi's monthly compute ladders, such as KXH100MS and KXB200MS, were open and trading on 22 Oct by our own check of its public API. The same day it asked the CFTC to relist other compute markets https://www.axios.com/2026/10/22/kalshi-compute-contracts-cftc . Architect lists GPU perpetual futures, per one advisor. Compute Exchange runs auctions and forward capacity. CME https://www.cftc.gov/filings/ptc/ptc08112615405.pdf ; ICE https://www.ice.com/publicdocs/futures_us/exchange_notices/ICE_Futures_US_Exchange_Notice_ORNN_Compute_4Q2026_20260929.pdf ; SF Compute https://sfcompute.com/news/scaling-with-gpu-resale .</p><p>Precedents. EEX lists caps and floors on future electricity prices https://www.eex.com/en/markets/power/power-options . AP estimated Southwest saved $3.5B from 1999 to mid-2008 with fuel caps, a third-party estimate https://www.spokesman.com/stories/2008/jul/06/airlines-use-fuel-hedging-to-battle-high-flying/ . Doral Energy set a floor at $100 and a cap at $131 with no net fee https://www.sec.gov/Archives/edgar/data/0001373485/000106299308004747/form10k.htm . Irish capacity options pay power plants a fee and cap what they pay back at 1.5x. Deutsche Börse Cloud Exchange launched in May 2015 and closed in March 2016 because too few buyers came https://www.heise.de/news/Deutsche-Boerse-Cloud-Exchange-macht-dicht-3098846.html . 6fusion signed with CME in 2014 on a mixed compute unit that matched nobody's bill. Back then cloud prices only fell, so nobody needed a cap.</p></aside>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide" id="s14" aria-label="Slide 14: The demo">
+  <div class="frame">
+    <div class="eyebrow"><b>Demo</b> Three screens</div>
+    <h2>In the demo, a startup buys a cap and later uses or resells the hours.</h2>
+    <div class="screens" aria-label="Stylised mock of three product screens">
+      <div class="screen">
+        <header><span>1 · Checkout</span><span>H100</span></header>
+        <div class="body">
+          <div class="seg"><span>Fixed price</span><span class="on">Cap</span></div>
+          <div class="row"><span>GPUs × window</span><b>64 × 7 days</b></div>
+          <div class="row"><span>GPU-hours</span><b>10,752</b></div>
+          <div class="row"><span>Capped at</span><b>$2.50</b></div>
+          <div class="row"><span>Cap fee up front</span><b>$0.25 · $2,688</b></div>
+          <div class="row"><span>Most you'll pay</span><b>$2.75 / GPU-hr</b></div>
+          <div class="btns"><span>Buy cap</span><span>Compare fixed price</span></div>
+        </div>
+      </div>
+      <div class="screen">
+        <header><span>2 · Portfolio</span><span>As of 17 Oct</span></header>
+        <div class="body">
+          <div class="row"><span>H100 cap, $2.50</span><span class="pill itm">Worth using</span></div>
+          <div class="row"><span>Cap fee paid</span><b>$2,688</b></div>
+          <div class="row"><span>Index today</span><b>$2.78</b></div>
+          <div class="row"><span>Market above cap by</span><b>+$0.28</b></div>
+          <div class="row"><span>Dodona Value</span><b>$0.33 · $3,548</b></div>
+          <div class="btns"><span>Use the GPUs</span><span>Resell hours</span></div>
+        </div>
+      </div>
+      <div class="screen">
+        <header><span>3 · Resale board</span><span>Later</span></header>
+        <div class="body">
+          <div class="row"><span>Reserved block for resale</span><b>10,752 H100-hrs</b></div>
+          <div class="row"><span>Asking, above the $2.50 cap</span><b>$0.30 / hr</b></div>
+          <div class="row"><span>Dodona Value</span><b>$0.33</b></div>
+          <div class="row"><span>Lender view, loan A</span><span class="pill ok">LTV 0.58 · ok</span></div>
+          <div class="row"><span>Loan B</span><span class="pill watch">LTV 0.71 · watch</span></div>
+        </div>
+      </div>
+    </div>
+    <p class="lede">The board resells reserved hours, not the contract. It goes live once counsel confirms the settlement.</p>
+    <p class="sample">Sample data · Ornn index for demonstration only</p>
+    <p class="src">A drawing of the product, not a screenshot. Everything is simulated except the Ornn index. LTV means loan-to-value.</p>
+    <aside class="notes"><p>The only real thing in the demo is the Ornn daily index, labelled demonstration only. Everything else is simulated, including contracts, the companies on each side, orders, accounts and payments.</p><p>The flow. Sign up. At checkout, pick a fixed price or a cap. The receipt shows no payment taken and no capacity held. The portfolio shows the cap level, the cap fee, how far today's index is above the cap, and the Dodona Value. The cap itself settles on the week's average. Then show the two choices on a cap that's worth using. Next, list the reserved hours on the resale board, where the asking price over the cap level sits next to the Dodona Value. Last, the neocloud and lender view. Apply a sudden rent shock and watch a loan cross into a warning band while the floor holds. LTV is ok below 0.60, watch below 0.75, and breach at 0.75.</p><p>How resale works. What changes hands is the physical block of reserved hours, not the option. The holder pays the cap level for the hours, the resale buyer pays the holder's asking price, and the escrow agent nets the two. Counsel must confirm that this netted settlement counts as resale before we offer it. Until then the pilot uses one-to-one quotes.</p><p>The $0.33 value matches slide 7's example when the market expects a flat $2.80. Ornn data is not licensed for valuation. Our path is a Silicon Data or Ornn data licence, or our own index built from partner fills.</p></aside>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide" id="s15" aria-label="Slide 15: Regulation">
+  <div class="frame">
+    <div class="eyebrow"><b>The rules</b> Regulation</div>
+    <h2>Real GPUs change hands between businesses, and we never hold the money.</h2>
+    <div class="cols">
+      <svg class="chart" viewBox="0 0 640 300" role="img" aria-labelledby="t14">
+        <title id="t14">How money and GPUs move. Dodona matches the buyer and the neocloud and values each contract daily. The neocloud delivers real GPU-hours to the buyer. The buyer's cap fee and rent pass through an escrow agent to the neocloud.</title>
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#052b42"/></marker></defs>
+        <rect x="220" y="6" width="200" height="66" rx="10" fill="#052b42"/>
+        <text x="320" y="34" text-anchor="middle" style="font-size:18px;font-weight:700;fill:#e0ff4f">Dodona</text>
+        <text x="320" y="56" text-anchor="middle" style="font-size:13px;fill:#f8f7f2">matches, prices, values daily</text>
+        <rect x="8" y="132" width="170" height="70" rx="10" fill="#e0e4ff"/>
+        <text x="93" y="162" text-anchor="middle" style="font-size:17px;font-weight:700;fill:#052b42">Buyer</text><text x="93" y="184" text-anchor="middle" style="font-size:13px;fill:#4f6676">a business that uses GPUs</text>
+        <rect x="462" y="132" width="170" height="70" rx="10" fill="#e0e4ff"/>
+        <text x="547" y="162" text-anchor="middle" style="font-size:17px;font-weight:700;fill:#052b42">Neocloud</text><text x="547" y="184" text-anchor="middle" style="font-size:13px;fill:#4f6676">a business that sells GPUs</text>
+        <rect x="235" y="228" width="170" height="64" rx="10" fill="#efefe9" stroke="rgba(5,43,66,.3)"/>
+        <text x="320" y="256" text-anchor="middle" style="font-size:16px;font-weight:700;fill:#052b42">Escrow agent</text><text x="320" y="277" text-anchor="middle" style="font-size:13px;fill:#4f6676">holds fees and deposits</text>
+        <line x1="460" y1="152" x2="182" y2="152" stroke="#614efa" stroke-width="3" marker-end="url(#ah)"/>
+        <text x="320" y="144" text-anchor="middle" style="font-size:14px;font-weight:600;fill:#614efa">real GPU-hours</text>
+        <polyline points="93,204 93,260 231,260" fill="none" stroke="#052b42" stroke-width="2" marker-end="url(#ah)"/>
+        <polyline points="409,260 547,260 547,206" fill="none" stroke="#052b42" stroke-width="2" marker-end="url(#ah)"/>
+        <text x="100" y="230" style="font-size:13px">cap fee and rent</text>
+        <line x1="250" y1="74" x2="140" y2="128" stroke="#4f6676" stroke-width="1.5" stroke-dasharray="4 4"/><line x1="390" y1="74" x2="500" y2="128" stroke="#4f6676" stroke-width="1.5" stroke-dasharray="4 4"/>
+      </svg>
+      <ul class="list" style="gap:12px">
+        <li>Real GPU-hours are delivered, never a cash payout instead.</li>
+        <li>Only businesses that use or sell GPUs take part.</li>
+        <li>We designed it for the CFTC's trade option exemption. Counsel has to confirm before launch.</li>
+        <li>We never take a side and never hold customer money.</li>
+      </ul>
+    </div>
+    <p class="src">Not legal advice. Sources. 17 CFR 32.3; 77 FR 48208; CFTC 7343-16; CFTC release 9286-26, 19 Aug 2026; docket CFTC-2026-1850.</p>
+    <aside class="notes"><p>Why we resell instead of paying out cash. Under the CFTC's Brent interpretation, swapping a delivery for a cash difference has to be a separate deal agreed later. It can't be written into the original contract. A built-in cash payout, or one most buyers use, would weaken the intent to deliver that the trade option exemption needs. Reselling delivered hours keeps delivery real, and floors work the same way, since the floor buyer takes the hours. 77 FR 48208 https://www.cftc.gov/LawRegulation/FederalRegister/FinalRules/2012-18003.html</p><p>17 CFR 32.3 https://www.law.cornell.edu/cfr/text/17/32.3 ; 2016 amendments removed Form TO for end users https://www.cftc.gov/PressRoom/PressReleases/7343-16 . The CFTC asked for public comment on compute derivatives in August 2026, and its chair said America can't win the AI race without a strong derivatives market for compute https://www.cftc.gov/PressRoom/PressReleases/9286-26 ; docket https://www.regulations.gov/document/CFTC-2026-1850-0001 , comments closed 20 Oct 2026.</p><p>Counsel has to confirm three things before launch. The contracts fit the trade option exemption. Netting a resale through the escrow agent counts as resale. And the 1% compute fee and our cut of cap fees don't need a broker licence. Before the fee and venue questions can be settled, the term sheet must also fix the exercise, delivery and invoice sequence, which Appendix B marks as open. The open question is whether many buyers and sellers can trade before contracts expire, which is why we start with one-to-one quotes. The founders confirm which counsel is engaged and when an opinion is due.</p></aside>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide" id="s16" aria-label="Slide 16: Team">
+  <div class="frame">
+    <div class="eyebrow"><b>Team</b> Who builds it</div>
+    <h2>Two founders, and the platform in the demo was built by this team in the past week.</h2>
+    <div class="cols even" style="align-items:stretch">
+      <div class="box stack" style="gap:10px;padding:24px">
+        <p class="tag">CEO</p>
+        <div class="big">Sourabh Velaga</div>
+        <p><b>Financial Mathematics at MIT, Quant Researcher</b></p>
+        <p class="tag">Neocloud partnerships, buyers, the raise and the pricing engine.</p>
+      </div>
+      <div class="box stack" style="gap:10px;padding:24px">
+        <p class="tag">CTO</p>
+        <div class="big">Pranav Patlola</div>
+        <p><b>CS at Cornell and NYU, AI Researcher and Software Engineering</b></p>
+        <p class="tag">Platform integration, platform development and the pricing engine.</p>
+      </div>
+    </div>
+    <div class="cols even">
+      <div class="box lav"><h3>First hire</h3><p><b>Quant pricing and risk lead</b></p></div>
+      <div class="box lav"><h3>Advisors</h3><p><b>Derivatives lawyer, neocloud operator</b></p></div>
+    </div>
+    <aside class="notes"><p>Picus says team, market and product come first, and it backs founders who attract talent. Keep each bio to one line about something relevant you built or ran. Say the demo platform was built in the past week, then show it. If there's no first hire or advisor yet, name who you're talking to and when they start.</p><p>Blitzy is a Picus portfolio company that runs large amounts of inference, which makes it a natural buyer-side design partner if it self-hosts models. Ask for that introduction by name.</p></aside>
+  </div>
+</section>
+
+<!-- 17 -->
+<section class="slide" id="s17" aria-label="Slide 17: Sources">
+  <div class="frame">
+    <div class="eyebrow"><b>Sources</b> Every market number</div>
+    <h2>Every market number has a source. Worked examples use our own assumptions, marked on each slide.</h2>
+<ul class="srcs">
+      <li><b>H100 history:</b> Silicon Data price history; BCG compute economics, Jul 2026.</li>
+      <li><b>2026 prices:</b> Ornn H100 index page, 24 Oct 2026; Silicon Data H100 index, 24 Oct 2026; Nebius price list, 1 Oct 2026; AWS Capacity Blocks pricing, read 24 Oct 2026; DCD, Jan 2026, and Spheron, Oct 2026, on AWS price rises.</li>
+      <li><b>Ornn index:</b> Ornn daily H100 index, 18 Jul to 17 Oct 2026, demonstration only.</li>
+      <li><b>Commitments:</b> Google Cloud docs; Microsoft Learn reservation policy; AWS RI Marketplace docs.</li>
+      <li><b>Buyers:</b> ICONIQ State of AI snapshot, Jan 2026; SaaStr on ICONIQ, Jul 2026; Epoch AI company spending breakdown; SemiAnalysis on GPU debt, Jul 2026; Together AI GPU cluster pricing.</li>
+      <li><b>Futures status:</b> CFTC filing for CME GPU1/GPU2; ICE exchange notice, 29 Sep 2026.</li>
+      <li><b>No listed options:</b> Gammon Capital compute derivatives FAQ, Oct 2026.</li>
+      <li><b>Private floors:</b> Nvidia 10-Q, Jul 2026; CoreWeave 8-K, Sep 2025; Nebius 6-K, Mar 2026.</li>
+      <li><b>Neocloud demand:</b> CoreWeave Q2 release, 11 Aug 2026; Nebius Q2 2026 call via Investing.com, Aug 2026.</li>
+      <li><b>GPU debt:</b> AC Research on GPU loan spreads, 16 Oct 2026; Lambda financing release via Business Wire, 1 Oct 2026; DCD and Invezz on Nebius's Citi loan, 22 Oct 2026; CCIR on CoreWeave debt.</li>
+      <li><b>Break-even, meaning how full a cluster must be:</b> American Compute model via Moduledge (vendor model).</li>
+      <li><b>Loan covenants:</b> CoreWeave 8-Ks (DDTL 3.0, DDTL 4.0, Aug 2026 loan); TradingView.</li>
+      <li><b>Oil lending:</b> Oil &amp; Gas Journal; Extraction Oil &amp; Gas 8-K.</li>
+      <li><b>Precedents:</b> EEX; SEM Committee SEM-16-022; AP via Spokesman-Review; Doral Energy 10-K.</li>
+      <li><b>Past attempts:</b> heise.de on Deutsche Börse Cloud Exchange; CME press release on 6fusion, 2014.</li>
+      <li><b>Market size:</b> Synergy Research, Apr 2026; Mordor Intelligence, 2026; CoreWeave 10-Q and Q2 2026 release; SemiAnalysis; Allium via Benzinga.</li>
+      <li><b>Fees:</b> AWS RI Marketplace docs; Deribit fee schedule, 14 Oct 2026; eWeek on SF Compute, Nov 2025; Coverwatch on broker commissions, Sep 2026; Silicon Data pricing, Oct 2026.</li>
+      <li><b>Competitors:</b> SF Compute resale note; Compute Exchange; Ornn case study; Axios on Kalshi, 22 Oct 2026.</li>
+      <li><b>Regulation:</b> 17 CFR 32.3; 77 FR 48208; CFTC 7343-16; CFTC 9286-26; docket CFTC-2026-1850.</li>
+      <li><b>Pricing:</b> Black 1976, implemented in our engine; Turnbull and Wakeman 1991 and Curran 1994, our intended methods for the exact average; CME advisory 20-198; Silicon Data volatility note.</li>
+      <li><b>Picus fit:</b> terralayr and Vattenfall capacity toll release; Picus portfolio pages.</li>
+      <li><b>Supply abroad:</b> IndiaAI empanelment figures via IMPRI; Business Standard, about 11 Oct 2026, a report.</li>
+      <li><b>Worked examples:</b> our own options research, 22 Oct 2026, benefits research, 24 Oct 2026, and go-to-market plan, 19 Oct 2026. We chose the cap levels, cap fees, how full each cluster is and our fee rates to illustrate how contracts work.</li>
+    </ul>
+    <p class="src">Full links are in the speaker notes on each slide. Press N to show them. Research, not legal or investment advice.</p>
+    <aside class="notes"><p>The founders fill in the brackets on slides 16 and 17 before the call. No named firm is a customer or partner, and no partner neocloud is signed yet.</p></aside>
+  </div>
+</section>
+
+<!-- 18 -->
+<section class="slide" id="s18" aria-label="Appendix A: Questions">
+  <div class="frame">
+    <div class="eyebrow"><b>Appendix A</b> Questions we expect</div>
+    <h2>Ten questions we expect.</h2>
+    <dl class="qa">
+      <div><dt>Why caps and not futures?</dt><dd>Futures tie both sides to a price, and none trade yet. Buyers want a cap. Neoclouds want a floor and the cap fee income.</dd></div>
+      <div><dt>Who's on the other side of the contract?</dt><dd>For a cap, the partner neocloud that sells it on a block of GPUs it has set aside. For a floor, a large GPU user that must take the hours at the floor level. Dodona matches the two sides.</dd></div>
+      <div><dt>What if every buyer uses their cap at once?</dt><dd>Delivery can't go beyond the reserved block. Resale happens at a real bid, so nobody gets paid for hours that weren't actually sold.</dd></div>
+      <div><dt>What if the neocloud can't deliver?</dt><dd>It owes damages under its service agreement. It loses a deposit held by an escrow agent. And a clause in the contract makes it supply replacement capacity.</dd></div>
+      <div><dt>Do you need a licence?</dt><dd>Our analytics don't need one. We designed the contracts to fit 17 CFR 32.3, for deals between businesses that end in real delivery. Counsel has to confirm that, and the venue question, before launch.</dd></div>
+      <div><dt>Why would a lender trust Dodona Value?</dt><dd>Anyone can reproduce it. Every number shows the method version, the date and a checksum of the input data. We don't trade, so we have no position to protect.</dd></div>
+      <div><dt>Can a neocloud push the price around?</dt><dd>We settle on an average, limit how much any one neocloud counts, and real hours stand behind each price.</dd></div>
+      <div><dt>What if prices fall?</dt><dd>Cap buyers lose only the cap fee they paid. Neoclouds with floors deliver at the floor level. Lenders need an independent value most when prices are falling.</dd></div>
+      <div><dt>Isn't the revenue small?</dt><dd>At first. A million capped GPU-hours a month earns about $470,000 a year under our proposed fees and assumptions if half the hours are delivered, or $650,000 if all are. Floors for lenders and Dodona Value subscriptions add to that.</dd></div>
+      <div><dt>What's real in the demo?</dt><dd>Only the Ornn price index, which is labelled demonstration only. Contracts, the companies on each side and payments are all simulated.</dd></div>
+    </dl>
+    <p class="src">Sources. Our demo pitch notes, checked against our options research and our list of verified claims.</p>
+    <aside class="notes"><p>If pressed on regulation, don't guess about venues. Say that delivery is real by default, only businesses take part, counsel has to confirm the path before launch, and we hold no customer money. If asked how full neocloud clusters are, say they don't publish it. Operators' own models put break-even near 70%.</p></aside>
+  </div>
+</section>
+
+<!-- 19 -->
+<section class="slide" id="s19" aria-label="Appendix B: Pricing sketch">
+  <div class="frame" style="gap:20px">
+    <div class="eyebrow"><b>Appendix B</b> Pricing</div>
+    <h2>We value each contract from an assumed forward price for its window and its volatility, and settle on the window's average.</h2>
+    <div class="cols even">
+      <div class="stack">
+        <p>Our engine runs Black-76 on that forward with the variance time cut to the window start plus a third of its length, an approximation for average-price settlement. These values are estimates under stated assumptions, not live quotes.</p>
+        <div class="tbl"><table>
+          <caption class="tag" style="text-align:left;caption-side:top;padding-bottom:4px">One-month H100 cap at a $2.80 assumed forward, window starting now. USD per covered GPU-hour, zero discounting.</caption>
+          <thead><tr><th>Volatility</th><th class="n">Rule of thumb</th><th class="n">Black-76 on the last-day price</th><th class="n">Average-price approximation</th></tr></thead>
+          <tbody>
+            <tr><td>35%</td><td class="n">$0.113</td><td class="n">$0.113</td><td class="n">$0.065</td></tr>
+            <tr><td>40%</td><td class="n">$0.129</td><td class="n">$0.129</td><td class="n">$0.074</td></tr>
+          </tbody>
+        </table></div>
+        <div class="tbl"><table>
+          <caption class="tag" style="text-align:left;caption-side:top;padding-bottom:4px">Assumed forward below $2.80. Cap or floor struck at $2.80, monthly average, 40% volatility</caption>
+          <thead><tr><th>Assumed forward</th><th class="n">Cap (call)</th><th class="n">Floor (put)</th></tr></thead>
+          <tbody>
+            <tr><td>$2.80, at the strike</td><td class="n">$0.074</td><td class="n">$0.074</td></tr>
+            <tr><td>$2.60, below the strike</td><td class="n">$0.012</td><td class="n">$0.212</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+      <div class="stack">
+        <p>A cap's fee depends on the assumed forward, and volatility depends on the index, the period and the sampling. Forty percent is our illustrative base case.</p>
+        <div class="tbl"><table>
+          <caption class="tag" style="text-align:left;caption-side:top;padding-bottom:4px">The $2.50 weekly cap from slide 7, window starting one month ahead, 40% volatility</caption>
+          <thead><tr><th>Assumed forward for that week</th><th class="n">Cap value</th></tr></thead>
+          <tbody>
+            <tr><td>$2.80, the example price</td><td class="n">$0.33</td></tr>
+            <tr class="win"><td>$2.70, our assumption</td><td class="n">$0.25</td></tr>
+            <tr><td>$2.65</td><td class="n">$0.21</td></tr>
+          </tbody>
+        </table></div>
+        <div class="tbl"><table>
+          <caption class="tag" style="text-align:left;caption-side:top;padding-bottom:4px">Past volatility depends on the index, period and sampling</caption>
+          <thead><tr><th>Index</th><th>Chip</th><th class="n">Volatility</th></tr></thead>
+          <tbody>
+            <tr><td>Silicon Data neocloud, Sep 2024 to 14 Aug 2026</td><td>H100</td><td class="n">26.2%</td></tr>
+            <tr><td>Silicon Data neocloud, Aug 2025 to 14 Aug 2026</td><td>B200</td><td class="n">30.2%</td></tr>
+            <tr><td>Ornn daily index, our calculation, 18 Jul to 17 Oct 2026, daily / weekly log returns</td><td>H100</td><td class="n" style="white-space:nowrap">89% / 38%</td></tr>
+            <tr><td>Ornn daily index, our calculation, 18 Jul to 17 Oct 2026, daily / weekly log returns</td><td>B200</td><td class="n" style="white-space:nowrap">39% / 60%</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+    <p class="src">Our own model and our own calculation on Ornn's data. USD per covered GPU-hour, before platform fees. Live quotes depend on contract terms and market inputs. Still open in the term sheet, the exercise, delivery and invoice sequence. Sources. Silicon Data, 24 Aug 2026; CME advisory 20-198; Black (1976).</p>
+    <aside class="notes"><p>Method, in words. You can't store a GPU-hour, so we value off a forward price for the delivery window, the way EEX does for electricity. No compute forward curve trades yet, so in the demo the forward is the spot index carried at half of the clamped historical drift. That is a model forward, not a market forward, and a live quote needs a market or contracted forward. The engine, method black76-asian-v0, runs a Black-76 call on that forward with the variance time set to the window start plus a third of the window's length, floored at one week, and discounts at 5% a year to the window end. Floors come from put-call parity. Volatility is the sample standard deviation of weekly log returns × √52, falling back to daily × √365 with fewer than 8 weekly points. The third-of-the-window rule is a small-volatility approximation for an arithmetic average with uniform sampling. Uncertainty before the window starts remains, so for a month-long window starting a month out the effective time is 1/12 + 1/36 = 1/9 of a year. It is not an identity for arbitrary forward curves, jumps, mean reversion or usage schedules. Turnbull-Wakeman and Curran are the intended methods for the exact arithmetic average, and neither is implemented yet. CME advisory 20-198 moved four oil average-price options to Curran effective 18 May 2020, which supports averaging-specific valuation, not vanilla Black-76.</p><p>The tables. They use zero discounting, so they sit a fraction above the engine, whose check value for a $2.80 forward and strike, 40% and one month is about $0.128 after discounting and $0.129 before. The first table is a one-month cap for a window starting now at a $2.80 assumed forward. The rule of thumb, 0.4 × volatility × √time × price, matches Black-76 on the last day's price, and settling on the month's average makes the cap much cheaper. The second shows an assumed forward below the strike, which traders call backwardation. Caps get cheaper and floors get more expensive. The third is the $2.50 weekly cap from slide 7, for a week starting a month out. Its value depends a lot on the assumed forward for that week. The first two tables use a $2.80 assumed forward, the level in our 22 Oct research, with windows starting now, so a one-month cap here costs less than the next-month windows on slides 8 and 10. Today's Ornn spot is $3.02.</p><p>Volatility sensitivity for the weekly cap, at a $2.70 forward and a $2.50 strike. It is worth about $0.22 at 26.2%, $0.25 at 40% and $0.39 at 89%. This is an illustration. The daily 89% figure shouldn't simply be plugged into the same model, and weekly sampling of returns is not the same thing as the distribution of a monthly average.</p><p>Fixing convention. A real quote needs the observation dates, weights, index identifier, payment date, rate and rounding. Thirty end-of-day fixes over a month give about $0.067 and $0.076 at 35% and 40%, against $0.065 and $0.074 for a continuous average.</p><p>Volatility data. Silicon Data reports 26.2% for H100 and 30.2% for B200, annualised from daily log returns of its neocloud indices with data through 14 Aug 2026 https://www.silicondata.com/blog/cash-settled-compute-futures . Our Ornn figures are our own calculation on Ornn's public daily index from 18 Jul to 17 Oct 2026, 92 daily points per GPU. We take the sample standard deviation of log returns. Daily volatility is annualised with the square root of 365. Weekly volatility uses every seventh daily point back from the latest, 14 points, annualised with the square root of 52. That gives 88.8% daily and 37.7% weekly for H100 SXM, over a price range of $2.49 to $3.21, and 39.0% daily and 60.2% weekly for B200. An October 2026 audit recomputed the public series on the shorter 25 Jul to 17 Oct 2026 window with Saturday-to-Saturday weekly returns and got about 92% and 39% for H100 SXM and 40% and 60% for B200. So the figures reproduce within a few points, and the difference comes from the window and the weekly anchor. The data is Ornn's public index, used for demonstration only. The two sources differ in index construction and in sample period, so the gap between them doesn't isolate either effect. Always quote volatility with index, period, return type, annualisation factor and sampling convention.</p><p>Open design decision, not yet settled. The window's average is known only after the hours have elapsed, so the term sheet must fix the exercise, delivery and invoice sequence. The demo delivers during the window and sends a final invoice at the lower of the window average and the cap per hour, with resale of the reserved block as the exit. Whether a buyer may instead decline delivery before the window by a deadline, or vary usage inside it, is not decided, and each choice changes the option's value. This stays unresolved until the founders choose the commercial rights, and it must not be settled by picking whatever preserves the example price.</p><p>Black 1976 https://doi.org/10.1016/0304-405X(76)90024-6 ; Turnbull and Wakeman 1991 https://econpapers.repec.org/RePEc:cup:jfinqa:v:26:y:1991:i:03:p:377-389_00 ; Curran 1994 https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1001473 ; CME switched oil average-price option valuation to Curran on 18 May 2020 https://www.cmegroup.com/notices/clearing/2020/05/Chadv20-198.pdf .</p></aside>
+  </div>
+</section>
+
+</main>
+
+<nav class="bar" aria-label="Slide navigation">
+  <span class="hint">Dodona · arrow keys to move · N for notes</span>
+  <div class="ctl">
+    <button type="button" id="notesBtn" aria-pressed="false">Notes</button>
+    <button type="button" id="prevBtn" aria-label="Previous slide">Prev</button>
+    <span id="count" aria-live="polite">1 / 19</span>
+    <button type="button" id="nextBtn" aria-label="Next slide">Next</button>
+  </div>
+</nav>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var count = document.getElementById('count');
+  var notesBtn = document.getElementById('notesBtn');
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  var current = 0;
+
+  function show(i) {
+    current = i;
+    count.textContent = (i + 1) + ' / ' + slides.length;
+  }
+
+  function go(i) {
+    var target = Math.max(0, Math.min(slides.length - 1, i));
+    slides[target].scrollIntoView({ behavior: reduce.matches ? 'auto' : 'smooth', block: 'start' });
+    show(target);
+  }
+
+  function toggleNotes() {
+    var on = document.documentElement.classList.toggle('notes-on');
+    notesBtn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) show(slides.indexOf(e.target));
+      });
+    }, { rootMargin: '-45% 0px -45% 0px' });
+    slides.forEach(function (s) { io.observe(s); });
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', function () { go(current - 1); });
+  document.getElementById('nextBtn').addEventListener('click', function () { go(current + 1); });
+  notesBtn.addEventListener('click', toggleNotes);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    var t = e.target;
+    var tag = t && t.tagName ? t.tagName : '';
+    if (/INPUT|TEXTAREA|SELECT/.test(tag) || (t && t.isContentEditable)) return;
+    if (tag === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
+    var k = e.key;
+    if (k === 'ArrowDown' || k === 'ArrowRight' || k === 'PageDown' || (k === ' ' && !e.shiftKey)) {
+      e.preventDefault(); go(current + 1);
+    } else if (k === 'ArrowUp' || k === 'ArrowLeft' || k === 'PageUp' || (k === ' ' && e.shiftKey)) {
+      e.preventDefault(); go(current - 1);
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0);
+    } else if (k === 'End') {
+      e.preventDefault(); go(slides.length - 1);
+    } else if (k === 'n' || k === 'N') {
+      toggleNotes();
+    }
+  });
+})();
+</script>
+<script>
+// Scales each slide's frame down to fit the viewport height on desktop screens, keeping its proportions.
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var MIN_WIDTH = 900;
+  function fit() {
+    var notesOn = document.documentElement.classList.contains('notes-on');
+    slides.forEach(function (s) {
+      var f = s.querySelector('.frame');
+      if (!f) return;
+      f.style.transform = ''; f.style.transformOrigin = ''; f.style.marginBottom = '';
+      if (notesOn || window.innerWidth < MIN_WIDTH) return;
+      var cs = getComputedStyle(s);
+      var avail = window.innerHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 2;
+      var h = f.offsetHeight;
+      if (h <= avail) return;
+      var k = avail / h;
+      f.style.transformOrigin = 'top center';
+      f.style.transform = 'scale(' + k + ')';
+      f.style.marginBottom = (-h * (1 - k)) + 'px';
+    });
+  }
+  window.addEventListener('resize', fit);
+  window.addEventListener('load', fit);
+  document.getElementById('notesBtn').addEventListener('click', fit);
+  document.addEventListener('keydown', function (e) { if (e.key === 'n' || e.key === 'N') setTimeout(fit, 0); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+  fit();
+})();
+</script>

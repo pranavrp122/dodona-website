@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import { createApp } from '../server.mjs';
 import { fixture, listen, close } from './fixture.mjs';
 
@@ -33,12 +34,12 @@ try {
   check(await page.locator('meta[property="og:image"]').count() === 1, 'social-sharing image metadata');
   check((await page.request.get(preview + '/assets/social-card.png')).status() === 200, 'social-sharing image served');
   check(await page.locator('a[href="mailto:dodonamarkets@gmail.com"]').count() >= 1, 'owner-provided public contact');
-  check((await page.locator('.decision-grid').innerText()).includes('$78 less'), 'compute comparison includes booking fee');
+  check((await page.locator('.decision-grid').innerText()).includes('$320 total, or $80 less'), 'compute comparison includes the protection payment');
   check(await page.locator('.stage').count() === 3, 'three-step explanation');
   check((await page.locator('.example-card').innerText()).includes('100 GPU-hours × $3.00 = $300'), 'illustrative exercise payment');
-  check((await page.locator('.example-card').innerText()).includes('$322 total: $300 compute + $20 protection + $2 booking'), 'compute cost includes protection and booking');
+  check((await page.locator('.example-card').innerText()).includes('$300 compute + $20 protection = $320 total'), 'compute cost includes protection');
   check((await page.locator('.stage').last().innerText()).includes('receive usable compute access'), 'exercise leads to compute delivery');
-  check((await page.locator('.downside').innerText()).includes('the $20 protection payment and $2 booking fee are not refunded'), 'expiry cost explained');
+  check((await page.locator('.downside').innerText()).includes('the $20 protection payment is not refunded'), 'expiry cost explained');
   check(await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')].every(link => document.getElementById(link.getAttribute('href').slice(1)))), 'every CTA has a valid destination');
 
   // Audit-only context permits axe injection. The app's production CSP stays intact.
@@ -69,8 +70,8 @@ try {
   check(mobileAgentAccessibility.violations.length === 0, 'mobile agent documentation accessibility');
   await agentAudit.close();
 
-  await page.screenshot({ path: new URL('../artifacts/desktop.png', import.meta.url).pathname, fullPage: true });
-  await page.screenshot({ path: new URL('../artifacts/desktop-hero.png', import.meta.url).pathname });
+  await page.screenshot({ path: fileURLToPath(new URL('../artifacts/desktop.png', import.meta.url)), fullPage: true });
+  await page.screenshot({ path: fileURLToPath(new URL('../artifacts/desktop-hero.png', import.meta.url)) });
   for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     await page.setViewportSize({ width, height: 900 });
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `no horizontal overflow at ${width}px`);
@@ -104,8 +105,8 @@ try {
   const mobileAccessibility = await auditPage.evaluate(() => axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } }));
   check(mobileAccessibility.violations.length === 0, 'mobile accessibility: ' + JSON.stringify(mobileAccessibility.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) }))));
   await auditContext.close();
-  await page.screenshot({ path: new URL('../artifacts/mobile.png', import.meta.url).pathname, fullPage: true });
-  await page.screenshot({ path: new URL('../artifacts/mobile-hero.png', import.meta.url).pathname });
+  await page.screenshot({ path: fileURLToPath(new URL('../artifacts/mobile.png', import.meta.url)), fullPage: true });
+  await page.screenshot({ path: fileURLToPath(new URL('../artifacts/mobile-hero.png', import.meta.url)) });
   await page.locator('.nav-cta').click();
   check(new URL(page.url()).hash === '#early-access', 'mobile CTA reaches early access');
   await page.locator('#faq details').first().locator('summary').click();

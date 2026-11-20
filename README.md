@@ -6,11 +6,11 @@ The proposed product is **delivery-backed compute options**. A call holder can t
 
 The public copy explains the product through compute-budget protection: secure a rental price, use it if costs rise, or rent elsewhere if a lower price is available. It uses an insurance analogy without presenting the agreement as an insurance policy. The secured price does not automatically fall with the market, and the upfront fee is non-refundable. Technical option mechanics remain the underlying proposed model.
 
-The static example covers 100 H100 GPU-hours at a $3/GPU-hour secured price with a $20 upfront protection payment to the supplier and a separate $2 Dodona booking fee. Using the compute costs an additional $300, or $322 including protection and booking, excluding taxes or other charges. The $4/hour comparison saves $78 versus renting without protection; choosing an available $2/hour rental instead costs $222 including the original protection and booking payments. Letting protection expire unused does not refund those payments.
+The static example covers 100 H100 GPU-hours at a $3/GPU-hour secured price with a $20 upfront protection payment to the supplier. Using the compute costs an additional $300, or $320 including protection, excluding taxes or other charges. The $4/hour comparison saves $80 versus renting without protection; choosing an available $2/hour rental instead costs $220 including the original protection payment. Letting protection expire unused does not refund that payment.
 
-The proposed business model earns booking fees, transaction fees on completed user-to-user resales, and service margins on supplier-funded buybacks. The intended booking-fee policy is non-refundable across use, resale, buyback, and expiry, subject to required refund rights. Supplier failure, protection-payment refunds, and capacity backing still require final funded arrangements and terms; the demo does not claim those arrangements exist.
+Dodona keeps 15% of each cap fee. Under the proposed model it would also take 1% of each compute bill delivered through Dodona, paid from the neocloud's side, plus a transaction fee on completed user-to-user resales. The 1% is not wired into settlement or payouts. Supplier failure, protection-payment refunds, and capacity backing still require final funded arrangements and terms; the demo does not claim those arrangements exist.
 
-Customers could list protection at their original purchase price or another asking price; completion depends on a willing buyer. The resale illustration shows a $20 sale less a 5% transaction fee, paying the seller $19. Buybacks require a supplier's committed funds before acceptance, and use current executable value rather than a fixed discount from original purchase price. The illustration shows a funded $20 purchase value less a total $1.50 deduction (7.5%), paying the customer $18.50 with no additional resale fee. The deduction covers processing and Dodona's service margin, including its risk allowance. These are explanatory examples, not a final fee schedule, guaranteed quote, or promise of profit. Booking fees remain paid and do not transfer as a refundable balance. Selling transfers the remaining compute access under the original agreement's terms. The existing protection price, quantity, and usage window remain fixed.
+Customers could list protection at their original purchase price or another asking price; completion depends on a willing buyer. The resale illustration shows a $20 sale less a 5% transaction fee, paying the seller $19. Buybacks require a supplier's committed funds before acceptance, and use current executable value rather than a fixed discount from original purchase price. The illustration shows a funded $20 purchase value less a total $1.50 deduction (7.5%), paying the customer $18.50 with no additional resale fee. The deduction covers processing and Dodona's service margin, including its risk allowance. These are explanatory examples, not a final fee schedule, guaranteed quote, or promise of profit. Selling transfers the remaining compute access under the original agreement's terms. The existing protection price, quantity, and usage window remain fixed.
 
 All figures are illustrative; there is no current capacity offer, live price, real trading, resale, buyback, exercise processing, or provisioning implementation. The public site explains customer fees and payouts; business costs and margins are documented here rather than presented as customer promises.
 
@@ -28,7 +28,7 @@ The landing page uses short descriptions, separate cost and payout examples, nat
 
 “How it works” includes a browser-only checkout calculator at `/#paper-order`. GPU tabs (H100, H200, B200, A100, RTX 5090) show today’s price and a sparkline, above a 90-day chart with today, high, low, and change tiles. Choose a quantity (1, 2, or 4 GPUs, or 1–16 nodes of 8), a region preference, a time zone (your own by default), and exact start and end dates and hours, or use the 1 day, 1 week, 2 weeks, and 1 month presets. The window is shown in local time and UTC. Starts must be at least 48 hours and at most 12 months away; the end must follow the start by at least 4 hours.
 
-Lock fixes the price per GPU-hour; Cap pays the market price up to a cap. The quote shows GPU-hours, the price, the protection fee and its per-GPU-hour rate, the $2 booking fee, the amount paid now, compute if used, the total, and the key dates, including the claim deadline. Fees are illustrative and scale with the GPU’s recent volatility and the time until the window. **Buy protection** opens a review; after the demo acknowledgement it shows a `DEMO-` receipt, and **Start another** resets the form.
+Lock fixes the price per GPU-hour; Cap pays the market price up to a cap. The quote shows GPU-hours, the price, the protection fee and its per-GPU-hour rate, the amount paid now (the fee alone, or nothing for a lock), compute if used, the total, and the key dates, including the claim deadline. Fees are illustrative and scale with the GPU’s recent volatility and the time until the window. **Buy protection** opens a review; after the demo acknowledgement it shows a `DEMO-` receipt, and **Start another** resets the form.
 
 The calculator lives in `checkout.js`, an external script, so the CSP still blocks inline scripts. On load it requests `GET /api/prices` with a 3-second timeout and labels the as-of date as live or cached; if that fails it keeps the Ornn daily index embedded in the script. It makes **no API writes**, takes no payment, holds no capacity, creates no account, does not join the waitlist, and uses no browser storage. The self-contained HTML preview inlines the same script with the embedded prices. `demo-model.js` still prices the MCP reservation demo; the page no longer loads `paper-order.js`.
 
@@ -50,6 +50,72 @@ Canonical URLs, absolute discovery links, and the sitemap use **only `APP_ORIGIN
 
 Agents may submit a signup only when a user asks to join and provides their email. They fetch a token from `GET /api/waitlist/status`, wait at least 1.5 seconds, then POST the JSON fields described by the schema. A confirmed `200 {"status":"saved"}` is the only success signal; configured Supabase remains required. The existing token checks, origin checks, rate limits, validation, and duplicate handling apply. No cross-origin browser permissions or credential access were added. API interest values retain the original vocabulary; the guide maps them to the clearer form labels. Agent instructions do not expose an endpoint to trade, request a buyback, provision compute, or read/remove signup records.
 
+## Contract values (sample)
+
+This area is hidden by default because the demo focuses on price caps. Set `SHOW_CONTRACT_VALUES=1` to serve `/contracts`, `/contracts/<id>` and `/api/contracts` and to list them in `llms.txt` and the sitemap. When it is off those paths return the usual 404 and no page links to them.
+
+`/contracts` is a listing board of sample GPU rental contracts. Each one has a daily **Dodona Value**, much like a home-value estimate for compute. `/contracts/<id>` shows one contract with its value, a 90-day value history, a term sheet and the method in plain words. "List for sale" and "Make an offer" are demo-only forms. They create, send and store nothing, and Dodona never holds funds. The contracts and loans are illustrative and name no real counterparties. Dodona Values are impersonal analytics, not ratings or offers.
+
+- `GET /api/prices` returns the Ornn daily GPU index for H100, H200, B200, A100 and RTX 5090. `lib/prices.mjs` fetches it server-side, with a 5 s timeout per request and a one-hour cache. When Ornn is unreachable it serves the saved copy in `data/ornn-index.json` with `live: false`.
+- `GET /api/contracts` returns the board: contracts with valuations, region totals, and the lender view of the sample GPU-backed loans. `GET /api/contracts/<id>` returns one contract with its valuation, history and inputs. An unknown id returns a 404.
+- The test valuation method `v0.1-test` lives in `lib/valuation.mjs`. Its formulas and assumptions are documented in `docs/valuation-v0.md`. The sample book is `data/sample-contracts.json`.
+- The pages render on the server, so they read without JavaScript. `contracts.js` and `contract.js` refresh the values from the API and run the map filter and demo forms. They share `contracts-view.js` with the server. The page styles are in `contracts.css`.
+
+## Market strip and methodology
+
+The home page shows a market strip: Ornn daily index tiles (demonstration only; not licensed for commercial valuation) and the status of compute futures at CME, ICE and Kalshi. `GET /api/market` returns that data with `Cache-Control: public, max-age=300`.
+
+The Kalshi market-implied view appears only on the signed-in demo dashboard, never on public pages. The dashboard requests `GET /api/market?implied=1`, which adds an `implied` object and is sent with `Cache-Control: no-store`. The strip renders it only inside a `#market-strip` section marked `data-implied="true"`. For each month it shows a bid/ask bracket, a median from quotes with spreads of 20 cents or less, and a last-trade median with its trade date. It reads Kalshi's public monthly ladders (`KXB200MS`, `KXH100MS`) without a key, holds the results in server memory for 10 minutes, and backs off on rate limits. Kalshi data is never written to disk or logs, never used in a value or quote, and not reachable through any MCP tool.
+
+`/methodology` explains Dodona Value and cap pricing in plain words.
+
+## Cap pricing (v0)
+
+A cap is priced with Black-76 on the Ornn index forward, with an average-price adjustment because a cap covers every hour in its window and settles on the window's average index price. It reuses the valuation's volatility and drift, so a quote and a Dodona Value read the same market. The formulas are in `docs/pricing-v0.md` and the engine is `lib/pricing.mjs`.
+
+- `GET /api/quote?gpu=H100&count=64&start=<iso>&end=<iso>&type=call&strike=2.50&region=US%20East&config=SXM-IB` returns the premium per GPU-hour, total premium, fees, pay-now amount, cost if used, break-even, forward, spot, volatility, method, `asOf` and `computeMs`. `type` is `call`, `lock` or `put` (the provider floor). Invalid input returns 400 with `{ error }`. Responses are `no-store`. The route is listed in `/openapi.json`.
+- The home page calculator calls the route on every change and falls back to an offline estimate when it cannot reach it. Its receipts stay in the browser tab only; orders that reach the dashboard are placed on the demo platform's `/offers` and `/checkout` pages.
+- The MCP tool `quote_cap` returns the same quote. It is a demo quote only; nothing is booked, held or charged.
+
+## Customer dashboard
+
+`/dashboard` is the buyer and lender console of the demo platform. Sign in at `/sign-in` with any email or a seeded demo login; the session is an HttpOnly cookie and positions come from the account's paid orders through `/api/portfolio`. It has an overview with the portfolio value and chart ranges from one day to all history, positions with the delivery choice, listing, counters and bid acceptance (each an API call), a what-if payoff on the window average for caps, floors and fixed prices, provider tools to quote caps and floors, a lender view with loan-to-value, a rent shock and CSV export, alerts, the mock outbox under Emails, and monthly statements with a CSV under Settings. A demo clock in the top bar moves the account's date, runs every due step and shows each one as a toast. The buyer pages are `/offers` (the board and a price-your-own form), `/checkout` (mock card), `/orders` and `/orders/:ref` (timeline, term sheet, resale, settlement statement, payouts, emails and what the neocloud saw). Without a session the dashboard shows a sign-in gate.
+
+- `GET /api/portfolio` returns the signed-in account's paid demo orders, valued with the Dodona Value method at the account's demo clock. Caps get their time value from `quoteCap` and floors from `quotePut`. It answers 401 when signed out.
+- The Kalshi-implied view from the market strip appears only here.
+
+## Demo platform
+
+An end-to-end demo that founders can walk an investor through. A visitor signs in with a demo email, browses offers from mock neoclouds, pays with a mock card, and watches the order reserve, deliver and settle as a demo clock moves forward. Everything runs on a separate SQLite database with mock payment, a mock neocloud and a mock email outbox. No money moves; payments run through "the escrow agent (simulated)".
+
+- **Consoles by role.** Buyer and lender accounts land on `/dashboard`, provider accounts on `/provider` and the admin on `/admin`.
+- **Demo logins.** All four use the password `demo-dodona-2026`: `demo@dodona.markets` (Sample Labs, with the seven sample positions as paid orders), `credit@meridian.example` (Meridian Credit, lender), `ops@northwind.example` (Northwind Compute, provider) and `admin@dodona.markets`. Helix Cloud is a second neocloud that supplies offers but has no login.
+- **Test cards.** `4242 4242 4242 4242` succeeds, `4000 0000 0000 0002` is declined and `4000 0000 0000 9995` has insufficient funds. Any other number that passes the Luhn check succeeds. Only the brand and the last four digits are stored.
+- **Settlement.** Every contract settles on the average of the daily index over its window. A cap holder pays the lower of the average and the cap. A floor holder receives the shortfall below the floor. A lock pays its fixed price.
+- **Demo clock.** `POST /api/demo/advance` takes `{ days }`, `{ to }` or `{ until: 'next-event' | 'settlement' }` and runs every due step in time order: confirmations, window starts, daily usage, settlements, payouts, resale bids and emails. After the real Ornn as-of date, prices are synthetic, seeded per account and scenario (`market`, `rise`, `fall`, `spike`, `flat`).
+- **Activity log.** Each account's page views, clicks, platform API calls with their status and error code, script errors and sign-ins are kept per account (newest 5,000, cleared by a reset) and shown on the admin account screen with filters and a CSV export; failures across accounts are on the admin Activity screen and mirror to `demo_activity_failures` in Supabase. It never records request bodies, input or form field values, card details, passwords or session tokens, and query strings keep their keys only.
+- **Code.** The routes live in `lib/platform.mjs` and `lib/platform-routes.mjs`, the provider API in `lib/provider.mjs` and the admin API in `lib/admin.mjs`. The rest is split by domain: accounts, orders, payments, clock, settlement, listing, neocloud, outbox and seed.
+
+Settings:
+
+- `DEMO_PLATFORM` switches the platform. It is on by default outside production and off in production unless set to `1`; `0` turns it off anywhere. When it is off, every platform API and page answers 404 and `/dashboard` shows a one-line notice. The public site and its Supabase forms are unaffected.
+- `DEMO_DB_FILE` sets the database path. The default is `data/demo.sqlite`, which is gitignored with its `-wal` and `-shm` files. The Docker image declares `/app/data` as a volume. Delete the file to start again from the seed.
+
+The database is separate from Supabase on purpose. The public signup keeps using Supabase.
+
+## Signups, contact and quote requests
+
+`/signup`, `/contact` and `/rfq` save to three Supabase tables: `signups`, `contact_messages` and `rfq_requests`. They reuse the waitlist's signed form tokens, origin checks and per-client rate limits. Bodies are capped at 8 KB. Without storage the routes answer an honest 503 and nothing is saved. Submissions are never logged.
+
+To connect storage, run `supabase/signups.sql`, `supabase/contact.sql` and `supabase/rfq.sql` in the Supabase SQL editor. Create a Secret key, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (the new `sb_secret_` format and the legacy JWT both work), then restart the app.
+
+## Audit trail
+
+`/audit` shows an append-only, hash-chained log of demo activity: quotes, bookings, exercises, listings, offers, signups, RFQs, daily marks and server events. Each entry stores the SHA-256 of the previous one, starting from 64 zeros, and the page can verify the whole chain in the browser. Entries never hold personal data.
+
+- `GET /api/audit` returns the entries. `POST /api/audit/events` accepts demo events from the site's own pages.
+- The server keeps the last 1,000 entries in memory and appends to `data/audit.jsonl` when it can write there. `AUDIT_LOG_FILE` sets another path and `AUDIT_LOG_FILE=off` keeps it in memory only.
+
 ## MCP reservation demo
 
 The app serves a **stateless Streamable HTTP MCP server at `/mcp`**, using the pinned official SDK. Connect `http://127.0.0.1:3000/mcp` from a local compatible MCP client. For remote Claude/ChatGPT clients that support MCP connectors, first deploy the app behind HTTPS and add `<APP_ORIGIN>/mcp` in that client's connector settings. The endpoint must be connected before a chat can use its tools. The code has been verified with the SDK client, not by connecting a user's Claude or ChatGPT account. No public deployment or automatic connector registration has been performed.
@@ -64,12 +130,13 @@ Once connected, ask: **“Help me book a demo H100 reservation with Dodona.”**
 | `confirm_demo_reservation` | Return a simulated receipt after user confirmation |
 | `get_waitlist_status` | Check real signup availability and obtain a token |
 | `join_waitlist` | Save an authorized signup through the existing storage integration |
+| `quote_cap` | Price a cap, floor or fixed-price lock with pricing v0; demo quote only |
 
 Resources: `dodona://product`, `dodona://guide`. Prompt: `reserve_compute_demo`. All tool responses include text and structured JSON, and failures use `isError: true`. Tool metadata identifies the real waitlist write separately from read-only information and stateless simulations.
 
 The reservation conversation collects GPU type/count, **total** GPU-hours, start/end times with explicit timezone, and region. It asks only for missing details. Optional `maxUpfrontUsd` and `maxTotalIfUsedUsd` caps prevent silently exceeding the user's budget. H100 only; 1–8 GPUs; 1–10,000 total GPU-hours; a future usage window starting within one year and long enough for the requested hours divided by GPU count. Regions are preferences, not provider inventory.
 
-Demo prices scale the site's illustrative example: $3/GPU-hour compute, $0.20/GPU-hour protection, and a $2 booking fee. Monetary results are integer cents. For 100 GPU-hours, the quote shows $22 upfront and another $300 if the compute is used, totaling $322 before taxes or other charges. The agent must show the amounts, window, deadline, terms, and demo disclaimer, then ask for confirmation. Quote tokens bind those exact details, expire after 15 minutes or when the usage window starts, and reject tampering. Repeated confirmation of the same valid token gives the same receipt ID. Stable `WAITLIST_FORM_SECRET` is also used to sign demo quotes; production already requires it.
+Demo prices scale the site's illustrative example: $3/GPU-hour compute, $0.20/GPU-hour protection, and nothing else upfront. Monetary results are integer cents. For 100 GPU-hours, the quote shows $20 upfront and another $300 if the compute is used, totaling $320 before taxes or other charges. The agent must show the amounts, window, deadline, terms, and demo disclaimer, then ask for confirmation. Quote tokens bind those exact details, expire after 15 minutes or when the usage window starts, and reject tampering. Repeated confirmation of the same valid token gives the same receipt ID. Stable `WAITLIST_FORM_SECRET` is also used to sign demo quotes; production already requires it.
 
 **No money is charged, no capacity is held, and no reservation is saved.** The receipt includes `mode: "demo"`, `status: "simulated"`, `paymentCharged: false`, `capacityHeld: false`, `realReservationCreated: false`, and `persisted: false`. It is an agent interaction demo, not a simulated successful payment or a live capacity offer. Signup remains an independent, real write when Supabase is configured; its token, validation, and per-client limits are shared across REST and MCP. MCP signup needs `userConsent: true` and an aged status token; it never signs someone up merely because they requested a demo reservation.
 
@@ -108,7 +175,7 @@ For a self-contained design preview that can be opened without the server, run `
 1. Create or select a Supabase project controlled by Dodona. In its authenticated **SQL Editor**, run [`supabase/waitlist.sql`](supabase/waitlist.sql). This creates the `public.waitlist` table, a unique email constraint, row-level security, and server-role permissions. The table has no public access policies, and grants are revoked from `public`, `anon`, and `authenticated`.
 2. In local development, copy `.env.example` to `.env`. In hosting, use the platform’s **server-side secret/environment settings**, not files in the public site. Set:
    - `SUPABASE_URL`: the project URL, such as `https://your-project.supabase.co`.
-   - `SUPABASE_SERVICE_ROLE_KEY`: the **legacy `service_role` key** in the project API key settings. This implementation expects the JWT service-role key, not an anon/publishable key or the newer `sb_secret_` format. Never put it in client JavaScript, a public environment prefix, chat, Git, or build output.
+   - `SUPABASE_SERVICE_ROLE_KEY`: a **Secret key** (`sb_secret_…`) or the **legacy `service_role` JWT** from the project API key settings, never an anon or publishable key. Never put it in client JavaScript, a public environment prefix, chat, Git, or build output.
    - `APP_ORIGIN`: the exact deployed HTTPS origin, with no path or trailing slash. For local checks, leave it empty or use the exact local origin including its port.
    - `WAITLIST_FORM_SECRET`: a private random value shared by all server instances. Generate one locally with `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. A single local process can use the generated in-memory default. Set a stable value in production to keep form tokens valid across restarts/replicas.
 3. If your environment restricts outbound traffic, allow HTTPS to **your exact Supabase project hostname**. Node runs with normal certificate validation and proxy support (`--use-env-proxy`). Do not disable TLS checks.
@@ -167,6 +234,12 @@ npm run test:browser
 `tests/fixture.mjs` is a **test-only, in-memory PostgREST fixture**. It verifies HTTP integration, validation, duplicate/concurrent writes, confirmation timing, spam controls, storage failures, and recovery without touching a live project. It is never served or enabled in the production app. Test-fixture success does not mean genuine expressions of interest were stored in Supabase.
 
 ## Review and deployment
+
+### Vercel deployment
+
+This repository is deployed as the full Node app, not as a static-only site. Keep the Vercel project root set to `.` and use the committed `vercel.json`: it installs production dependencies with `npm ci --omit=dev --ignore-scripts` and emits the Build Output API bundle with `node scripts/build-vercel.mjs`. Use Node 24, and set the runtime variables `APP_ORIGIN` (the exact HTTPS site origin), `WAITLIST_FORM_SECRET` (at least 32 private characters), `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` in Vercel's server-side environment settings. `SHOW_CONTRACT_VALUES=1` is optional. Preview deployments may derive an HTTPS origin from `VERCEL_URL` when `APP_ORIGIN` is unset.
+
+The optional `DEMO_PLATFORM=1` mode uses a temporary database path in the serverless instance when `DEMO_DB_FILE` is unset; its data is ephemeral and is not a durable production store. Audit entries likewise use a temporary path unless `AUDIT_LOG_FILE` is explicitly configured. After changing these settings, let the committed build run; do not repeat an empty redeploy without the install/build commands.
 
 The local preview is for review; no production domain has been published. Once the owner supplies Supabase settings and the real storage check passes, deploy the same Node app behind HTTPS, set `APP_ORIGIN`, and restart it with server-side secrets. The page must continue to state that Dodona is in development and real-money trading is unavailable. Signup is for product updates and possible early access, not a purchase or a guarantee of trading eligibility.
 

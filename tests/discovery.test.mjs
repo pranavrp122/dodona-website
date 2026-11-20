@@ -61,7 +61,7 @@ test('agents can follow the documented token flow without browser JavaScript; li
   t.after(() => f.cleanup());
   const schema = await (await fetch(f.origin + '/openapi.json')).json();
   assert.equal(schema.openapi, '3.1.0');
-  assert.deepEqual(Object.keys(schema.paths).sort(), ['/api/site', '/api/waitlist', '/api/waitlist/status']);
+  assert.deepEqual(Object.keys(schema.paths).sort(), ['/api/quote', '/api/site', '/api/waitlist', '/api/waitlist/status']);
   const fields = schema.components.schemas.Signup;
   assert.deepEqual(fields.required, ['email', 'token']);
   assert.equal(fields.properties.website.const, '');
@@ -92,7 +92,8 @@ test('machine figures match the visible totals and payout examples', async t => 
   t.after(() => f.cleanup());
   const { example } = await (await fetch(f.origin + '/api/site')).json();
   const html = await (await fetch(f.origin + '/')).text();
-  assert.equal(example.protectionPayment + example.bookingFee, example.upfrontTotal);
+  assert.equal(example.protectionPayment, example.upfrontTotal);
+  assert.ok(!('bookingFee' in example), 'no flat per-order fee');
   assert.equal(example.gpuHours * example.rentalPricePerGpuHour, example.computePayment);
   assert.equal(example.computePayment + example.upfrontTotal, example.totalIfUsed);
   assert.equal(example.resale.salePrice - example.resale.fee, example.resale.sellerPayout);

@@ -2,7 +2,12 @@
 .env.*
 !.env.example
 node_modules/
+.vercel/
 artifacts/
 *.log
 exports/
 *.csv
+data/audit.jsonl
+data/demo.sqlite
+data/demo.sqlite-wal
+data/demo.sqlite-shm

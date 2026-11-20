@@ -1,0 +1,101 @@
+{
+  "note": "Sample contracts for demonstration. Parties and terms are illustrative.",
+  "contracts": [
+    {
+      "id": "h100-us-east-mar-aug-2027",
+      "label": "2,048 H100 · Mar–Aug 2027 · US East",
+      "gpu": "H100", "count": 2048, "pricePerGpuHour": 2.45,
+      "start": "2027-03-01", "end": "2027-09-01",
+      "region": "US East", "config": "SXM-IB",
+      "provider": { "label": "Tier-1 neocloud", "creditTier": "B+", "bondPriceCents": 78 },
+      "termType": "take-or-pay", "status": "held",
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "h100-europe-2026",
+      "label": "1,024 H100 · Jan–Dec 2026 · Europe",
+      "gpu": "H100", "count": 1024, "pricePerGpuHour": 3.4,
+      "start": "2026-01-01", "end": "2027-01-01",
+      "region": "Europe", "config": "SXM-IB",
+      "provider": { "label": "Regional provider", "creditTier": "BB−", "bondPriceCents": 91 },
+      "termType": "take-or-pay", "status": "listed", "askingCents": 92,
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "h200-us-west-jul-2026-jun-2027",
+      "label": "512 H200 · Jul 2026–Jun 2027 · US West",
+      "gpu": "H200", "count": 512, "pricePerGpuHour": 5.1,
+      "start": "2026-07-01", "end": "2027-07-01",
+      "region": "US West", "config": "SXM-IB",
+      "provider": { "label": "Hyperscaler reseller", "creditTier": "A", "bondPriceCents": 100 },
+      "termType": "usage-with-cancel", "status": "listed", "askingCents": 104,
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "b200-us-east-nov-2026-apr-2028",
+      "label": "4,096 B200 · Nov 2026–Apr 2028 · US East",
+      "gpu": "B200", "count": 4096, "pricePerGpuHour": 9.9,
+      "start": "2026-11-01", "end": "2028-05-01",
+      "region": "US East", "config": "SXM-IB",
+      "provider": { "label": "Tier-1 neocloud", "creditTier": "B+", "bondPriceCents": 78 },
+      "termType": "take-or-pay", "status": "held",
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "a100-pcie-us-west-aug-2026-jan-2027",
+      "label": "1,536 A100 PCIe · Aug 2026–Jan 2027 · US West",
+      "gpu": "A100", "count": 1536, "pricePerGpuHour": 1.05,
+      "start": "2026-08-01", "end": "2027-02-01",
+      "region": "US West", "config": "PCIe",
+      "provider": { "label": "Regional provider", "creditTier": "BB−", "bondPriceCents": 91 },
+      "termType": "take-or-pay", "status": "listed", "askingCents": 70,
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "h100-pcie-us-east-dec-2026-feb-2027",
+      "label": "256 H100 PCIe · Dec 2026–Feb 2027 · US East",
+      "gpu": "H100", "count": 256, "pricePerGpuHour": 2.1,
+      "start": "2026-12-01", "end": "2027-03-01",
+      "region": "US East", "config": "PCIe",
+      "provider": { "label": "Hyperscaler reseller", "creditTier": "A", "bondPriceCents": 100 },
+      "termType": "usage-with-cancel", "status": "held",
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "b200-europe-apr-2026-mar-2027",
+      "label": "1,024 B200 · Apr 2026–Mar 2027 · Europe",
+      "gpu": "B200", "count": 1024, "pricePerGpuHour": 7.6,
+      "start": "2026-04-01", "end": "2027-04-01",
+      "region": "Europe", "config": "SXM-IB",
+      "provider": { "label": "Regional provider", "creditTier": "BB−", "bondPriceCents": 91 },
+      "termType": "usage-with-cancel", "status": "listed", "askingCents": 101,
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "h200-us-east-jan-jun-2027",
+      "label": "768 H200 · Jan–Jun 2027 · US East",
+      "gpu": "H200", "count": 768, "pricePerGpuHour": 7.1,
+      "start": "2027-01-01", "end": "2027-07-01",
+      "region": "US East", "config": "SXM-IB",
+      "provider": { "label": "Tier-1 neocloud", "creditTier": "B+", "bondPriceCents": 78 },
+      "termType": "take-or-pay", "status": "listed", "askingCents": 88,
+      "note": "Sample contract for demonstration. Parties and terms are illustrative."
+    }
+  ],
+  "fleets": [
+    {
+      "id": "h100-fleet-2024",
+      "label": "H100 cluster loan · installed Nov 2024",
+      "gpu": "H100", "units": 1024, "installedOn": "2024-11-01",
+      "utilization": 0.75, "usefulLifeMonths": 48, "loanBalance": 20000000,
+      "note": "Sample loan for demonstration. Parties and terms are illustrative."
+    },
+    {
+      "id": "a100-fleet-2023",
+      "label": "A100 cluster loan · installed Jun 2023",
+      "gpu": "A100", "units": 2048, "installedOn": "2023-06-01",
+      "utilization": 0.75, "usefulLifeMonths": 48, "loanBalance": 6600000,
+      "note": "Sample loan for demonstration. Parties and terms are illustrative."
+    }
+  ]
+}

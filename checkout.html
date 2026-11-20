@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Checkout · Console — Dodona</title>
+  <meta name="description" content="Checkout: review the terms, pick the quantity and pay by card.">
+  <meta name="robots" content="noindex">
+  <!-- CANONICAL -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <script src="/theme.js"></script>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/dashboard.css">
+  <link rel="stylesheet" href="/platform.css">
+  <link rel="stylesheet" href="/tour.css">
+  <link rel="modulepreload" href="/tour.js">
+  <link rel="modulepreload" href="/tour-steps.js">
+  <script type="module" src="/platform-checkout.js"></script>
+  <script type="module" src="/activity.js"></script>
+</head>
+<body class="d-body">
+  <!-- P_SPRITE -->
+  <a class="skip-link" href="#main">Skip to content</a>
+  <!-- P_TOP -->
+  <div class="d-app">
+    <!-- P_RAIL -->
+    <main id="main" class="d-main">
+      <section class="c-ctr p-gate" id="p-gate" aria-labelledby="p-gate-h" hidden>
+        <p class="eyebrow">Dodona</p>
+        <h1 id="p-gate-h">Sign in to check out</h1>
+        <p>Payments run through the escrow agent. Sign in to check out.</p>
+        <div class="d-signin-acts"><a class="btn btn-primary" href="/sign-in">Sign in</a><a class="btn" href="/sign-in#create">Create an account</a></div>
+      </section>
+
+      <div class="p-content" id="p-content">
+        <header class="c-page-head">
+          <nav class="c-crumbs" aria-label="Breadcrumb"><a href="/dashboard#overview">Console</a><span aria-hidden="true">/</span><a href="/offers">Offers</a><span aria-hidden="true">/</span><span aria-current="page">Checkout</span></nav>
+          <div class="c-page-row">
+            <div class="c-page-title">
+              <h1 id="co-title">Checkout</h1>
+              <p id="co-sub">Review the terms, pick the quantity and pay with a test card.</p>
+            </div>
+          </div>
+        </header>
+
+        <p class="p-err" id="co-load-err" role="alert"></p>
+
+        <div class="p-checkout" id="co-body" hidden>
+          <div class="c-stack">
+            <section class="c-ctr" aria-labelledby="co-qty-h">
+              <div class="c-ctr-h"><div><h2 id="co-qty-h">1 · Quantity</h2><p id="co-qty-note">How many GPUs from this block.</p></div></div>
+              <div class="p-form">
+                <div class="field"><label for="co-count">GPUs</label><input id="co-count" type="number" inputmode="numeric" min="1" step="1" required aria-describedby="co-count-hint"><span class="p-hint" id="co-count-hint"></span></div>
+              </div>
+            </section>
+
+            <section class="c-ctr" aria-labelledby="co-pay-h">
+              <div class="c-ctr-h"><div><h2 id="co-pay-h"><span id="co-pay-t">2 · Pay by card</span> <span class="tag d-tag-demo">demo data</span></h2><p id="co-pay-p">The card number is never stored; only the brand and last four digits are kept.</p></div></div>
+              <form class="p-form" id="co-form" method="post" action="/checkout" novalidate autocomplete="on">
+                <div id="co-card">
+                <div class="field"><label for="co-name">Name on card</label><input id="co-name" type="text" autocomplete="cc-name" required maxlength="80"></div>
+                <div class="p-card-row">
+                  <div class="field"><label for="co-number">Card number</label><input id="co-number" type="text" inputmode="numeric" autocomplete="cc-number" required maxlength="23" spellcheck="false" placeholder="4242 4242 4242 4242"></div>
+                  <div class="field"><label for="co-exp">Expiry (MM/YY)</label><input id="co-exp" type="text" inputmode="numeric" autocomplete="cc-exp" required maxlength="7" placeholder="12/29"></div>
+                  <div class="field"><label for="co-cvc">CVC</label><input id="co-cvc" type="password" inputmode="numeric" autocomplete="cc-csc" required maxlength="4" placeholder="123"></div>
+                </div>
+                <aside class="p-help" aria-labelledby="co-help-h" data-tour="test-cards">
+                  <h3 id="co-help-h"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-info"/></svg>Test cards</h3>
+                  <ul>
+                    <li><code>4242 4242 4242 4242</code><span>succeeds</span></li>
+                    <li><code>4000 0000 0000 0002</code><span>declined</span></li>
+                    <li><code>4000 0000 0000 9995</code><span>insufficient funds</span></li>
+                  </ul>
+                  <p class="fine">Any future expiry and any three-digit CVC. Any other number that passes the Luhn check also succeeds.</p>
+                </aside>
+                </div>
+                <p class="p-none" id="co-none" hidden>Nothing to pay now. A fixed price has no premium, so there is no card to enter. The compute bill comes at settlement, at the fixed price.</p>
+                <p class="p-err" id="co-err" role="alert"></p>
+                <button type="submit" class="btn btn-primary p-pay" id="co-pay"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg><span id="co-pay-lbl">Pay</span></button>
+                <p class="fine" id="co-pay-fine">Paid through the escrow agent. Dodona never holds funds. The premium goes 85% to the neocloud and 15% to Dodona.</p>
+              </form>
+            </section>
+          </div>
+
+          <section class="c-ctr p-sum" aria-labelledby="co-sum-h">
+            <div class="c-ctr-h"><div><h2 id="co-sum-h">Order summary</h2><p id="co-sum-sub"></p></div><span id="co-kind"></span></div>
+            <dl class="p-lines" id="co-lines"></dl>
+            <p class="fine c-ctr-foot" id="co-sum-foot"></p>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+  <!-- P_FOOTER -->
+</body>
+</html>

@@ -1,0 +1,174 @@
+<title>Picus Demo Run-sheet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;600;700&family=Albert+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Layout: one reading column, a timed run-sheet table, then talking points in plain sections. */
+  :root {
+    color-scheme: light;
+    --ground: #f6f6f1;
+    --panel: #ffffff;
+    --ink: #052b42;
+    --muted: #4f6676;
+    --rule: #052b4226;
+    --violet: #614efa;
+    --lime: #e0ff4f;
+    --lime-ink: #1b2a08;
+    --lavender: #e7e9ff;
+    --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+    --body: "Albert Sans", "Avenir Next", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #0d1a26; --panel: #16263a; --ink: #e9edf2; --muted: #a9b6c3; --rule: #ffffff22;
+      --violet: #9d90ff; --lime: #d9f55a; --lime-ink: #10200a; --lavender: #2a2f55;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0d1a26; --panel: #16263a; --ink: #e9edf2; --muted: #a9b6c3; --rule: #ffffff22;
+    --violet: #9d90ff; --lime: #d9f55a; --lime-ink: #10200a; --lavender: #2a2f55;
+  }
+  body { background: var(--ground); color: var(--ink); font: 16px/1.55 var(--body); margin: 0;
+    padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  main { max-width: 880px; margin-inline: auto; display: grid; gap: 40px; }
+  h1, h2, h3 { font-family: var(--display); line-height: 1.15; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(30px, 2.4vw + 18px, 42px); font-weight: 700; }
+  h2 { font-size: 22px; font-weight: 650; }
+  h3 { font-size: 17px; font-weight: 600; }
+  p, li { max-width: 68ch; }
+  p { margin: 0; }
+  .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  header { display: grid; gap: 12px; }
+  header p { color: var(--muted); }
+  section { display: grid; gap: 14px; }
+  .lead { font-size: 18px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { background: var(--lavender); color: var(--ink); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; }
+  .pill.go { background: var(--lime); color: var(--lime-ink); }
+  ol, ul { margin: 0; padding-left: 22px; display: grid; gap: 8px; }
+  li::marker { color: var(--violet); font-weight: 600; }
+  .scroll { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--panel); }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+  th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: 0; }
+  td.t { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+  td.say::before { content: "\201C"; color: var(--violet); } td.say::after { content: "\201D"; color: var(--violet); }
+  .compare th:first-child, .compare td:first-child { font-weight: 600; width: 22%; }
+  .compare th:nth-child(3), .compare td:nth-child(3) { background: color-mix(in oklab, var(--lavender) 45%, transparent); }
+  .qa { display: grid; gap: 12px; }
+  .qa div { border-left: 3px solid var(--violet); padding-left: 14px; display: grid; gap: 4px; }
+  .qa b { font-weight: 600; }
+  .check { display: grid; gap: 8px; }
+  .check label { display: flex; gap: 10px; align-items: flex-start; }
+  .check input { margin-top: 4px; accent-color: var(--violet); }
+  .note { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 14px; background: var(--lavender); padding: 1px 5px; border-radius: 4px; }
+  footer { color: var(--muted); font-size: 13px; }
+  :focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+<main>
+  <header>
+    <p class="eyebrow">Dodona Markets · Picus Capital meeting · prepared 23 Oct 2026</p>
+    <h1>Picus demo run-sheet</h1>
+    <p class="lead">Pitch for ten minutes, demo for twelve, then questions. The deck explains the mechanism; the demo answers "is it real?". If they open with "just show us", run the demo first and pull the options-versus-futures slide to the front.</p>
+    <div class="pills"><span class="pill go">Buyer window: demo@dodona.markets</span><span class="pill">Provider window: ops@northwind.example</span><span class="pill">Admin tab: admin@dodona.markets</span></div>
+  </header>
+
+  <section>
+    <h2>Before the meeting, 30 minutes</h2>
+    <div class="check">
+      <label><input type="checkbox" id="c1"> <span>Start the server from <code>dodona-wt-demo</code>. Open two browser windows side by side: buyer on the left, Northwind on the right, admin in a third tab. Sign in once per account. Ten failed attempts lock an email for ten minutes.</span></label>
+      <label><input type="checkbox" id="c2"> <span>In the admin tab open Sample Labs and Northwind Compute and press "Reset this demo account" on each, so every clock starts today and the seeded orders are fresh.</span></label>
+      <label><input type="checkbox" id="c3"> <span>Light mode on a projector, dark on a laptop across a table.</span></label>
+      <label><input type="checkbox" id="c4"> <span>Say "simulated" once at the start, then stop repeating it. The demo labels stay on screen.</span></label>
+      <label><input type="checkbox" id="c5"> <span>Do not open the public home page's exit card or FAQ until the buyback wording is replaced.</span></label>
+      <label><input type="checkbox" id="c6"> <span>Clocks are per account. After advancing the buyer's clock, advance Northwind's to the same date before switching windows.</span></label>
+      <label><input type="checkbox" id="c7"> <span>Keep the walkthrough video open in a tab as the fallback.</span></label>
+    </div>
+  </section>
+
+  <section>
+    <h2>The twelve-minute run-sheet</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Minute</th><th>Screen</th><th>Click</th><th>Say</th></tr></thead>
+        <tbody>
+          <tr><td class="t">0:00</td><td>Home page calculator</td><td>Price a cap: 64 H100, one week in November</td><td class="say">Priced live on today's index with a published method. Anyone can check it.</td></tr>
+          <tr><td class="t">0:30</td><td>Buyer dashboard, Overview</td><td>Already signed in</td><td class="say">This is a CFO's view: what their GPU commitments are worth today and what needs attention.</td></tr>
+          <tr><td class="t">1:30</td><td>Positions</td><td>Select the H2 price cap, open the what-if slider</td><td class="say">A cap settles on the window's average price. Below the cap you lose only the fee; above it the saving grows. Both sides, one picture.</td></tr>
+          <tr><td class="t">3:00</td><td>Offers</td><td>Take the Northwind H100 cap, checkout, pay with 4242</td><td class="say">Neoclouds post caps, floors and fixed prices on reserved blocks. The premium holds our 15%, and under the proposed model we also take 1% of compute delivered through us. That is the business model.</td></tr>
+          <tr><td class="t">5:00</td><td>Order page</td><td>+7 days on the clock, then "Advance to this window's end"</td><td class="say">Capacity confirmed by the neocloud, the window runs, daily usage reports, then settlement on the average. Money moves through the escrow agent; Dodona never holds funds.</td></tr>
+          <tr><td class="t">6:30</td><td>Second order</td><td>"Resell the hours", list, +1 day, accept the bid</td><td class="say">The exit is a resale of delivered hours, not a cash settlement. That keeps these contracts inside the trade-option exemption.</td></tr>
+          <tr><td class="t">7:30</td><td>Provider window</td><td>Overview, Orders (confirm one), Contracts, Integration</td><td class="say">The neocloud earns premium on hours that would have sat idle, and buys floors against its own revenue. Integration is one webhook and one key.</td></tr>
+          <tr><td class="t">9:30</td><td>Lender view</td><td>LTV bars, rent shock</td><td class="say">Floors turn GPU-backed loans into something a lender can model. Today those loans cost 6 to 12%.</td></tr>
+          <tr><td class="t">10:30</td><td>Admin</td><td>Accounts, Supabase sync</td><td class="say">We can onboard design partners today.</td></tr>
+          <tr><td class="t">11:00</td><td>Audit trail, Methodology</td><td>Verify a hash</td><td class="say">Every quote and settlement is on a hash chain, and the pricing method is public.</td></tr>
+          <tr><td class="t">11:30</td><td>Close</td><td></td><td class="say">We need an index licence, counsel's opinion on the order book, two neocloud design partners, and the raise.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>What matters most to Picus, in order</h2>
+    <ol>
+      <li><b>A working two-sided product on real data.</b> Seed investors buy execution. Say how fast this was built and that the pricing engine runs on the live index.</li>
+      <li><b>The gap and the timing.</b> No compute futures trade yet: CME's contract is in CFTC review until 9 Nov 2026 and ICE has no date. Gammon Capital wrote on 12 Oct 2026 that reserved capacity is the only deep instrument and that caps and options are bilateral and bespoke. The mega-deals prove the need: Nvidia's $36B of capacity commitments, Meta's up to $15B with Nebius, CoreWeave's $6.3B backstop. Nothing exists for the long tail.</li>
+      <li><b>Why neoclouds say yes.</b> Idle hours are real: Azure production traces show peak load 3.3x the valley for conversation and 34.6x for coding, with weekends much lower. Covered calls on those hours are premium income with no new liability beyond hours they already own. Floors lower their cost of debt.</li>
+      <li><b>The analogy they already own.</b> terralayr sells battery capacity from 15 minutes to 15 years to customers including data centres, with tolling deals. Axle plugs fragmented flexible assets into wholesale markets. Quantile is a power-trading desk Picus led. Dodona is terralayr's contract model applied to GPU hours, with the option layer on top.</li>
+      <li><b>Fees that hold up.</b> Deribit charges 3 basis points of notional capped at 12.5% of premium; OKX caps at 7% of premium. Dodona's 15% is richer because the product bundles a physical capacity hold and delivery, not just a price.</li>
+      <li><b>Risks you name first.</b> The Ornn index is demonstration-only and needs a licence. Counsel must opine on a pre-expiry order book. Delivery risk sits with the neocloud and is managed with capacity holds, KYB and the escrow agent. Liquidity starts on the supply side with neocloud-posted offers.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Options versus futures</h2>
+    <div class="scroll">
+      <table class="compare">
+        <thead><tr><th></th><th>Futures (Ornn and ICE plan, CME in review)</th><th>Dodona caps and floors</th></tr></thead>
+        <tbody>
+          <tr><td>What you get</td><td>A cash difference on a monthly-average index</td><td>A GPU block at a price ceiling, delivered</td></tr>
+          <tr><td>Capacity</td><td>None; it settles in cash</td><td>A reserved block, confirmed by the neocloud</td></tr>
+          <tr><td>If prices fall</td><td>You still pay the locked price</td><td>You rent cheaper and lose only the fee</td></tr>
+          <tr><td>Cash needed</td><td>Initial and variation margin, daily, through a futures broker</td><td>The fee up front, nothing after</td></tr>
+          <tr><td>Built for</td><td>Traders and treasury desks</td><td>Operators: AI labs, neoclouds, lenders</td></tr>
+          <tr><td>Rules</td><td>Exchange listing and clearing, CFTC review</td><td>Physical trade options between commercial parties, no exchange licence (17 CFR 32.3)</td></tr>
+          <tr><td>Settlement basis</td><td>Monthly average of the index</td><td>Window average of the same index, so it can be hedged against futures once they list</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Why options are the product operators need</h3>
+    <ul>
+      <li>A buyer wants a ceiling with an exit, the way they buy insurance. A future removes the upside and adds margin calls.</li>
+      <li>Non-financial companies do not run margin accounts. A CFO can budget a fee.</li>
+      <li>Capacity is the real risk. A future cannot deliver GPUs; a Dodona cap is tied to a reservation.</li>
+      <li>The supply side has idle hours and expensive debt. Covered calls monetise the hours; floors protect the debt.</li>
+      <li>Futures and options are complementary. Futures give the index price discovery; options are what operators buy. When CME or ICE list, Dodona hedges its book on them. Ornn is building the benchmark; Dodona builds the product that uses it, and needs Ornn's licence to do it.</li>
+      <li>Precedents: EEX power options, Irish capacity options, tolling agreements, Southwest's fuel hedges, producer collars.</li>
+      <li>Volatility makes it worth paying for. Silicon Data reports 26.2% annualised for H100 and 30.2% for B200; the Ornn-based figure is 38 to 89% depending on sampling. The deck's example: 64 H100 for a week, a $2.50 cap for a $0.25 fee.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Objections and short answers</h2>
+    <div class="qa">
+      <div><b>Isn't this a reserved instance?</b><span>Reserved is a lock with no exit. A cap is an exit plus a ceiling. Reserved discounts run 17 to 33%, up to 60% on long terms; a cap often costs less than that discount and keeps the flexibility.</span></div>
+      <div><b>Why won't Ornn or a big neocloud do this?</b><span>Ornn is an index and futures business. A neocloud selling its own caps has a conflict and no cross-provider liquidity. Dodona is neutral and never takes the other side.</span></div>
+      <div><b>Where does liquidity come from?</b><span>Supply first: neoclouds post offers and sell covered calls on idle hours. Demand from AI labs and model companies. Resale of delivered hours is the secondary market from day one; a pre-expiry book comes after counsel's opinion.</span></div>
+      <div><b>Regulatory?</b><span>Physical trade options between commercial parties need no exchange licence. Any cash book-out has to be a separate later agreement, which is why the product resells hours instead. Counsel confirms the order book. No offshore structure.</span></div>
+      <div><b>Data?</b><span>Ornn is demonstration-only until licensed. Silicon Data is the alternative. Over time, executed contracts produce Dodona's own prints.</span></div>
+      <div><b>Delivery and credit risk?</b><span>KYB on both sides, capacity holds confirmed by the neocloud, delivery-backed tiers, an escrow agent, and Dodona never holds funds.</span></div>
+      <div><b>Why you?</b><span>The founders' story and the speed of this build. Fill in before the meeting.</span></div>
+    </div>
+  </section>
+
+  <section class="note">
+    <h3>Logins for the demo</h3>
+    <p>Buyer demo@dodona.markets, lender credit@meridian.example, neocloud ops@northwind.example, admin admin@dodona.markets. Test card 4242 4242 4242 4242 pays; 4000 0000 0000 0002 declines. Everything on the platform is simulated and labelled as such.</p>
+  </section>
+
+  <footer>Sources for every figure are in options-angle-verified.md, options-concept-research.md and picus-capital.md under Desktop/dodona-ideas/platform.</footer>
+</main>
