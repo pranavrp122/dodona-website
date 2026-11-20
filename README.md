@@ -235,6 +235,12 @@ npm run test:browser
 
 ## Review and deployment
 
+### Vercel deployment
+
+This repository is deployed as the full Node app, not as a static-only site. Keep the Vercel project root set to `.` and use the committed `vercel.json`: it installs production dependencies with `npm ci --omit=dev --ignore-scripts` and emits the Build Output API bundle with `node scripts/build-vercel.mjs`. Use Node 24, and set the runtime variables `APP_ORIGIN` (the exact HTTPS site origin), `WAITLIST_FORM_SECRET` (at least 32 private characters), `SUPABASE_URL`, and `SUPABASE_SERVICE_ROLE_KEY` in Vercel's server-side environment settings. `SHOW_CONTRACT_VALUES=1` is optional. Preview deployments may derive an HTTPS origin from `VERCEL_URL` when `APP_ORIGIN` is unset.
+
+The optional `DEMO_PLATFORM=1` mode uses a temporary database path in the serverless instance when `DEMO_DB_FILE` is unset; its data is ephemeral and is not a durable production store. Audit entries likewise use a temporary path unless `AUDIT_LOG_FILE` is explicitly configured. After changing these settings, let the committed build run; do not repeat an empty redeploy without the install/build commands.
+
 The local preview is for review; no production domain has been published. Once the owner supplies Supabase settings and the real storage check passes, deploy the same Node app behind HTTPS, set `APP_ORIGIN`, and restart it with server-side secrets. The page must continue to state that Dodona is in development and real-money trading is unavailable. Signup is for product updates and possible early access, not a purchase or a guarantee of trading eligibility.
 
 `Dockerfile` installs the lockfile's production dependencies with lifecycle scripts disabled and excludes test tools, exports, and `.env` files. It runs the app as the unprivileged `node` user. To review the demo in a container with signups unavailable:
