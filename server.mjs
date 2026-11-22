@@ -10,6 +10,7 @@ import { discoveryDocument, structuredData } from './lib/discovery.mjs';
 import { handleMcp } from './lib/mcp.mjs';
 import { getPriceHistory } from './lib/prices.mjs';
 import { contractsDocument } from './lib/contracts.mjs';
+import { MONTHLY_GPU_HOURS } from './forms.js';
 import { quoteRoute } from './lib/pricing.mjs';
 import { createMarketSource, handleMarket, handleMethodology } from './lib/market.mjs';
 import { createFormRoutes } from './lib/forms.mjs';
@@ -131,6 +132,8 @@ export function validateSubmission(body) {
   }
   const interest = body.interest ?? '';
   if (typeof interest !== 'string' || !interests.has(interest)) throw new RequestError(422, 'Choose one of the listed interests.');
+  const monthlyGpuHours = body.monthlyGpuHours ?? '';
+  if (monthlyGpuHours !== '' && !MONTHLY_GPU_HOURS.includes(monthlyGpuHours)) throw new RequestError(422, 'Choose a GPU-hours range from the list.');
   if (body.useCase != null && typeof body.useCase !== 'string') throw new RequestError(422, 'Please keep your use case to a short sentence or two.');
   const useCase = (body.useCase ?? '').trim();
   if (useCase.length > 280 || /[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/.test(useCase)) {
@@ -139,7 +142,7 @@ export function validateSubmission(body) {
   if (body.website != null && (typeof body.website !== 'string' || body.website !== '')) {
     throw new RequestError(422, 'We couldn’t accept this submission.');
   }
-  return { email, interest, useCase };
+  return { email, interest, useCase, monthlyGpuHours };
 }
 
 export function createApp({

@@ -6,8 +6,12 @@ create table if not exists public.waitlist (
   email text not null unique check (email = lower(btrim(email)) and char_length(email) between 3 and 254),
   interest text check (interest in ('Individual trading', 'Business hedging', 'Partnership')),
   use_case text check (char_length(use_case) <= 280),
+  monthly_gpu_hours text check (monthly_gpu_hours in ('under_1k', '1k_10k', '10k_100k', 'over_100k', 'not_sure')),
   created_at timestamptz not null default now()
 );
+
+-- Adds the column to a table created before it existed.
+alter table public.waitlist add column if not exists monthly_gpu_hours text check (monthly_gpu_hours in ('under_1k', '1k_10k', '10k_100k', 'over_100k', 'not_sure'));
 
 alter table public.waitlist enable row level security;
 -- No public policies: browser users cannot read or write the list.
