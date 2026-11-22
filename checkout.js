@@ -432,7 +432,7 @@ function summaryRows({ q, result }) {
 }
 function demoRef() {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", bytes = crypto.getRandomValues(new Uint8Array(6));
-  return "DEMO-" + Array.from(bytes, b => chars[b % chars.length]).join("");
+  return "DOD-" + Array.from(bytes, b => chars[b % chars.length]).join("");
 }
 
 // Review always shows a priced quote: a pending or debounced request is settled first.
