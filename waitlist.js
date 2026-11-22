@@ -95,6 +95,7 @@
     const body = {
       email: email.value,
       interest: document.getElementById('interest').value,
+      monthlyGpuHours: document.getElementById('monthly-gpu-hours').value,
       useCase: document.getElementById('use-case').value,
       website: document.getElementById('website').value,
       token,

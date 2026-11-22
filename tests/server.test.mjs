@@ -33,6 +33,13 @@ test('optional fields can be omitted', async t => {
   assert.equal((await f.submit({ email: valid.email, token: await f.token() })).status, 200);
   assert.equal(f.rows.get(valid.email).interest, null);
   assert.equal(f.rows.get(valid.email).use_case, null);
+  assert.equal('monthly_gpu_hours' in f.rows.get(valid.email), false);
+});
+
+test('a chosen GPU-hours range is saved with the signup', async t => {
+  const f = await setup(t);
+  assert.equal((await f.submit({ ...valid, monthlyGpuHours: '10k_100k', token: await f.token() })).status, 200);
+  assert.equal(f.rows.get(valid.email).monthly_gpu_hours, '10k_100k');
 });
 
 test('duplicates and concurrent retries produce one row and do not expose list membership', async t => {
@@ -53,7 +60,8 @@ test('malformed emails and inputs are rejected server-side without a write', asy
     { ...valid, email: 'not-an-email' }, { ...valid, email: 'a@localhost' },
     { ...valid, email: 'a..b@example.com' }, { ...valid, email: 'a@-example.com' },
     { ...valid, email: ['a@example.com'] }, { ...valid, email: 'a'.repeat(65) + '@example.com' },
-    { ...valid, interest: 'Deposits' }, { ...valid, useCase: 'x'.repeat(281) },
+    { ...valid, interest: 'Deposits' }, { ...valid, monthlyGpuHours: 'lots' }, { ...valid, monthlyGpuHours: 5 },
+    { ...valid, useCase: 'x'.repeat(281) },
     { ...valid, useCase: '\u0000' }, { ...valid, useCase: {} },
     { ...valid, website: 'spam.example' }, { ...valid, website: true },
   ]) assert.equal((await f.submit({ ...body, token })).status, 422);
