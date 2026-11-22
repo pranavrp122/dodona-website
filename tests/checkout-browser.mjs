@@ -156,7 +156,7 @@ try {
   await page.locator('#co-consent').check();
   await page.locator('#co-confirm').click();
   check(await page.locator('#co-receipt').isVisible() && await page.locator('#co-review').isHidden(), 'confirmation shows the receipt');
-  check(/^DEMO-[A-Z2-9]{6}$/.test(await page.locator('#co-ref').innerText()), 'receipt has a DEMO reference');
+  check(/^DOD-[A-Z2-9]{6}$/.test(await page.locator('#co-ref').innerText()), 'receipt has a DOD reference');
   check(await page.locator('#co-r-title').evaluate(element => element === document.activeElement), 'receipt heading receives focus');
   check((await page.locator('#co-receipt-list').innerText()).includes('Claim by'), 'receipt lists the claim deadline');
   await page.screenshot({ path: 'artifacts/checkout-receipt.png' });
@@ -235,7 +235,7 @@ try {
   await dialogOpen(offline);
   await offline.locator('#co-consent').check();
   await offline.locator('#co-confirm').click();
-  check(/^DEMO-/.test(await offline.locator('#co-ref').innerText()), 'standalone preview completes a booking offline');
+  check(/^DOD-/.test(await offline.locator('#co-ref').innerText()), 'standalone preview completes a booking offline');
   check(await offline.locator('#co-asof').innerText() === embeddedAsOf, 'standalone preview uses the embedded prices');
   check(await offline.locator('#submit-button').isDisabled(), 'offline preview does not enable real signups');
   await offlineContext.close();
