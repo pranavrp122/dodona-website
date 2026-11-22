@@ -144,13 +144,13 @@ test('a chosen GPU-hours range is stored and an empty one leaves the row unchang
   assert.equal(validateForm('signup', { ...signup, monthlyGpuHours: null }, NOW).value.monthlyGpuHours, '');
 });
 
-test('a repeat signup is reported as a duplicate and not stored twice', async t => {
+test('a repeat signup is not stored twice and looks the same as a new one', async t => {
   const store = fakeStore();
   const f = await setup(t, { formStore: store });
   const first = await f.post('/api/signups', { ...signup, token: await f.token('signup') });
   const second = await f.post('/api/signups', { ...signup, email: 'ops@example.com', token: await f.token('signup') });
   assert.deepEqual(await first.json(), { status: 'saved' });
-  assert.deepEqual(await second.json(), { status: 'duplicate' });
+  assert.deepEqual(await second.json(), { status: 'saved' });
   assert.equal(store.tables.get('signups').length, 1);
 });
 
