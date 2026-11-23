@@ -143,3 +143,13 @@ test('guide pages are public, canonical, in the sitemap and listed for agents', 
   }
   assert.ok(!/in development|simulated/i.test(guide));
 });
+
+test('IndexNow key file is served as plain text', async t => {
+  const { INDEXNOW_KEY } = await import('../lib/discovery.mjs');
+  const f = await fixture({});
+  t.after(() => f.cleanup());
+  const response = await fetch(`${f.origin}/${INDEXNOW_KEY}.txt`);
+  assert.equal(response.status, 200);
+  assert.match(response.headers.get('content-type'), /^text\/plain/);
+  assert.equal(await response.text(), INDEXNOW_KEY);
+});
