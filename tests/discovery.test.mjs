@@ -28,7 +28,7 @@ test('public discovery works without storage and does not imply live trading or 
     assert.equal(write.status, path === '/agents' ? 404 : 405);
   }
   const site = await (await fetch(origin + '/api/site')).json();
-  assert.equal(site.status, 'in_development');
+  assert.equal(site.status, 'early_access');
   for (const capability of ['purchaseProtection', 'trading', 'resale', 'buyback', 'computeAccess']) assert.equal(site.capabilities[capability], false);
   assert.equal(site.capabilities.waitlist.requiresUserConsent, true);
   assert.equal(site.capabilities.waitlist.statusUrl, '/api/waitlist/status');
@@ -122,4 +122,24 @@ test('structured data remains valid JSON, escapes script-closing text, and uses 
   const hash = createHash('sha256').update(raw).digest('base64');
   assert.ok(response.headers.get('content-security-policy').includes("'sha256-" + hash + "'"));
   assert.ok(!response.headers.get('content-security-policy').includes('unsafe-inline'));
+});
+
+test('guide pages are public, canonical, in the sitemap and listed for agents', async t => {
+  const canonical = 'https://dodona.example';
+  const f = await fixture({ origin: canonical });
+  t.after(() => f.cleanup());
+  const sitemap = await (await fetch(f.origin + '/sitemap.xml')).text();
+  const guide = await (await fetch(f.origin + '/llms.txt')).text();
+  const site = await (await fetch(f.origin + '/api/site')).json();
+  for (const path of ['/guides/hedge-gpu-costs', '/guides/gpu-rental-prices', '/guides/price-protection-vs-reserved']) {
+    const response = await fetch(f.origin + path);
+    assert.equal(response.status, 200, path);
+    const html = await response.text();
+    assert.ok(html.includes(`rel="canonical" href="${canonical}${path}"`), path);
+    assert.ok(!html.includes('<!--'), `${path}: placeholders rendered`);
+    assert.ok(sitemap.includes(canonical + path), path);
+    assert.ok(guide.includes(canonical + path), path);
+    assert.ok(site.guides.some(g => g.url === canonical + path), path);
+  }
+  assert.ok(!/in development|simulated/i.test(guide));
 });

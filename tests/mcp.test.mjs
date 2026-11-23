@@ -36,7 +36,7 @@ test('real MCP client discovers tools, resources, questions, and a booking promp
   const { resources } = await client.listResources();
   assert.deepEqual(resources.map(resource => resource.uri).sort(), ['dodona://guide', 'dodona://product']);
   const guide = await client.readResource({ uri: 'dodona://guide' });
-  assert.match(guide.contents[0].text, /No OAuth or API key is required for this demo/);
+  assert.match(guide.contents[0].text, /No OAuth or API key is required./);
   const prompt = await client.getPrompt({ name: 'reserve_compute_demo' });
   assert.match(prompt.messages[0].content.text, /ask me to confirm/);
 });

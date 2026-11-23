@@ -21,7 +21,7 @@ const NS = "http://www.w3.org/2000/svg";
 const $ = id => document.getElementById(id);
 if (!$("paper-order")) return;
 
-const state = { gpu: "H100", kind: "lock", preset: "7", strikeFactor: 1, strikeCustom: null };
+const state = { gpu: "H100", kind: "cap", preset: "7", strikeFactor: 1, strikeCustom: null };
 let pending = null, live = null, requestedKey = null, quoteTimer = null, quoteSeq = 0;
 
 const pad = n => String(n).padStart(2, "0");
@@ -494,7 +494,7 @@ function confirmBooking() {
 }
 function startAnother() {
   closeDialog(); pending = null;
-  state.kind = "lock"; state.strikeFactor = 1; state.strikeCustom = null;
+  state.kind = "cap"; state.strikeFactor = 1; state.strikeCustom = null;
   $("co-qty").value = "8"; $("co-region").selectedIndex = 0;
   setDefaults(); renderAll();
 }

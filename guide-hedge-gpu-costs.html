@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>How to hedge GPU rental costs — Dodona</title>
+  <meta name="description" content="Three ways to handle GPU rental price risk for a training run or inference launch, with a worked H100 price cap example.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="How to hedge GPU rental costs">
+  <meta property="og:description" content="Three ways to handle GPU rental price risk, with a worked H100 example.">
+  <!-- CANONICAL -->
+  <!-- SHARE_IMAGE -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/market.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Guides"><a href="/guides/gpu-rental-prices">GPU prices</a><a href="/guides/price-protection-vs-reserved">Compare options</a><a href="/#early-access">Join early access</a></nav></div></header>
+  <main class="wrap privacy-document mt-document" id="main">
+    <p class="eyebrow">Guide · GPU costs</p>
+    <h1>How to hedge GPU rental costs</h1>
+    <p class="mt-lede">If you plan to rent GPUs next month or next quarter, you are exposed to whatever the hourly rate is when you start. Here are the three ways teams deal with that, and when each one makes sense.</p>
+    <nav class="document-links" aria-label="On this page"><a href="#why">Why it matters</a><a href="#options">The three options</a><a href="#cap">Worked example</a><a href="#choose">Choosing</a><a href="#faq">Questions</a></nav>
+
+    <h2 id="why">Why GPU budgets are hard to plan</h2>
+    <p>GPU rental is priced per GPU-hour, and that price moves. New chip generations, large model launches, new data centres coming online and demand in a particular region all push hourly rates up or down, sometimes within weeks. For a training run that needs thousands of GPU-hours, a move of a dollar an hour changes the bill by thousands of dollars.</p>
+    <p>Most teams find out what their run costs only when they start it. Hedging means deciding in advance how much of that uncertainty you are willing to carry.</p>
+
+    <h2 id="options">The three options</h2>
+    <dl class="mt-terms">
+      <div><dt>1. Pay on-demand</dt><dd>Rent at whatever the price is when you need the GPUs. No commitment and nothing upfront, but you take the full price risk, and capacity may be short when demand spikes.</dd></div>
+      <div><dt>2. Reserve capacity</dt><dd>Sign a committed contract with a provider, usually for months or years. You get a lower, fixed rate and guaranteed GPUs, but you pay whether or not you use them, and you can't switch if prices fall.</dd></div>
+      <div><dt>3. Buy a price cap</dt><dd>Pay a small fee upfront for a ceiling on the price over a future window. If prices rise, you pay no more than the cap. If they fall, you pay the lower market price or rent elsewhere, and the fee is your only cost.</dd></div>
+    </dl>
+    <p>A cap works like insurance on your hourly rate, though it is a pricing agreement and not an insurance policy. It is the only one of the three that protects you from rises while letting you benefit from falls.</p>
+
+    <h2 id="cap">A worked example</h2>
+    <p>Say you need 100 H100 GPU-hours next month and today's rate is about $3 an hour. You pay $20 upfront for a $3.00 cap on that window.</p>
+    <div class="guide-table-wrap"><table class="guide-table">
+      <thead><tr><th scope="col">What happens</th><th scope="col">Without protection</th><th scope="col">With a $3.00 cap</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Price rises to $4/hour</th><td>$400</td><td>$300 + $20 fee = <strong>$320</strong></td></tr>
+        <tr><th scope="row">Price falls to $2/hour</th><td>$200</td><td>Rent elsewhere for $200 + $20 fee = <strong>$220</strong></td></tr>
+        <tr><th scope="row">Plans change, run cancelled</th><td>$0</td><td>$20, or less if you resell it</td></tr>
+      </tbody>
+    </table></div>
+    <p>At a larger scale: 64 H100s for one week is 10,752 GPU-hours. A $2.50 cap for a $0.25 per-hour fee costs $2,688 upfront. If that week averages $3.80, you pay $2.75 an hour all-in instead of $3.80, about $11,290 less than renting at the market price.</p>
+    <p class="mt-callout">Figures are examples to show how the arithmetic works, not quotes. Real fees depend on the GPU, the window and how much prices have been moving.</p>
+
+    <h2 id="choose">How to choose</h2>
+    <ul class="mt-list">
+      <li><strong>Steady, long-running workloads</strong> (production inference that runs all year): reserved capacity usually gives the lowest rate.</li>
+      <li><strong>A planned run</strong>, especially if the timing or size might change or prices could go either way: a cap sets the most you will pay and keeps your options open.</li>
+      <li><strong>Small, flexible, or experimental work</strong>: on-demand is often fine, because the price risk is small in dollar terms.</li>
+    </ul>
+    <p>Many teams combine them: reserve the base load, cap the spikes they can see coming, and pay on-demand for the rest.</p>
+
+    <h2 id="faq">Questions</h2>
+    <h3>What is a GPU-hour?</h3>
+    <p>One GPU running for one hour. Eight GPUs for ten hours is 80 GPU-hours.</p>
+    <h3>What price does a cap settle against?</h3>
+    <p>Dodona caps settle on the average of a public daily GPU rental index over your window, so one unusual day can't trigger or dodge the payout. See the <a href="/methodology">methodology</a>.</p>
+    <h3>Do I get the GPUs, or only the price?</h3>
+    <p>Each Dodona agreement is tied to capacity from a GPU provider, so you can claim the compute at your price before the deadline. You can also leave it unused, or list it for another buyer.</p>
+    <h3>What if I don't need it any more?</h3>
+    <p>An unused cap expires and the upfront fee is not refunded. Before the window starts you can try to sell it to another user.</p>
+
+    <section class="guide-cta" aria-labelledby="cta-title">
+      <h2 id="cta-title">Plan your next GPU run</h2>
+      <p>Join early access to book a price cap for your next window.</p>
+      <a class="btn btn-ink" href="/#early-access">Join early access</a>
+    </section>
+    <p class="guide-related">Related: <a href="/guides/gpu-rental-prices">GPU rental prices: what moves them and how to budget</a> · <a href="/guides/price-protection-vs-reserved">Price protection vs reserved GPUs vs on-demand</a></p>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Prices and fees shown are examples, not offers.</p><div class="footer-links"><a href="/">Dodona</a><a href="/methodology">Methodology</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

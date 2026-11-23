@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Price protection vs reserved GPUs vs on-demand — Dodona</title>
+  <meta name="description" content="Compare on-demand GPU rental, reserved GPU capacity and a price cap: what you pay upfront, what you commit to, and what happens when prices rise or fall.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Price protection vs reserved GPUs vs on-demand">
+  <meta property="og:description" content="What you pay, what you commit to, and what happens when GPU prices move.">
+  <!-- CANONICAL -->
+  <!-- SHARE_IMAGE -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/market.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Guides"><a href="/guides/hedge-gpu-costs">Hedging guide</a><a href="/guides/gpu-rental-prices">GPU prices</a><a href="/#early-access">Join early access</a></nav></div></header>
+  <main class="wrap privacy-document mt-document" id="main">
+    <p class="eyebrow">Guide · Comparison</p>
+    <h1>Price protection vs reserved GPUs vs on-demand</h1>
+    <p class="mt-lede">There are three common ways to pay for GPU compute you will need later. They differ in what you pay now, what you are locked into, and who carries the risk when prices move.</p>
+    <nav class="document-links" aria-label="On this page"><a href="#table">Side by side</a><a href="#when">When to use each</a><a href="#example">Same run, with and without a cap</a></nav>
+
+    <h2 id="table">Side by side</h2>
+    <div class="guide-table-wrap"><table class="guide-table">
+      <thead><tr><th scope="col"></th><th scope="col">On-demand</th><th scope="col">Reserved capacity</th><th scope="col">Price cap</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Pay upfront</th><td>Nothing</td><td>Often a prepayment or monthly commitment</td><td>A fee per GPU-hour</td></tr>
+        <tr><th scope="row">Commitment</th><td>None</td><td>Months to years, use it or not</td><td>One window, optional to use</td></tr>
+        <tr><th scope="row">If prices rise</th><td>You pay more</td><td>Protected</td><td>Protected above the cap</td></tr>
+        <tr><th scope="row">If prices fall</th><td>You pay less</td><td>You still pay the contract rate</td><td>You pay less or rent elsewhere</td></tr>
+        <tr><th scope="row">If plans change</th><td>No cost</td><td>You keep paying</td><td>Lose the fee, or resell it</td></tr>
+        <tr><th scope="row">GPUs available on your dates</th><td>Not guaranteed</td><td>Yes</td><td>Yes, through Dodona</td></tr>
+      </tbody>
+    </table></div>
+
+    <h2 id="when">When to use each</h2>
+    <dl class="mt-terms">
+      <div><dt>On-demand</dt><dd>Small or unpredictable workloads, experiments, and anything where a price move wouldn't hurt the budget much.</dd></div>
+      <div><dt>Reserved capacity</dt><dd>Steady workloads that run all year, such as production inference, where you are confident you will use every hour.</dd></div>
+      <div><dt>Price cap</dt><dd>A planned run where you want protection from rises but think prices might fall, or where the size or timing might change.</dd></div>
+    </dl>
+
+    <h2 id="example">The same run, with and without a cap</h2>
+    <p>Take 100 H100 GPU-hours next month, with today's rate at $3.00 an hour. A cap at $3.00 costs $20 upfront. Here is the total in three outcomes.</p>
+    <div class="guide-table-wrap"><table class="guide-table">
+      <thead><tr><th scope="col">Outcome</th><th scope="col">On-demand</th><th scope="col">Price cap at $3.00</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Price rises to $4</th><td>$400</td><td>$320</td></tr>
+        <tr><th scope="row">Price falls to $2</th><td>$200</td><td>$220</td></tr>
+        <tr><th scope="row">Run cancelled</th><td>$0</td><td>$20, less if resold</td></tr>
+      </tbody>
+    </table></div>
+    <p>The cap costs a little when prices fall and saves a lot when they rise. That trade is worth making when a price rise would hurt more than the fee. Reserved capacity can beat both on rate, but only if you use every hour you commit to.</p>
+    <p class="mt-callout">Figures are examples to show how the options compare, not quotes. Reserved-capacity terms vary widely between providers.</p>
+
+    <section class="guide-cta" aria-labelledby="cta-title">
+      <h2 id="cta-title">Get a price on your next window</h2>
+      <p>Join early access to book a price cap with Dodona.</p>
+      <a class="btn btn-ink" href="/#early-access">Join early access</a>
+    </section>
+    <p class="guide-related">Related: <a href="/guides/hedge-gpu-costs">How to hedge GPU rental costs</a> · <a href="/guides/gpu-rental-prices">GPU rental prices: what moves them and how to budget</a></p>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Prices and fees shown are examples, not offers.</p><div class="footer-links"><a href="/">Dodona</a><a href="/methodology">Methodology</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>
