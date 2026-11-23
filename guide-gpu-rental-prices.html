@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GPU rental prices: what moves them and how to budget — Dodona</title>
+  <meta name="description" content="What drives H100, H200 and B200 rental prices per GPU-hour, how to read a GPU price index, and a checklist for budgeting a training run when prices move.">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="GPU rental prices: what moves them and how to budget">
+  <meta property="og:description" content="What drives GPU rental prices and how to budget a training run when they move.">
+  <!-- CANONICAL -->
+  <!-- SHARE_IMAGE -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/market.css">
+  <script src="/market.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="nav"><div class="wrap nav-inner"><a class="logo" href="/">DODONA</a><nav aria-label="Guides"><a href="/guides/hedge-gpu-costs">Hedging guide</a><a href="/guides/price-protection-vs-reserved">Compare options</a><a href="/#early-access">Join early access</a></nav></div></header>
+  <main class="wrap privacy-document mt-document" id="main">
+    <p class="eyebrow">Guide · GPU prices</p>
+    <h1>GPU rental prices: what moves them and how to budget</h1>
+    <p class="mt-lede">GPU rental is priced per GPU-hour, and the rate for the same chip can change a lot over a few months. Here is what moves it, how to track it, and how to put a number on your next run.</p>
+    <nav class="document-links" aria-label="On this page"><a href="#today">Prices today</a><a href="#drivers">What moves prices</a><a href="#index">Reading an index</a><a href="#budget">Budgeting checklist</a></nav>
+
+    <h2 id="today">Prices today</h2>
+    <p>The daily index below tracks the average rental price per GPU-hour for common data-centre GPUs.</p>
+    <section class="mk-sec guide-strip" id="market-strip" aria-labelledby="mk-title"><div class="wrap">
+      <div class="mk-head"><div><h3 id="mk-title" class="mk-title">GPU rental prices</h3></div><p class="mk-asof" data-mk="asof">Ornn daily index · demonstration only; not licensed for commercial valuation</p></div>
+      <div class="mk-tiles" data-mk="tiles"><p class="mk-fallback">Market data loads with JavaScript.</p></div>
+      <div class="mk-lower"><div class="mk-futures" data-mk="futures" hidden></div></div>
+    </div></section>
+
+    <h2 id="drivers">What moves GPU rental prices</h2>
+    <dl class="mt-terms">
+      <div><dt>New chip generations</dt><dd>When a newer GPU ships in volume, rental prices for the previous generation tend to fall as capacity frees up. The newest chip is usually scarce and expensive at first.</dd></div>
+      <div><dt>Big model launches</dt><dd>Large training runs and popular product launches absorb capacity quickly, which can push short-term prices up across providers.</dd></div>
+      <div><dt>New supply</dt><dd>Data centres coming online add capacity in waves. A large cluster going live can pull prices down in that region.</dd></div>
+      <div><dt>Configuration</dt><dd>GPUs with fast interconnect (such as SXM with InfiniBand) cost more than PCIe cards, because multi-node training needs them.</dd></div>
+      <div><dt>Region</dt><dd>Power costs, data-residency rules and local demand make the same GPU cost different amounts in different regions.</dd></div>
+      <div><dt>Contract length</dt><dd>On-demand rates are highest. Committing to months or years buys a lower rate in exchange for paying whether or not you use it.</dd></div>
+    </dl>
+
+    <h2 id="index">Reading a GPU price index</h2>
+    <p>A price index averages rental prices across many providers each day, so it shows where the market is rather than one provider's list price. Two things to keep in mind:</p>
+    <ul class="mt-list">
+      <li><strong>Daily prices are noisy.</strong> A single day can spike or dip. For budgeting, the average over the weeks you will actually be running matters more than any one day.</li>
+      <li><strong>The index is a benchmark, not a quote.</strong> The price you get depends on your provider, region, configuration and how many GPUs you need at once.</li>
+    </ul>
+    <p>That is why Dodona caps settle on the average of the daily index over your window rather than a single day's price. The <a href="/methodology">methodology</a> has the details.</p>
+
+    <h2 id="budget">Budgeting checklist for a training run</h2>
+    <ol class="mt-list">
+      <li><strong>Count GPU-hours.</strong> GPUs × hours of the run, plus a buffer for restarts and evaluation. 64 GPUs for a week is 10,752 GPU-hours.</li>
+      <li><strong>Pick the window.</strong> The dates you expect to run. The further out, the more the price can move before you start.</li>
+      <li><strong>Price the range, not the point.</strong> Work out the bill at today's rate and at 20–30% above it. If the higher number breaks your budget, you have price risk worth managing.</li>
+      <li><strong>Decide how much risk to keep.</strong> Pay on-demand, reserve capacity or buy a price cap. The <a href="/guides/hedge-gpu-costs">hedging guide</a> compares them with worked examples.</li>
+      <li><strong>Check capacity, not just price.</strong> A low price is only useful if GPUs are available on your dates. Make sure your plan comes with access to the compute.</li>
+    </ol>
+
+    <section class="guide-cta" aria-labelledby="cta-title">
+      <h2 id="cta-title">Put a ceiling on your next run</h2>
+      <p>Join early access to cap the GPU-hour price for your window.</p>
+      <a class="btn btn-ink" href="/#early-access">Join early access</a>
+    </section>
+    <p class="guide-related">Related: <a href="/guides/hedge-gpu-costs">How to hedge GPU rental costs</a> · <a href="/guides/price-protection-vs-reserved">Price protection vs reserved GPUs vs on-demand</a></p>
+  </main>
+  <footer><div class="wrap footer-grid"><p>Index data comes from the Ornn daily index, demonstration only; not licensed for commercial valuation.</p><div class="footer-links"><a href="/">Dodona</a><a href="/methodology">Methodology</a><a href="/privacy">Privacy</a><!-- CONTACT_LINK --></div></div></footer>
+</body>
+</html>

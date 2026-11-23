@@ -129,12 +129,9 @@
               <p class="co-error" id="co-error" aria-live="polite" hidden></p>
             </fieldset>
             <fieldset class="co-step" data-tour="protection">
-              <legend><span class="co-num">3</span>Protection</legend>
-              <div class="co-types" role="group" aria-label="Protection type">
-                <button type="button" data-kind="lock" aria-pressed="true"><b>Lock</b><span>Fixed price per GPU-hour for the window.</span></button>
-                <button type="button" data-kind="cap" aria-pressed="false"><b>Price cap (a call)</b><span>Pay your window’s average market price, never above the cap.</span></button>
-              </div>
-              <div class="co-strike" id="co-strike" hidden>
+              <legend><span class="co-num">3</span>Price cap</legend>
+              <p class="co-help">Pay your window’s average market price, never more than the cap.</p>
+              <div class="co-strike" id="co-strike">
                 <span class="co-label" id="co-strike-l">Cap price</span>
                 <div class="co-chips" role="group" aria-labelledby="co-strike-l"><button type="button" data-strike="1" aria-pressed="true">At today’s price <small></small></button><button type="button" data-strike="1.1" aria-pressed="false">+10% <small></small></button><button type="button" data-strike="1.2" aria-pressed="false">+20% <small></small></button></div>
                 <div class="field co-strike-own"><label for="co-strike-in">Or set your own, $ per GPU-hour</label><input id="co-strike-in" type="number" min="0.05" max="1000" step="0.05" inputmode="decimal" aria-describedby="co-strike-err"></div>
@@ -144,10 +141,10 @@
           </form>
           <aside class="co-quote" aria-labelledby="co-quote-title" data-tour="quote">
             <p class="eyebrow">Your quote · USD</p>
-            <h4 id="co-quote-title">H100 · Lock</h4>
+            <h4 id="co-quote-title">H100 · Price cap</h4>
             <dl class="co-lines">
               <div><dt>GPU-hours</dt><dd id="co-q-hours"></dd></div>
-              <div><dt id="co-q-price-l">Fixed price</dt><dd id="co-q-price"></dd></div>
+              <div><dt id="co-q-price-l">Cap price</dt><dd id="co-q-price"></dd></div>
               <div><dt>Fee <span class="co-tag" id="co-fee-tag" hidden>model · v0</span><small id="co-q-per"></small></dt><dd id="co-q-fee"></dd></div>
               <div class="co-sub"><dt>of which Dodona fee (15%)</dt><dd id="co-q-platform"></dd></div>
               <div class="co-upfront"><dt>Pay now</dt><dd id="co-q-upfront"></dd></div>
@@ -278,7 +275,7 @@
       <div class="sec-head"><div><p class="eyebrow">Selling your protection</p><h2 id="flexibility-title">If you no longer<br>need the compute</h2></div><p>The plan is to offer two ways to sell before the access deadline. You’d see your payout before accepting.</p></div>
       <div class="exit-grid">
         <article class="exit-card" data-tour="resale"><p class="eyebrow">Sell to another user</p><h3>List it on Dodona.</h3><p>Choose an asking price, including what you originally paid. You need a buyer willing to pay it. Dodona takes a fee when the sale completes.</p><dl class="payout"><div><dt>Example sale price</dt><dd>$20.00</dd></div><div><dt>Resale transaction fee · 5%</dt><dd>−$1.00</dd></div><div class="payout-total"><dt>You receive</dt><dd>$19.00</dd></div></dl><p class="exit-note">The buyer gets the remaining compute access on the same terms.</p></article>
-        <article class="exit-card exit-card-buyback"><p class="eyebrow">Accept a buyback quote</p><h3>Request a buyback quote.</h3><p>Dodona would arrange a buyback when a supplier commits funds to buy your protection. The quote uses its value today, less the deduction shown below.</p><dl class="payout"><div><dt>Supplier’s funded offer</dt><dd>$20.00</dd></div><div><dt>Buyback deduction · 7.5%</dt><dd>−$1.50</dd></div><div class="payout-total"><dt>You receive</dt><dd>$18.50</dd></div></dl><p class="exit-note">The deduction covers processing and Dodona’s margin. No extra resale fee applies in this example. Quotes depend on supplier funding.</p></article>
+        <article class="exit-card exit-card-buyback"><p class="eyebrow">Accept a buyback quote</p><h3>Request a buyback quote.</h3><p>Dodona would arrange a buyback when a supplier commits funds to buy your protection. The quote uses its value today, less the deduction shown below.</p><dl class="payout"><div><dt>Supplier’s funded offer</dt><dd>$20.00</dd></div><div><dt>Buyback deduction · 7.5%</dt><dd>−$1.50</dd></div><div class="payout-total"><dt>You receive</dt><dd>$18.50</dd></div></dl></article>
       </div>
       <p class="scenario-note">These fees are examples only. A buyback’s value can rise or fall, so it isn’t a fixed percentage of your original payment.</p>
     </div></section>
@@ -310,6 +307,6 @@
       </div>
     </div></section>
   </main>
-  <footer id="legal"><div class="wrap footer-grid"><div><a class="logo" href="#top" aria-label="Dodona home">DODONA<span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a><p>Book a GPU price ahead of time.</p><!-- OPERATOR_LINE --></div><div class="footer-legal"><p>Prices and fees shown are examples, not offers.</p><div class="footer-links"><a href="#early-access">Join early access</a><a href="#faq">Questions</a><a href="/privacy">Privacy</a><a href="/agents">For agents</a><a href="/contact">Contact</a><a href="/rfq">Request a quote</a><!-- CONTACT_LINK --><span>© Dodona</span></div></div></div></footer>
+  <footer id="legal"><div class="wrap footer-grid"><div><a class="logo" href="#top" aria-label="Dodona home">DODONA<span aria-hidden="true"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19 19 5M5 5h14v14"/></svg></span></a><p>Book a GPU price ahead of time.</p><!-- OPERATOR_LINE --></div><div class="footer-legal"><p>Prices and fees shown are examples, not offers.</p><div class="footer-links"><a href="#early-access">Join early access</a><a href="#faq">Questions</a><a href="/privacy">Privacy</a><a href="/agents">For agents</a><a href="/contact">Contact</a><a href="/rfq">Request a quote</a><a href="/guides/hedge-gpu-costs">Hedging GPU costs</a><a href="/guides/gpu-rental-prices">GPU prices</a><a href="/guides/price-protection-vs-reserved">Compare options</a><!-- CONTACT_LINK --><span>© Dodona</span></div></div></div></footer>
 </body>
 </html>

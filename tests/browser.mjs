@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { mkdir } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { createApp } from '../server.mjs';
 import { fixture, listen, close } from './fixture.mjs';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
-const browser = await chromium.launch({ executablePath: process.env.BROWSER_EXECUTABLE || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
+const browser = await chromium.launch({ executablePath: process.env.BROWSER_EXECUTABLE || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined), headless: true, args: ['--no-sandbox'] });
 const unconfigured = createApp({ store: null });
 const preview = await listen(unconfigured);
 const f = await fixture({ realClock: true });
@@ -150,7 +151,9 @@ try {
   check(await page.locator('#interest').evaluate(element => element === document.activeElement), 'email to interest keyboard order');
   check(await page.locator('#interest').evaluate(element => getComputedStyle(element).outlineWidth === '3px'), 'visible keyboard focus');
   await page.keyboard.press('Tab');
-  check(await page.locator('#use-case').evaluate(element => element === document.activeElement), 'interest to use case keyboard order');
+  check(await page.locator('#monthly-gpu-hours').evaluate(element => element === document.activeElement), 'interest to GPU-hours keyboard order');
+  await page.keyboard.press('Tab');
+  check(await page.locator('#use-case').evaluate(element => element === document.activeElement), 'GPU-hours to use case keyboard order');
   await page.keyboard.press('Tab');
   check(await page.locator('#submit-button').evaluate(element => element === document.activeElement), 'honeypot excluded from keyboard order');
   await page.locator('#interest').selectOption('Individual trading');

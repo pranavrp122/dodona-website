@@ -54,3 +54,15 @@
 .mt-list{padding-left:20px}
 .mt-list li{margin-bottom:6px}
 @media(max-width:540px){.mt-terms>div{grid-template-columns:1fr}.mt-lede{font-size:16px}}
+/* Guide pages */
+.guide-table-wrap{overflow-x:auto;margin:8px 0 18px;border:1px solid var(--border);border-radius:12px}
+.guide-table{width:100%;border-collapse:collapse;font-size:15px;min-width:640px}
+.guide-table th,.guide-table td{padding:12px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--border)}
+.guide-table thead th{background:var(--panel);font-weight:600}
+.guide-table tbody th{font-weight:600}
+.guide-table tr:last-child>*{border-bottom:0}
+.guide-cta{margin-top:28px;padding:22px 24px;background:var(--lavender);border-radius:12px}
+.guide-cta p{margin:0 0 12px}
+.guide-related{margin-top:24px}
+.guide-strip{margin:8px 0 18px}
+.guide-strip .wrap{padding:0;max-width:none}

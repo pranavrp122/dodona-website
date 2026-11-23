@@ -14,6 +14,7 @@ import { MONTHLY_GPU_HOURS } from './forms.js';
 import { quoteRoute } from './lib/pricing.mjs';
 import { createMarketSource, handleMarket, handleMethodology } from './lib/market.mjs';
 import { createFormRoutes } from './lib/forms.mjs';
+import { handleGuide } from './lib/guides.mjs';
 import { formStoreFromEnvironment } from './lib/signups.mjs';
 import { auditDocument, acceptEvent, AuditError, recordStartup, recordServerEvent } from './lib/audit.mjs';
 import { portfolioDocument } from './lib/portfolio.mjs';
@@ -304,6 +305,7 @@ export function createApp({
       if (url.pathname === '/api/quote' && request.method === 'GET') { const quote = await quoteRoute(url, { prices, now }); if (quote.status === 200) auditQuote(request, quote.body); return json(response, quote.status, quote.body); }
       if (url.pathname === '/api/market' && request.method === 'GET') return await handleMarket(url, response, market, json);
       if (url.pathname === '/methodology' && ['GET', 'HEAD'].includes(request.method)) return await handleMethodology(request, response, { settings: siteSettings, origin });
+      if (await handleGuide(request, response, url, { settings: siteSettings, origin })) return;
       if (await forms.handle(request, response, url)) return;
       if (url.pathname === '/api/audit/events' && request.method === 'POST') {
         const expectedOrigin = origin || `http://${request.headers.host}`;
