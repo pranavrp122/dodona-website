@@ -291,7 +291,7 @@ test('GET /api/index flags synthetic prints after the real as-of date and stops 
   assert.ok((await f.anonymous.get('/api/index?gpu=H100')).data.points.every(p => !p.synthetic), 'signed out sees real prints only');
 });
 
-test('with the platform off every platform route and page is a 404 and the dashboard says so', async t => {
+test('with the platform off every platform route and page is a 404 and the dashboard shows an in-progress page', async t => {
   const f = await setup(t, { platform: false });
   for (const path of ['/api/auth/sign-in', '/api/orders', '/api/demo/advance', '/api/provider/overview', '/api/admin/accounts']) {
     assert.equal((await f.anonymous.post(path, {})).status, 404, path);
@@ -301,7 +301,11 @@ test('with the platform off every platform route and page is a 404 and the dashb
   }
   const page = await f.anonymous.get('/dashboard');
   assert.equal(page.status, 200);
-  assert.match(page.data, /The demo platform is off\./);
+  assert.match(page.data, /<h1>Dashboard in progress<\/h1>/);
+  assert.match(page.data, /href="\/#early-access"/);
+  assert.match(page.data, /<meta name="robots" content="noindex">/);
+  assert.match(page.data, /<link rel="stylesheet" href="\/styles\.css">/);
+  assert.doesNotMatch(page.data, /demo platform/i);
   assert.equal((await f.anonymous.get('/')).status, 200, 'the public site is untouched');
 });
 
