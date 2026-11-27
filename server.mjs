@@ -320,8 +320,9 @@ export function createApp({
       if (await adminPortal.handle(request, response, url)) return;
       if (await demo.handle(request, response, url)) return;
       if (!demo.enabled && ['GET', 'HEAD'].includes(request.method) && url.pathname === '/dashboard') {
-        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
-        return response.end(request.method === 'HEAD' ? undefined : '<!doctype html><title>Dodona</title><p>The demo platform is off.</p>');
+        const page = Buffer.from(renderPage(await readFile(resolve(root, 'dashboard-in-progress.html'), 'utf8'), { settings: siteSettings, origin, path: '/dashboard' }));
+        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': page.length, 'Cache-Control': 'no-cache' });
+        return response.end(request.method === 'HEAD' ? undefined : page);
       }
       if (!demo.enabled && (url.pathname === '/api/portfolio' || isPlatformPage(url.pathname))) return json(response, 404, { ok: false, error: { code: 'not_found', message: 'Not found.' } });
       // ---- provider portal pages (feature/platform-provider): the portal, its assets and the neocloud guide; 404 when the platform is off ----
